@@ -1,5 +1,6 @@
 stages:
   - test
+  - deploy
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
@@ -29,3 +30,16 @@ test:
   script:
   - pip install pre-commit
   - pre-commit run --all-files
+
+pypi:
+  stage: deploy
+  script:
+  - pip install twine setuptools wheel
+  - python setup.py sdist bdist_wheel
+  # The API token is provided in the TWINE_PASSWORD environment variable configured in the CI
+  - twine upload --user __token__ dist/*
+  only:
+    # tags of type v1.2.3
+    - /^v(\d+\.)?(\d+\.)?(\d+)$/
+  except:
+    - branches
