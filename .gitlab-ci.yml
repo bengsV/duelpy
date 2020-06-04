@@ -1,3 +1,7 @@
+# Use the python image to speed up the setup.
+# https://hub.docker.com/r/library/python/tags/
+image: python:latest
+
 stages:
   - test
   - deploy
@@ -19,9 +23,9 @@ cache:
 
 before_script:
   - apt-get update -qy
-  - apt-get install -y python-dev python-pip
-  - python -V  # Print out python version for debugging
-  - pip install virtualenv
+  - apt-get install -y python3-dev python3-pip
+  - python3 -V  # Print out python version for debugging
+  - pip3 install virtualenv
   - virtualenv venv
   - source venv/bin/activate
 
@@ -35,7 +39,7 @@ pypi:
   stage: deploy
   script:
   - pip install twine setuptools wheel
-  - python setup.py sdist bdist_wheel
+  - python3 setup.py sdist bdist_wheel
   # The API token is provided in the TWINE_PASSWORD environment variable configured in the CI
   - twine upload --user __token__ dist/*
   only:
