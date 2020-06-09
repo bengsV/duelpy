@@ -11,6 +11,9 @@ extension-pkg-whitelist=
     numpy,
     multiprocessing,
 
+load-plugins=
+    pylint.extensions.docparams, # docstrings must mention all parameters
+
 
 [MESSAGES CONTROL]
 
