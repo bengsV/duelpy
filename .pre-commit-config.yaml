@@ -21,3 +21,8 @@ repos:
     rev: v0.780
     hooks:
       - id: mypy
+  # Standardize import ordering and remove unused imports
+  - repo: https://github.com/sqlalchemyorg/zimports
+    rev: 0.2.0
+    hooks:
+      - id: zimports
