@@ -1,7 +1,9 @@
+"""Defines setuptools metadata."""
+
 import setuptools
 
 with open("README.md", "r") as readme_file:
-    long_description = readme_file.read()
+    LONG_DESCRIPTION = readme_file.read()
 
 setuptools.setup(
     name="duelpy",
@@ -9,7 +11,7 @@ setuptools.setup(
     author="The duelpy team",
     author_email="contact.us.at@gitlab.invalid",
     description="Dueling Bandit Algorithms in Python",
-    long_description=long_description,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     url="https://gitlab.com/duelpy/duelpy",
     packages=setuptools.find_packages(),
