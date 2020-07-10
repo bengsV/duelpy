@@ -29,11 +29,18 @@ before_script:
   - virtualenv venv
   - source venv/bin/activate
 
-test:
+lint:
   stage: test
   script:
   - pip install pre-commit
   - pre-commit run --all-files
+
+pytest:
+  stage: test
+  script:
+  - pip install pytest
+  - pip install -r requirements.txt
+  - pytest
 
 pypi:
   stage: deploy
