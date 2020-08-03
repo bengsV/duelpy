@@ -1,6 +1,9 @@
 """Gather feedback from a ground-truth preference matrix."""
 
+from typing import Callable
+from typing import List
 from typing import Optional
+from typing import Tuple
 
 import numpy as np
 
@@ -29,6 +32,7 @@ class PreferenceMatrix(FeedbackMechanism):
         self.preference_matrix = preference_matrix
         self.no_of_arms = len(self.preference_matrix)
         self.random = random if random is not None else np.random.RandomState()
+        self.history: List[Tuple[int, int]] = []
 
     def duel(self, arm_i: int, arm_j: int) -> bool:
         """Perform a duel between two arms based on a given probability matrix.
@@ -45,6 +49,7 @@ class PreferenceMatrix(FeedbackMechanism):
         bool
             True if arm_i wins.
         """
+        self.history.append((arm_i, arm_j))
         probability_i_wins = self.preference_matrix[arm_i][arm_j]
         i_wins = self.random.random() <= probability_i_wins
         return i_wins
@@ -70,3 +75,80 @@ class PreferenceMatrix(FeedbackMechanism):
             if np.amin(preference_probabilities) > 0.5:
                 return arm_idx
         return None
+
+    def reset_history(self) -> None:
+        """Delete the regret history."""
+        self.history.clear()
+
+    def _calculate_regret(
+        self, best_arm: int, aggregation_function: Callable[[float, float], float]
+    ) -> Tuple[list, float]:
+        """Calculate the regret.
+
+        The regret is calculated with respect to the given arm. The regret type is specified by the aggregation function.
+
+        Parameters
+        ----------
+        best_arm
+            The arm on which the regret is based on.
+        aggregation_function
+            This function is used to calculate the regret. E.g. minimum for weak regret.
+
+        Returns
+        -------
+        regret_history
+            A list containing the regret per round.
+        cumul_regret
+            The cumulative regret.
+        """
+        regret_history = []
+        cumul_regret = 0.0
+        for arm_i, arm_j in self.history:
+            weak_regret = (
+                aggregation_function(
+                    self.preference_matrix[best_arm, arm_i],
+                    self.preference_matrix[best_arm, arm_j],
+                )
+                - 0.5
+            )
+            regret_history.append(weak_regret)
+            cumul_regret += weak_regret
+        return regret_history, cumul_regret
+
+    def calculate_weak_regret(self, best_arm: int) -> Tuple[List[float], float]:
+        """Calculate the weak regret with respect to an arm.
+
+        The weak regret is defined as the distance from the best chosen arm to the best arm overall.
+
+        Parameters
+        ----------
+        best_arm
+            The arm with respect to which the regret is calculated
+
+        Returns
+        -------
+        regret_history
+            A list containing the weak regret per round.
+        cumul_regret
+            The cumulative weak regret.
+        """
+        return self._calculate_regret(best_arm, min)
+
+    def calculate_strong_regret(self, best_arm: int) -> Tuple[List[float], float]:
+        """Calculate the strong regret with respect to an arm.
+
+        The strong regret is defined as the distance from the worst chosen arm to the best arm overall.
+
+        Parameters
+        ----------
+        best_arm
+            The arm with respect to which the regret is calculated
+
+        Returns
+        -------
+        regret_history
+            A list containing the weak regret per round.
+        cumul_regret
+            The cumulative strong regret.
+        """
+        return self._calculate_regret(best_arm, max)
