@@ -12,13 +12,8 @@ def _run_decision_experiment() -> None:
         "Third best arm.",  # 3
         "Least favorite arm.",  # 4
     ]
-    feedback_mechanism = CommandlineFeedback()
-    savage(
-        num_arms=len(arms),
-        feedback_mechanism=feedback_mechanism,
-        delta=0.5,
-        verbose=True,
-    )
+    feedback_mechanism = CommandlineFeedback(len(arms))
+    savage(feedback_mechanism=feedback_mechanism, delta=0.5, verbose=True)
 
 
 if __name__ == "__main__":

@@ -6,6 +6,9 @@ from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 class CommandlineFeedback(FeedbackMechanism):
     """Compare two arms based on human feedback on the CLI."""
 
+    def __init(self, num_arms: int) -> None:
+        super().__init__(num_arms)
+
     def duel(self, arm_i: int, arm_j: int) -> bool:
         """Perform a duel between two arms based on human feedback.
 

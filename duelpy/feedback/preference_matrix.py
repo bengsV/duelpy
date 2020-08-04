@@ -29,8 +29,8 @@ class PreferenceMatrix(FeedbackMechanism):
         preference_matrix: np.array,
         random: Optional[np.random.RandomState] = None,
     ):
+        super().__init__(len(preference_matrix))
         self.preference_matrix = preference_matrix
-        self.no_of_arms = len(self.preference_matrix)
         self.random = random if random is not None else np.random.RandomState()
         self.history: List[Tuple[int, int]] = []
 
@@ -66,7 +66,7 @@ class PreferenceMatrix(FeedbackMechanism):
             The index of the Condorcet winner if one exists.
         """
         # select one arm each time from the pool of total arms to check whether it is a Condorcet winner or not
-        for arm_idx in range(self.no_of_arms):
+        for arm_idx in range(self.num_arms):
             # preference_probabilities of selected arm with all arms present in pool of total arms.
             preference_probabilities = np.asarray(self.preference_matrix[arm_idx])
             # preference_probability of selected arm with itself is not required as arm are not compared with itself.
