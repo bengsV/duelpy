@@ -53,7 +53,7 @@ class PreferenceMatrix(FeedbackMechanism):
         """
         self.history.append((arm_i, arm_j))
         probability_i_wins = self.preference_matrix[arm_i][arm_j]
-        i_wins = self.random_state.random() <= probability_i_wins
+        i_wins = self.random_state.uniform() <= probability_i_wins
         return i_wins
 
     def get_condorcet_winner(self) -> Optional[int]:
