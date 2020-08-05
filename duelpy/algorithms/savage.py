@@ -73,10 +73,7 @@ def copeland_independence_test(
 
 
 def savage(
-    num_arms: int,
-    feedback_mechanism: FeedbackMechanism,
-    delta: float = 0.1,
-    verbose: bool = False,
+    feedback_mechanism: FeedbackMechanism, delta: float = 0.1, verbose: bool = False,
 ) -> int:
     r"""Determine the probably-approximately-correct best arm.
 
@@ -140,13 +137,15 @@ def savage(
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random=np.random.RandomState(42))
+    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=np.random.RandomState(42))
 
     Obviously, the last arm (index 2) is expected to win against the most other
     arms. That makes it the copeland winner:
-    >>> savage(num_arms=3, feedback_mechanism=feedback_mechanism)
+    >>> savage(feedback_mechanism=feedback_mechanism)
     2
     """
+    num_arms = feedback_mechanism.get_num_arms()
+
     # Based on Hoeffding + Union Bound. Might be interesting to experiment with
     # more advanced methods, such as https://arxiv.org/pdf/1905.06208.pdf.
     def confidence_radius(num_samples: int) -> float:
