@@ -137,7 +137,7 @@ def savage(
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random=np.random.RandomState(42))
+    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=np.random.RandomState(42))
 
     Obviously, the last arm (index 2) is expected to win against the most other
     arms. That makes it the copeland winner:

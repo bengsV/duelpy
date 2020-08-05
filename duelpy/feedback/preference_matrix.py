@@ -20,18 +20,20 @@ class PreferenceMatrix(FeedbackMechanism):
         wins against arm j. This implies p[j, i] = 1 - p[i, j] and p[i, i] =
         0.5.
 
-    random
+    random_state
         A numpy random state. Defaults to an unseeded state when not specified.
     """
 
     def __init__(
         self,
         preference_matrix: np.array,
-        random: Optional[np.random.RandomState] = None,
+        random_state: Optional[np.random.RandomState] = None,
     ):
         super().__init__(len(preference_matrix))
         self.preference_matrix = preference_matrix
-        self.random = random if random is not None else np.random.RandomState()
+        self.random_state = (
+            random_state if random_state is not None else np.random.RandomState()
+        )
         self.history: List[Tuple[int, int]] = []
 
     def duel(self, arm_i: int, arm_j: int) -> bool:
@@ -51,7 +53,7 @@ class PreferenceMatrix(FeedbackMechanism):
         """
         self.history.append((arm_i, arm_j))
         probability_i_wins = self.preference_matrix[arm_i][arm_j]
-        i_wins = self.random.random() <= probability_i_wins
+        i_wins = self.random_state.random() <= probability_i_wins
         return i_wins
 
     def get_condorcet_winner(self) -> Optional[int]:
