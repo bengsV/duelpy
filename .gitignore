@@ -10,3 +10,8 @@ ENV/
 
 # misc
 /.pytest_cache/
+
+
+#sphinx
+_build
+public

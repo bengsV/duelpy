@@ -14,6 +14,9 @@ extension-pkg-whitelist=
 load-plugins=
     pylint.extensions.docparams, # docstrings must mention all parameters
 
+# Ignore config files
+ignore=conf.py
+
 
 [MESSAGES CONTROL]
 
