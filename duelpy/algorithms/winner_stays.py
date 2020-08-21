@@ -28,9 +28,7 @@ class WinnerStaysWeakRegret:
     win_deltas
         Stores the difference between won and lost rounds for each arm. Corresponds to the C(t,i) values in [1]_.
     feedback_mechanism
-        The FeedbackMechanism object describing the environment.
     random_state
-        Used for random choices in the algorithm.
 
     References
     ----------
@@ -141,12 +139,8 @@ class WinnerStaysStrongRegret:
     Attributes
     ----------
     feedback_mechanism
-        The FeedbackMechanism object describing the environment.
     exploitation_factor
-        The factor set when creating the object
     random_state
-        Used for random choices in the algorithm.
-
 
     References
     ----------
