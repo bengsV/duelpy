@@ -125,6 +125,29 @@ class PreferenceEstimate:
         )
         return min(mean + confidence_radius, 1)
 
+    def get_lower_estimate(self, first_arm: int, second_arm: int) -> float:
+        """Get the lower estimate of the win probability of `first_arm` against `second_arm`.
+
+        Parameters
+        ----------
+        first_arm
+            The first arm of the duel.
+        second_arm
+            The second arm of the duel.
+
+        Returns
+        -------
+        float
+            The lower bound of the confidence estimate for the probability that `first_arm` wins against `second_arm`.
+        """
+        if first_arm == second_arm:
+            return 1 / 2
+        mean = self.get_mean_estimate(first_arm, second_arm)
+        confidence_radius = self.confidence_radius(
+            self.get_num_samples(first_arm, second_arm)
+        )
+        return max(mean - confidence_radius, 0)
+
     def get_num_samples(self, first_arm: int, second_arm: int) -> int:
         """Get the number of times a duel between first_arm and second_arms was sampled.
 
