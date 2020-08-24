@@ -32,3 +32,4 @@ repos:
     rev: 5.0.2
     hooks:
       - id: pydocstyle
+exclude: ^sphinx/

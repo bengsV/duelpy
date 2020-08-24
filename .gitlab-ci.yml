@@ -42,6 +42,31 @@ pytest:
   - pip install -r requirements.txt
   - pytest
 
+test:
+  stage: test
+  script:
+  - pip install --upgrade sphinx
+  - sphinx-apidoc -o _doc duelpy
+  - cp sphinx/index.rst _doc/index.rst
+  - sphinx-build -c sphinx -b html _doc public
+  only:
+  - branches
+  except:
+  - master
+
+pages:
+  stage: deploy
+  script:
+  - pip install --upgrade sphinx
+  - sphinx-apidoc -o _doc duelpy
+  - cp sphinx/index.rst _doc/index.rst
+  - sphinx-build -c sphinx -b html _doc public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
+
 pypi:
   stage: deploy
   script:
