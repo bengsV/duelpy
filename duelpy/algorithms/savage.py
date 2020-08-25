@@ -131,6 +131,7 @@ def savage(
     --------
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
+
     >>> from duelpy.feedback import PreferenceMatrix
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
@@ -141,6 +142,7 @@ def savage(
 
     Obviously, the last arm (index 2) is expected to win against the most other
     arms. That makes it the copeland winner:
+
     >>> savage(feedback_mechanism=feedback_mechanism)
     2
     """

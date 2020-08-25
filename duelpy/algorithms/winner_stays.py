@@ -38,6 +38,7 @@ class WinnerStaysWeakRegret:
     --------
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
+
     >>> from duelpy.feedback import PreferenceMatrix
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
@@ -150,6 +151,7 @@ class WinnerStaysStrongRegret:
     --------
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
+
     >>> from duelpy.feedback import PreferenceMatrix
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
