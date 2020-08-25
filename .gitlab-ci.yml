@@ -46,9 +46,14 @@ test:
   stage: test
   script:
   - pip install --upgrade sphinx
+  - pip install -r requirements.txt
   - sphinx-apidoc -o _doc duelpy
   - cp sphinx/index.rst _doc/index.rst
-  - sphinx-build -c sphinx -b html _doc public
+  - sphinx-build -c sphinx -b html _doc doc_test
+  artifacts:
+    paths:
+      - doc_test
+    expire_in: 1 week
   only:
   - branches
   except:
@@ -58,6 +63,7 @@ pages:
   stage: deploy
   script:
   - pip install --upgrade sphinx
+  - pip install -r requirements.txt
   - sphinx-apidoc -o _doc duelpy
   - cp sphinx/index.rst _doc/index.rst
   - sphinx-build -c sphinx -b html _doc public
