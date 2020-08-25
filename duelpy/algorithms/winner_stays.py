@@ -45,12 +45,13 @@ class WinnerStaysWeakRegret:
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
+
     >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=np.random.RandomState(3))
     >>> ws_wr = WinnerStaysWeakRegret(feedback_mechanism, random_state=np.random.RandomState(3))
     >>> for t in range(100):
     ...    ws_wr.step()
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_weak_regret(2)
-    >>> np.round(cumul_regret, 2)
+    >>> regret_history, cumulative_regret = feedback_mechanism.calculate_weak_regret(2)
+    >>> np.round(cumulative_regret, 2)
     0.4
     """
 
@@ -162,8 +163,8 @@ class WinnerStaysStrongRegret:
     >>> ws_wr = WinnerStaysStrongRegret(feedback_mechanism, random_state=np.random.RandomState(1))
     >>> for t in range(100):
     ...     ws_wr.step()
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_strong_regret(2)
-    >>> np.round(cumul_regret, 2)
+    >>> regret_history, cumulative_regret = feedback_mechanism.calculate_strong_regret(2)
+    >>> np.round(cumulative_regret, 2)
     1.8
     """
 
