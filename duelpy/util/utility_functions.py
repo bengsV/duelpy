@@ -1,36 +1,54 @@
 """Implementation of various helper functions."""
+from typing import List
+from typing import Optional
+from typing import Set
 
 import numpy as np
 
 
-def argmax_set(array: np.array) -> np.array:
-    """Calculate the argmax set of the input array.
+def argmin_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> np.array:
+    """Calculate the complete argmin set, returning an array with all indices.
+
+    It removes the ``exclude_indexes`` from the  array and calculates the indices set with minimum value from remaining
+    indexes of array.
 
     Parameters
     ----------
     array
-        The array for which the argmax set should be calculated.
+        The 1-D array for which the argmin should be calculated.
+    exclude_indexes
+        Indices to exclude in the argmin operation.
 
     Returns
     -------
     indices
-        A 1-D array containing all indices which point to the maximum value.
+        A 1-D array containing all indices which point to the minimum value.
     """
-    # np.argmax only returns the first index, to get the whole set,
-    # we first find the maximum and then search for all indices which point
-    # to a value equal to this maximum
-    max_value = array.max()
-    indices = np.argwhere(array == max_value).flatten()
-    return indices
+    # np.argmin only returns the first index, to get the whole set,
+    # we first find the minimum and then search for all indices which point
+    # to a value equal to this minimum
+    mask = np.zeros(array.size, dtype=bool)
+    if exclude_indexes is not None:
+        mask[exclude_indexes] = True
+    max_value = np.min(np.ma.array(array, mask=mask))
+    indices = np.ndarray.flatten(np.argwhere(array == max_value))
+    return np.delete(indices, np.where(indices == exclude_indexes), axis=0)
 
 
-def argmin_set(array: np.array) -> np.array:
-    """Calculate the complete argmin set, returning an array with all indices.
+def argmax_set(
+    array: np.array, exclude_indexes: Optional[List[int]] = None
+) -> np.array:
+    """Calculate the complete argmax set, returning an array with all indices..
+
+    It removes the ``exclude_indexes`` from the  array and calculates the indices set with maximum value from the remaining
+    indexes of array.
 
     Parameters
     ----------
     array
-        The array for which the argmin set should be calculated
+        The 1-D array for which the argmax should be calculated
+    exclude_indexes
+        Indices to exclude in the argmax operation.
 
     Returns
     -------
@@ -40,6 +58,9 @@ def argmin_set(array: np.array) -> np.array:
     # np.argmax only returns the first index, to get the whole set,
     # we first find the maximum and then search for all indices which point
     # to a value equal to this maximum
-    min_value = array.min()
-    indices = np.argwhere(array == min_value).flatten()
-    return indices
+    mask = np.zeros(array.size, dtype=bool)
+    if exclude_indexes is not None:
+        mask[exclude_indexes] = True
+    max_value = np.max(np.ma.array(array, mask=mask))
+    indices = np.ndarray.flatten(np.argwhere(array == max_value))
+    return np.delete(indices, np.where(indices == exclude_indexes), axis=0)
