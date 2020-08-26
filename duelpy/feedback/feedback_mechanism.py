@@ -4,8 +4,8 @@
 class FeedbackMechanism:
     """Some means of comparing two arms."""
 
-    def __init__(self, list_arm_labels: list) -> None:
-        self.list_arm_labels = list_arm_labels
+    def __init__(self, arms: list) -> None:
+        self.arms = arms
 
     # In our final design we will probably want a better arm representation to
     # avoid restricting it to int.
@@ -28,8 +28,8 @@ class FeedbackMechanism:
 
     def get_arms(self) -> list:
         """Get the pool of arms available."""
-        return self.list_arm_labels
+        return self.arms
 
     def get_num_arms(self) -> int:
         """Get the number of arms."""
-        return len(self.list_arm_labels)
+        return len(self.arms)
