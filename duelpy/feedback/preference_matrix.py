@@ -15,7 +15,7 @@ class PreferenceMatrix(FeedbackMechanism):
 
     Parameters
     ----------
-    list_arm_labels
+    arms
         It represents a list of arms from preference matrix. If not provided, the method will create its own list of
         arms from preference matrix.
     preference_matrix
@@ -29,15 +29,15 @@ class PreferenceMatrix(FeedbackMechanism):
     def __init__(
         self,
         preference_matrix: np.array,
-        list_arm_labels: Optional[list] = None,
+        arms: Optional[list] = None,
         random_state: Optional[np.random.RandomState] = None,
     ):
-        if list_arm_labels is None:
-            list_arm_labels = list(range(len(preference_matrix)))
+        if arms is None:
+            arms = list(range(len(preference_matrix)))
         else:
-            if len(preference_matrix) != len(list_arm_labels):
+            if len(preference_matrix) != len(arms):
                 raise ValueError("Labels and matrix size mismatch")
-        super().__init__(list_arm_labels)
+        super().__init__(arms)
         self.preference_matrix = preference_matrix
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()
@@ -76,7 +76,7 @@ class PreferenceMatrix(FeedbackMechanism):
             The index of the Condorcet winner if one exists.
         """
         # select one arm each time from the pool of total arms to check whether it is a Condorcet winner or not
-        for arm_idx, _ in enumerate(self.list_arm_labels):
+        for arm_idx, _ in enumerate(self.arms):
             # preference_probabilities of selected arm with all arms present in pool of total arms.
             preference_probabilities = np.asarray(self.preference_matrix[arm_idx])
             # preference_probability of selected arm with itself is not required as arm are not compared with itself.
