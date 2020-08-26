@@ -172,6 +172,38 @@ class PreferenceEstimate:
         """
         return self.num_samples.get(frozenset((first_arm_index, second_arm_index)), 0)
 
+    def get_upper_estimate_matrix(self) -> np.array:
+        """Compute the current upper confidence matrix.
+
+        Returns
+        -------
+        np.array
+            2D-array representing the upper confidence bounds of the preference probabilities.
+        """
+        upper_estimate_matrix: np.array = np.zeros((self.num_arms, self.num_arms))
+        for first_arm in range(self.num_arms):
+            for second_arm in range(self.num_arms):
+                upper_estimate_matrix[first_arm][second_arm] = self.get_upper_estimate(
+                    first_arm, second_arm
+                )
+        return upper_estimate_matrix
+
+    def get_lower_estimate_matrix(self) -> np.array:
+        """Compute the current lower confidence matrix.
+
+        Returns
+        -------
+        np.array
+            2D-array representing the lower confidence bounds of the preference probabilities.
+        """
+        lower_estimate_matrix: np.array = np.zeros((self.num_arms, self.num_arms))
+        for first_arm in range(self.num_arms):
+            for second_arm in range(self.num_arms):
+                lower_estimate_matrix[first_arm][second_arm] = self.get_lower_estimate(
+                    first_arm, second_arm
+                )
+        return lower_estimate_matrix
+
     def __str__(self) -> str:
         """Produce a string representation of the estimate."""
         result = ""
