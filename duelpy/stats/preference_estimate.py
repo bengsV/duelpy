@@ -1,11 +1,13 @@
 """Utilities for estimating preference matrices based on samples."""
 
-from typing import Callable
 from typing import Dict
 from typing import FrozenSet
 from typing import Tuple
 
 import numpy as np
+
+from duelpy.stats.confidence_radius import ConfidenceRadius
+from duelpy.stats.confidence_radius import TrivialConfidenceRadius
 
 
 class PreferenceEstimate:
@@ -16,14 +18,13 @@ class PreferenceEstimate:
     num_arms
         The number of arms in the estimated preference matrix.
     confidence_radius
-        A function that computes the radius of a confidence interval given the
-        number of samples that were already performed.
+        The confidence radius to use when computing confidence intervals.
     """
 
     def __init__(
         self,
         num_arms: int,
-        confidence_radius: Callable[[int], float] = lambda x: np.inf,
+        confidence_radius: ConfidenceRadius = TrivialConfidenceRadius(),
     ) -> None:
         self.num_arms = num_arms
         self.wins: Dict[Tuple[int, int], int] = dict()

@@ -7,6 +7,7 @@ import numpy as np
 
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
+from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
 # corresponds to "IndepTest" in the paper.
@@ -148,20 +149,6 @@ def savage(
     """
     num_arms = feedback_mechanism.get_num_arms()
 
-    # Based on Hoeffding + Union Bound. Might be interesting to experiment with
-    # more advanced methods, such as https://arxiv.org/pdf/1905.06208.pdf.
-    def confidence_radius(num_samples: int) -> float:
-        if num_samples == 0:
-            return 1
-        # Possible number of combinations of two arms
-        num_random_variables = num_arms * (num_arms - 1) / 2
-        # eta = 2NT when finite, pi^2 N t^2/3 otherwise
-        eta = (np.pi ** 2) * num_random_variables * (num_samples ** (2 / 3))
-
-        # Radius in which where the true value lies with probability at
-        # least (1-delta) (according to the Hoeffding bound).
-        return np.sqrt(1 / (2 * num_samples) * np.log(eta / delta))
-
     # Initialize with all possible arm pairings, without loss of generality the
     # first arm has the lower index. This maintains a list of all pairwise win
     # probabilities we are not sufficiently sure about yet, i.e. which may
@@ -170,11 +157,30 @@ def savage(
     relevant_arm_combinations = {
         (i, i + j) for i in range(num_arms) for j in range(1, num_arms - i)
     }
+
+    # The number of random variables that we attempt to estimate (all the
+    # pairwise preference probabilities).
+    num_random_variables = num_arms * (num_arms - 1) / 2
+
+    # The failure probability of each individual confidence interval must be
+    # scaled appropriately so that the probability that *any* estimate fails is
+    # sufficiently low (as set by failure_probability). That is achieved by a
+    # naive Union bound. See page 10 of
+    # http://proceedings.mlr.press/v28/urvoy13-supp.pdf for a detailed
+    # derivation of this bound. Intuitively, we scale the allowed failure
+    # probability down proportional the number of random variables we are
+    # estimating. Since the time horizon is unknown (infinite-horizon case) we
+    # additionally scale by the square of the current sample to make sure the
+    # infinite sum converges.
+    def union_bound_scaling_factor(num_samples: int) -> float:
+        return 3 / (np.pi ** 2 * num_random_variables * num_samples ** 2)
+
+    confidence_radius = HoeffdingConfidenceRadius(
+        delta, probability_scaling_factor=union_bound_scaling_factor
+    )
     # Estimate the preference matrix based on past samples. Keeps track of the
     # t_i and \hat\mu_i variables in the paper.
-    preference_estimate = PreferenceEstimate(
-        confidence_radius=confidence_radius, num_arms=num_arms
-    )
+    preference_estimate = PreferenceEstimate(num_arms, confidence_radius)
 
     # When making the Condorcet assumption, the termination condition could be
     # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
