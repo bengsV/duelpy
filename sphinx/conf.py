@@ -29,7 +29,7 @@ release = "https://gitlab.com/duelpy/duelpy"
 
 import sys, os
 
-sys.path.append(os.path.abspath('../'))
+sys.path.append(os.path.abspath("../"))
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
