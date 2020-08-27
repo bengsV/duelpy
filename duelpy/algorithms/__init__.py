@@ -10,12 +10,15 @@ from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.knockout_tournament import KnockoutTournament
 from duelpy.algorithms.mallows import MallowsMPI
 from duelpy.algorithms.mallows import MallowsMPR
+from duelpy.algorithms.plackett_luce import PlackettLuceAMPR
+from duelpy.algorithms.plackett_luce import PlackettLucePACItem
 from duelpy.algorithms.relative_confidence_sampling import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
 from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
 from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
+
 
 # Pylint insists that algorithm_list and interfaces are constants and should be
 # named in UPPER_CASE. Technically that is correct, but it doesn't feel quite
@@ -42,6 +45,8 @@ algorithm_list = [
     SequentialElimination,
     DoubleThompsonSampling,
     DoubleThompsonSamplingPlus,
+    PlackettLucePACItem,
+    PlackettLuceAMPR,
 ]
 # This is not really needed, but otherwise zimports doesn't understand the
 # __all__ construct and complains that the Algorithm import is unnecessary.
