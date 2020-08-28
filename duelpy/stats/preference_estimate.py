@@ -6,6 +6,7 @@ from typing import Tuple
 
 import numpy as np
 
+from duelpy.feedback.preference_matrix import PreferenceMatrix
 from duelpy.stats.confidence_radius import ConfidenceRadius
 from duelpy.stats.confidence_radius import TrivialConfidenceRadius
 
@@ -204,6 +205,47 @@ class PreferenceEstimate:
                     first_arm, second_arm
                 )
         return lower_estimate_matrix
+
+    def sample_preference_matrix(
+        self, random_state: np.random.RandomState
+    ) -> PreferenceMatrix:
+        """Sample a preference matrix based on a Beta distribution.
+
+        The outcome is a PreferenceMatrix object which is initialized from a sampled
+        preference matrix. In this preference matrix, each pairwise preference is
+        drawn from a beta-distribution which is parameterized on the results of prior
+        duels.
+
+        Parameters
+        ----------
+        random_state
+            A numpy random state.
+
+        Returns
+        -------
+        PreferenceMatrix
+            A PreferenceMatrix object which is initialized from a preference matrix which
+            is sampled on a Beta distribution.
+        """
+        # The diagonal values remain 0.5 whereas the other values change after sampling.
+        preference_matrix_sample = np.full((self.num_arms, self.num_arms), 0.5)
+        random_state = (
+            random_state if random_state is not None else np.random.RandomState()
+        )
+
+        # Fill the preference matrix `preference_matrix_sample`(denoted by q).
+        # Sample the values for q[i][j] such that i < j and fill q[j][i] = 1 - q[i][j].
+        for first_arm in range(self.num_arms):
+            for second_arm in range(first_arm + 1, self.num_arms):
+                preference_matrix_sample[first_arm][second_arm] = random_state.beta(
+                    self.wins.get((first_arm, second_arm), 0) + 1,
+                    self.wins.get((second_arm, first_arm), 0) + 1,
+                )
+                preference_matrix_sample[second_arm][first_arm] = (
+                    1 - preference_matrix_sample[first_arm][second_arm]
+                )
+
+        return PreferenceMatrix(preference_matrix_sample, random_state=random_state)
 
     def __str__(self) -> str:
         """Produce a string representation of the estimate."""
