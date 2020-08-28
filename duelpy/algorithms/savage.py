@@ -46,16 +46,11 @@ class Savage:
     failure_probability
         Upper bound on the probability of failure (the "delta" in
         epsilon-delta-PAC).
-    verbose
-        Whether to log the internal state. This is only for the testbed, we
-        should come up with a more elegant method of accessing the internal
-        state during algorithm execution for interactive applications.
 
     Attributes
     ----------
     feedback_mechanism
     failure_probability
-    verbose
     preference_estimate
         The current estimate of the preference matrix.
 
@@ -92,14 +87,10 @@ class Savage:
     """
 
     def __init__(
-        self,
-        feedback_mechanism: FeedbackMechanism,
-        failure_probability: float = 0.1,
-        verbose: bool = False,
+        self, feedback_mechanism: FeedbackMechanism, failure_probability: float = 0.1,
     ):
         self.feedback_mechanism = feedback_mechanism
         self.failure_probability = failure_probability
-        self.verbose = verbose
 
         # The number of random variables that we attempt to estimate
         # (corresponds to the upper triangle of the preference matrix).
@@ -228,12 +219,6 @@ class Savage:
         self.preference_estimate.enter_sample(
             *next_sample, self.feedback_mechanism.duel(*next_sample)
         )
-        if self.verbose:
-            # Printing for the interactive test. This is not ideal and should
-            # not be done in the final implementation. Maybe we should
-            # generally implement a way to run an algorithm step-by-step.
-            print("Preference estimate is now")
-            print(self.preference_estimate)
 
         self._relevant_arm_combinations.difference_update(
             {
@@ -258,7 +243,7 @@ class Savage:
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
         # in the reference paper.
-        return len(self._relevant_arm_combinations) > 0
+        return len(self._relevant_arm_combinations) == 0
 
     def run(self) -> None:
         """Run the algorithm until it can make a prediction.
