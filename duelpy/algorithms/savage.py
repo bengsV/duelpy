@@ -1,6 +1,7 @@
 """PAC best arm selection with the SAVAGE algorithm."""
 
 
+from typing import Optional
 from typing import Set
 from typing import Tuple
 
@@ -46,6 +47,9 @@ class Savage:
     failure_probability
         Upper bound on the probability of failure (the "delta" in
         epsilon-delta-PAC).
+    time_horizon
+        The number of steps that the algorithm is supposed to be run. Specify
+        `None` for an infinite time horizon.
 
     Attributes
     ----------
@@ -87,10 +91,14 @@ class Savage:
     """
 
     def __init__(
-        self, feedback_mechanism: FeedbackMechanism, failure_probability: float = 0.1,
+        self,
+        feedback_mechanism: FeedbackMechanism,
+        failure_probability: float = 0.1,
+        time_horizon: Optional[int] = None,
     ):
         self.feedback_mechanism = feedback_mechanism
         self.failure_probability = failure_probability
+        self.time_horizon = time_horizon
 
         # The number of random variables that we attempt to estimate
         # (corresponds to the upper triangle of the preference matrix).
@@ -104,11 +112,14 @@ class Savage:
         # http://proceedings.mlr.press/v28/urvoy13-supp.pdf for a detailed
         # derivation of this bound. Intuitively, we scale the allowed failure
         # probability down proportional the number of random variables we are
-        # estimating. Since the time horizon is unknown (infinite-horizon case) we
-        # additionally scale by the square of the current sample to make sure the
-        # infinite sum converges.
+        # estimating. If the time horizon is unknown (infinite-horizon case) we
+        # additionally scale by the square of the current sample to make sure
+        # the infinite sum converges. Otherwise scale by the time horizon.
         def union_bound_scaling_factor(num_samples: int) -> float:
-            return 3 / (np.pi ** 2 * num_random_variables * num_samples ** 2)
+            if self.time_horizon is None:
+                return 3 / (np.pi ** 2 * num_random_variables * num_samples ** 2)
+            else:
+                return 1 / (2 * num_random_variables * self.time_horizon)
 
         confidence_radius = HoeffdingConfidenceRadius(
             failure_probability, probability_scaling_factor=union_bound_scaling_factor
