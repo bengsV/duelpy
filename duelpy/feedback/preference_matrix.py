@@ -115,15 +115,15 @@ class PreferenceMatrix(FeedbackMechanism):
         regret_history = []
         cumulative_regret = 0.0
         for arm_i, arm_j in self.history:
-            weak_regret = (
+            regret = (
                 aggregation_function(
                     self.preference_matrix[best_arm, arm_i],
                     self.preference_matrix[best_arm, arm_j],
                 )
                 - 0.5
             )
-            regret_history.append(weak_regret)
-            cumulative_regret += weak_regret
+            regret_history.append(regret)
+            cumulative_regret += regret
         return regret_history, cumulative_regret
 
     def calculate_weak_regret(self, best_arm: int) -> Tuple[List[float], float]:
@@ -158,8 +158,37 @@ class PreferenceMatrix(FeedbackMechanism):
         Returns
         -------
         regret_history
-            A list containing the weak regret per round.
+            A list containing the strong regret per round.
         cumulative_regret
             The cumulative strong regret.
         """
         return self._calculate_regret(best_arm, max)
+
+    def calculate_average_regret(self, best_arm: int) -> Tuple[List[float], float]:
+        """Calculate the average regret with respect to an arm.
+
+        The average regret is defined as the average of the distances from the chosen arms to the best arm overall.
+
+        Parameters
+        ----------
+        best_arm
+            The arm with respect to which the regret is calculated.
+
+        Returns
+        -------
+        regret_history
+            A list containing the average regret per round.
+        cumulative_regret
+            The cumulative average regret.
+        """
+
+        def average(
+            preference_probability_against_arm1: float,
+            preference_probability_against_arm2: float,
+        ) -> float:
+            return (
+                preference_probability_against_arm1
+                + preference_probability_against_arm2
+            ) / 2
+
+        return self._calculate_regret(best_arm, average)
