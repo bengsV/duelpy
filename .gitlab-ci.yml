@@ -51,6 +51,7 @@ test:
   - cp sphinx/index.rst _doc/index.rst
   - sphinx-build -c sphinx -b html _doc doc_test
   artifacts:
+    expose_as: 'docs'
     paths:
       - doc_test
     expire_in: 1 week
