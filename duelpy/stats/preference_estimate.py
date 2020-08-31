@@ -186,6 +186,16 @@ class PreferenceEstimate:
                 )
         return PreferenceMatrix(matrix)
 
+    def get_mean_estimate_matrix(self) -> PreferenceMatrix:
+        """Get the current mean estimates as a PreferenceMatrix.
+
+        Returns
+        -------
+        PreferenceMatrix
+            The current mean estimate.
+        """
+        return self._estimate_to_matrix(self.get_mean_estimate)
+
     def get_upper_estimate_matrix(self) -> PreferenceMatrix:
         """Get the current upper estimates as a PreferenceMatrix.
 
