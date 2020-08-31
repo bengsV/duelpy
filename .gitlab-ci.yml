@@ -2,6 +2,13 @@
 # https://hub.docker.com/r/library/python/tags/
 image: python:latest
 
+# Configure pipeline to run on merged results.
+# https://docs.gitlab.com/ee/ci/merge_request_pipelines/pipelines_for_merged_results
+#
+# This would avoid a pipeline failure after merge.
+include:
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
+
 stages:
   - test
   - deploy
