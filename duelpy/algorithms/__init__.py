@@ -1,5 +1,5 @@
 """Various algorithms to solve Preference-Based Multi-Armed Bandit Problems."""
 
-from duelpy.algorithms.savage import savage
+from duelpy.algorithms.savage import Savage
 
-__all__ = ["savage"]
+__all__ = ["Savage"]

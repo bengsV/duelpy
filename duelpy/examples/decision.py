@@ -1,6 +1,6 @@
 """A simple example of how a decision-tool using duelpy could work."""
 
-from duelpy.algorithms import savage
+from duelpy.algorithms.savage import Savage
 from duelpy.feedback import CommandlineFeedback
 
 
@@ -13,7 +13,13 @@ def _run_decision_experiment() -> None:
         "Least favorite arm.",  # 4
     ]
     feedback_mechanism = CommandlineFeedback(arms)
-    savage(feedback_mechanism=feedback_mechanism, delta=0.5, verbose=True)
+    algorithm = Savage(feedback_mechanism=feedback_mechanism, failure_probability=0.5)
+    while not algorithm.is_finished():
+        algorithm.step()
+        print("Preference estimate is now")
+        print(algorithm.preference_estimate)
+    print("Estimated Copeland winners:")
+    print(algorithm.get_pac_copeland_winners())
 
 
 if __name__ == "__main__":

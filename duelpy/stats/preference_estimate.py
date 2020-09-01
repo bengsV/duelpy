@@ -1,5 +1,6 @@
 """Utilities for estimating preference matrices based on samples."""
 
+from typing import Callable
 from typing import Dict
 from typing import FrozenSet
 from typing import Tuple
@@ -174,37 +175,46 @@ class PreferenceEstimate:
         """
         return self.num_samples.get(frozenset((first_arm_index, second_arm_index)), 0)
 
-    def get_upper_estimate_matrix(self) -> np.array:
-        """Compute the current upper confidence matrix.
+    def _estimate_to_matrix(
+        self, estimate_function: Callable[[int, int], float]
+    ) -> PreferenceMatrix:
+        matrix = np.zeros((self.num_arms, self.num_arms))
+        for first_arm_idx in range(self.num_arms):
+            for second_arm_idx in range(self.num_arms):
+                matrix[first_arm_idx, second_arm_idx] = estimate_function(
+                    first_arm_idx, second_arm_idx
+                )
+        return PreferenceMatrix(matrix)
+
+    def get_mean_estimate_matrix(self) -> PreferenceMatrix:
+        """Get the current mean estimates as a PreferenceMatrix.
 
         Returns
         -------
-        np.array
-            2D-array representing the upper confidence bounds of the preference probabilities.
+        PreferenceMatrix
+            The current mean estimate.
         """
-        upper_estimate_matrix: np.array = np.zeros((self.num_arms, self.num_arms))
-        for first_arm in range(self.num_arms):
-            for second_arm in range(self.num_arms):
-                upper_estimate_matrix[first_arm][second_arm] = self.get_upper_estimate(
-                    first_arm, second_arm
-                )
-        return upper_estimate_matrix
+        return self._estimate_to_matrix(self.get_mean_estimate)
 
-    def get_lower_estimate_matrix(self) -> np.array:
-        """Compute the current lower confidence matrix.
+    def get_upper_estimate_matrix(self) -> PreferenceMatrix:
+        """Get the current upper estimates as a PreferenceMatrix.
 
         Returns
         -------
-        np.array
-            2D-array representing the lower confidence bounds of the preference probabilities.
+        PreferenceMatrix
+            The current mean estimate.
         """
-        lower_estimate_matrix: np.array = np.zeros((self.num_arms, self.num_arms))
-        for first_arm in range(self.num_arms):
-            for second_arm in range(self.num_arms):
-                lower_estimate_matrix[first_arm][second_arm] = self.get_lower_estimate(
-                    first_arm, second_arm
-                )
-        return lower_estimate_matrix
+        return self._estimate_to_matrix(self.get_upper_estimate)
+
+    def get_lower_estimate_matrix(self) -> PreferenceMatrix:
+        """Get the current lower estimates as a PreferenceMatrix.
+
+        Returns
+        -------
+        PreferenceMatrix
+            The current mean estimate.
+        """
+        return self._estimate_to_matrix(self.get_lower_estimate)
 
     def sample_preference_matrix(
         self, random_state: np.random.RandomState
