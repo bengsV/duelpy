@@ -100,6 +100,6 @@ class HoeffdingConfidenceRadius(ConfidenceRadius):
         if num_samples == 0:
             return 1
         adjusted_probability = (
-            self.failure_probability * self.probability_scaling_factor(num_samples)
+            self.probability_scaling_factor(num_samples) / self.failure_probability
         )
         return np.sqrt(1 / (2 * num_samples) * np.log(adjusted_probability))
