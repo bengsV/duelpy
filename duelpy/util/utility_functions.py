@@ -1,5 +1,4 @@
 """Implementation of various helper functions."""
-from typing import List
 from typing import Optional
 from typing import Set
 
@@ -30,14 +29,13 @@ def argmin_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> n
     mask = np.zeros(array.size, dtype=bool)
     if exclude_indexes is not None:
         mask[exclude_indexes] = True
-    max_value = np.min(np.ma.array(array, mask=mask))
-    indices = np.ndarray.flatten(np.argwhere(array == max_value))
-    return np.delete(indices, np.where(indices == exclude_indexes), axis=0)
+    min_value = np.min(np.ma.array(array, mask=mask))
+    indices = set(np.ndarray.flatten(np.argwhere(array == min_value)))
+    indices = indices - set(exclude_indexes) if exclude_indexes is not None else indices
+    return list(indices)
 
 
-def argmax_set(
-    array: np.array, exclude_indexes: Optional[List[int]] = None
-) -> np.array:
+def argmax_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> np.array:
     """Calculate the complete argmax set, returning an array with all indices..
 
     It removes the ``exclude_indexes`` from the  array and calculates the indices set with maximum value from the remaining
@@ -62,5 +60,6 @@ def argmax_set(
     if exclude_indexes is not None:
         mask[exclude_indexes] = True
     max_value = np.max(np.ma.array(array, mask=mask))
-    indices = np.ndarray.flatten(np.argwhere(array == max_value))
-    return np.delete(indices, np.where(indices == exclude_indexes), axis=0)
+    indices = set(np.ndarray.flatten(np.argwhere(array == max_value)))
+    indices = indices - set(exclude_indexes) if exclude_indexes is not None else indices
+    return list(indices)
