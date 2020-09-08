@@ -33,6 +33,16 @@ class PreferenceEstimate:
         self.num_samples: Dict[FrozenSet[int], int] = dict()
         self.confidence_radius = confidence_radius
 
+    def set_confidence_radius(self, confidence_radius: ConfidenceRadius) -> None:
+        """Set the confidence radius to the given parameter.
+
+        Parameters
+        ----------
+        confidence_radius
+            The confidence radius to be set as the new `confidence_radius`.
+        """
+        self.confidence_radius = confidence_radius
+
     def enter_sample(
         self, first_arm_index: int, second_arm_index: int, first_won: bool
     ) -> None:
