@@ -61,20 +61,26 @@ class HoeffdingConfidenceRadius(ConfidenceRadius):
         and we want to bound the union of their failures. In that case, it can
         be necessary to scale the failure probability of any individual
         estimate.
+    factor
+        This factor is applied inside the square root of the radius calculation.
+        It allows to scale the influence of the number of samples taken.
 
     Attributes
     ----------
     failure_probability
     probability_scaling_factor
+    factor
     """
 
     def __init__(
         self,
         failure_probability: float,
         probability_scaling_factor: Callable[[int], float] = lambda num_samples: 1,
+        factor: float = 1,
     ):
         self.failure_probability = failure_probability
         self.probability_scaling_factor = probability_scaling_factor
+        self.factor = factor
 
     def __call__(self, num_samples: int) -> float:
         """Compute the confidence radius.
@@ -102,4 +108,4 @@ class HoeffdingConfidenceRadius(ConfidenceRadius):
         adjusted_probability = (
             self.probability_scaling_factor(num_samples) / self.failure_probability
         )
-        return np.sqrt(1 / (2 * num_samples) * np.log(adjusted_probability))
+        return np.sqrt(self.factor / (2 * num_samples) * np.log(adjusted_probability))
