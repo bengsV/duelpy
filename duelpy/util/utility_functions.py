@@ -1,12 +1,13 @@
 """Implementation of various helper functions."""
 from typing import List
 from typing import Optional
-from typing import Set
 
 import numpy as np
 
 
-def argmin_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> np.array:
+def argmin_set(
+    array: np.array, exclude_indexes: Optional[List[int]] = None
+) -> List[int]:
     """Calculate the complete argmin set, returning an array with all indices.
 
     It removes the ``exclude_indexes`` from the  array and calculates the indices set with minimum value from remaining
@@ -27,7 +28,7 @@ def argmin_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> n
     # np.argmin only returns the first index, to get the whole set,
     # we first find the minimum and then search for all indices which point
     # to a value equal to this minimum
-    if exclude_indexes is None:
+    if exclude_indexes is None or len(exclude_indexes) == 0:
         # For this case the simpler implementation is more efficient, although
         # the other one with a trivial mask would also work.
         return np.argwhere(array == np.amin(array)).flatten()
@@ -39,7 +40,9 @@ def argmin_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> n
     return list(indices)
 
 
-def argmax_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> np.array:
+def argmax_set(
+    array: np.array, exclude_indexes: Optional[List[int]] = None
+) -> List[int]:
     """Calculate the complete argmax set, returning an array with all indices..
 
     It removes the ``exclude_indexes`` from the  array and calculates the indices set with maximum value from the remaining
@@ -55,12 +58,12 @@ def argmax_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> n
     Returns
     -------
     indices
-        A 1-D array containing all indices which point to the minimum value.
+        A 1-D array containing all indices which point to the maximum value.
     """
     # np.argmax only returns the first index, to get the whole set,
     # we first find the maximum and then search for all indices which point
     # to a value equal to this maximum
-    if exclude_indexes is None:
+    if exclude_indexes is None or len(exclude_indexes) == 0:
         # For this case the simpler implementation is more efficient, although
         # the other one with a trivial mask would also work.
         return np.argwhere(array == np.amax(array)).flatten()

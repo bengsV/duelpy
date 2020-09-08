@@ -3,6 +3,7 @@
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
 from duelpy.algorithms.ccb import CopelandConfidenceBound
+from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSampling
 from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.knockout_tournament import KnockoutTournament
 from duelpy.algorithms.mallows import MallowsMPI
@@ -28,4 +29,5 @@ __all__ = [
     "SequentialElimination",
     "MallowsMPI",
     "MallowsMPR",
+    "DoubleThompsonSampling",
 ]
