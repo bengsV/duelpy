@@ -108,3 +108,38 @@ def pop_random(
             removed_element = left_over.pop(random_index)
             picked.append(removed_element)
         return picked
+
+
+def kullback_leibler_divergence(probability_p: float, probability_q: float) -> float:
+    r"""Implement KL divergence equation for Bernoulli random variable.
+
+    The KL-divergence (i.e for two Bernoulli random variable with parameters as probability p, q) from q to p is formulated
+    as :math:`d(p,q) = (1-p) \ln((1-p)/(1-q))) + p \ln(p/q)`.
+
+    Parameters
+    ----------
+    probability_p
+        The preference probability of one arm over another.
+    probability_q
+        The preference probability of one arm over another.
+
+    Returns
+    -------
+    float
+        divergence measures between two probability.
+    """
+    if (probability_q == 0 and probability_p > 0) or (
+        probability_q == 1 and probability_p < 1
+    ):
+        return float("inf")
+    else:
+        if probability_p == 0:
+            result = -np.log(1 - probability_q)
+        elif probability_p == 1:
+            result = -np.log(probability_q)
+        else:
+            result = (1 - probability_p) * np.log(
+                (1 - probability_p) / (1 - probability_q)
+            ) + probability_p * np.log(probability_p / probability_q)
+
+    return result
