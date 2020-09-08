@@ -49,7 +49,7 @@ pytest:
   - pip install -r requirements.txt
   - pytest
 
-test:
+doc_test_build:
   stage: test
   script:
   - pip install --upgrade sphinx
@@ -62,12 +62,10 @@ test:
     paths:
       - doc_test
     expire_in: 1 week
-  only:
-  - branches
   except:
   - master
 
-pages:
+doc_deploy_build:
   stage: deploy
   script:
   - pip install --upgrade sphinx
