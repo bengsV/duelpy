@@ -2,6 +2,7 @@
 
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
 from duelpy.algorithms.rcs import RelativeConfidenceSampling
+from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
 
-__all__ = ["Savage", "BeatTheMeanBandit", "RelativeConfidenceSampling"]
+__all__ = ["Savage", "BeatTheMeanBandit", "RelativeConfidenceSampling", "RelativeUCB"]
