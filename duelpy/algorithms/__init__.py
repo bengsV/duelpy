@@ -4,5 +4,14 @@ from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
 from duelpy.algorithms.rcs import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
+from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
+from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
 
-__all__ = ["Savage", "BeatTheMeanBandit", "RelativeConfidenceSampling", "RelativeUCB"]
+__all__ = [
+    "Savage",
+    "WinnerStaysWeakRegret",
+    "WinnerStaysStrongRegret",
+    "BeatTheMeanBandit",
+    "RelativeConfidenceSampling",
+    "RelativeUCB",
+]
