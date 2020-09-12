@@ -1,5 +1,6 @@
 """Various algorithms to solve Preference-Based Multi-Armed Bandit Problems."""
 
+from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
 from duelpy.algorithms.rcs import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
@@ -14,4 +15,5 @@ __all__ = [
     "BeatTheMeanBandit",
     "RelativeConfidenceSampling",
     "RelativeUCB",
+    "Algorithm",
 ]
