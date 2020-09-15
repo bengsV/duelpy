@@ -2,6 +2,7 @@
 
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
+from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.rcs import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
@@ -16,4 +17,5 @@ __all__ = [
     "RelativeConfidenceSampling",
     "RelativeUCB",
     "Algorithm",
+    "InterleavedFiltering",
 ]
