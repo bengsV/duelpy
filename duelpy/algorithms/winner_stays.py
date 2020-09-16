@@ -2,11 +2,12 @@
 
 import numpy as np
 
+from duelpy.algorithms.algorithm import Algorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.util.utility_functions import argmax_set
 
 
-class WinnerStaysWeakRegret:
+class WinnerStaysWeakRegret(Algorithm):
     """Implements the weak regret version of the "Winner Stays" algorithm [1].
 
     This algorithm is tournament-based and minimizes the expected regret of the best arm.
@@ -112,13 +113,19 @@ class WinnerStaysWeakRegret:
         self.win_deltas[winner] += 1
         self.win_deltas[loser] -= 1
 
-    def get_best_arm(self) -> int:
-        """Get the index of the arm currently believed to be the best."""
+    def get_condorcet_winner(self) -> int:
+        """Get the index of the arm currently believed to be the Condorcet winner.
+
+        Returns
+        -------
+        int
+            The Condorcet winner
+        """
         # index as tie breaker, choose the smallest
         return argmax_set(self.win_deltas)[0]
 
 
-class WinnerStaysStrongRegret:
+class WinnerStaysStrongRegret(Algorithm):
     """Implements the strong regret version of the "Winner Stays" algorithm [1].
 
     This algorithm is based on the weak regret version.
@@ -184,7 +191,7 @@ class WinnerStaysStrongRegret:
         self._round_index = 0
         self._round_length = 0
         self._current_round_iteration = 0
-        self._best_arm = -1
+        self._best_arm = 0
 
     def step(self) -> None:
         """Execute one iteration of the algorithm.
@@ -198,7 +205,17 @@ class WinnerStaysStrongRegret:
                 self._exploitation_factor ** self._round_index
             )
             self._ws.step()
-            self._best_arm = self._ws.get_best_arm()
+            self._best_arm = self._ws.get_condorcet_winner()
         else:
             self.feedback_mechanism.duel(self._best_arm, self._best_arm)
             self._current_round_iteration += 1
+
+    def get_condorcet_winner(self) -> int:
+        """Get the index of the arm currently believed to be the Condorcet winner.
+
+        Returns
+        -------
+        int
+            The Condorcet winner
+        """
+        return self._best_arm
