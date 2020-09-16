@@ -150,8 +150,8 @@ class BeatTheMeanBandit:
 class ComparisonHistory:
     """Store the comparison history of the working set.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     number_of_arms
         The number of arms in the estimated preference matrix.
     confidence_radius
@@ -193,8 +193,8 @@ class ComparisonHistory:
     ) -> Tuple[int, int]:
         """Return the least sampled arm and a random challenger.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         excluding_indices
             A list containing the worst_arms.
         random_state
