@@ -72,14 +72,14 @@ class RelativeUCB(Algorithm):
     --------
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5]
     ... ])
     >>> random_state = np.random.RandomState(43)
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix=preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
     >>> test_object = RelativeUCB(
     ...     feedback_mechanism=feedback_mechanism,
     ...     time_horizon=100,
@@ -194,7 +194,7 @@ class RelativeUCB(Algorithm):
         # Step 4: computation for upper confidence bound matrix U[i,j]
         #   µ[i,j]
         upper_confidence_bound_matrix = (
-            self.preference_estimate.get_upper_estimate_matrix().preference_matrix
+            self.preference_estimate.get_upper_estimate_matrix()
         )
         # Step 6: compute potential champion of arms
         potential_arms = set()

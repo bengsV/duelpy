@@ -108,4 +108,9 @@ class HoeffdingConfidenceRadius(ConfidenceRadius):
         adjusted_probability = (
             self.probability_scaling_factor(num_samples) / self.failure_probability
         )
-        return np.sqrt(self.factor / (2 * num_samples) * np.log(adjusted_probability))
+        # If we are still too uncertain (otherwise there would be a negative
+        # value in the square root).
+        if adjusted_probability < 1:
+            return 0
+        in_sqrt = self.factor / (2 * num_samples) * np.log(adjusted_probability)
+        return np.sqrt(in_sqrt)

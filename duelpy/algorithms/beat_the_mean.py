@@ -47,14 +47,14 @@ class BeatTheMeanBandit:
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
     >>> random_state = np.random.RandomState(43)
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix=preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
     >>> time_horizon = 100  # time horizon greater than or equal to number of arms.
     >>> btm = BeatTheMeanBandit(feedback_mechanism=feedback_mechanism, time_horizon=time_horizon, random_state=random_state)
     >>> btm.run()
