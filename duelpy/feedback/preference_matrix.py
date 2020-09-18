@@ -66,6 +66,16 @@ class PreferenceMatrix(FeedbackMechanism):
         i_wins = self.random_state.uniform() <= probability_i_wins
         return i_wins
 
+    def get_num_duels(self) -> int:
+        """Get the number of duels that were already performed.
+
+        Returns
+        -------
+        int
+            The number of duels.
+        """
+        return len(self.history)
+
     def get_condorcet_winner(self) -> Optional[int]:
         """Get the index of the Condorcet winner if one exists.
 
