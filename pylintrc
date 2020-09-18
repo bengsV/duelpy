@@ -27,3 +27,9 @@ disable=
     no-else-return, # I think a clear "else" is more readable in some cases
     line-too-long, # handled by black (differently)
     too-few-public-methods, # such classes can still be useful
+
+[SIMILARITIES]
+
+# Our algorithms have very similar functionality and therefore have similar
+# imports. That might be a code smell for some projects, but not in our case.
+ignore-imports=yes
