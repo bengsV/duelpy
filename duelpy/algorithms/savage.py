@@ -202,12 +202,8 @@ class Savage(SingleCopelandProducer):
 
         return True
 
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-        """
+    def explore(self) -> None:
+        """Run one step of exploration."""
         # Find the next arm to sample. This could probably be optimized by choosing
         # a better data structure, but I'm trying to keep it simple and relatively
         # close to the paper for now.
@@ -240,6 +236,23 @@ class Savage(SingleCopelandProducer):
             }
         )
 
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winner = self.get_copeland_winner()
+        assert winner is not None
+        self.feedback_mechanism.duel(winner, winner)
+
+    def step(self) -> None:
+        """Take a step in the algorithm.
+
+        Includes determining the next sample, asking for feedback once and
+        updating the environment candidates based on this new data.
+        """
+        if len(self._relevant_arm_combinations) > 0:
+            self.explore()
+        else:
+            self.exploit()
+
     def is_finished(self) -> bool:
         """Determine whether enough data for a PAC prediction is available.
 
@@ -255,7 +268,10 @@ class Savage(SingleCopelandProducer):
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
         # in the reference paper.
-        return len(self._relevant_arm_combinations) == 0
+        return len(self._relevant_arm_combinations) == 0 and (
+            self.time_horizon is None
+            or self.feedback_mechanism.get_num_duels() >= self.time_horizon
+        )
 
     def run(self) -> None:
         """Run the algorithm until it can make a prediction.
