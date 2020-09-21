@@ -95,6 +95,7 @@ class RelativeConfidenceSampling(Algorithm):
         exploratory_constant: float = 0.501,
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
+        super().__init__(feedback_mechanism)
         self.feedback_mechanism = feedback_mechanism
         if exploratory_constant <= 0.5:
             raise ValueError("Value of exploratory constant must be greater than 0.5")

@@ -91,6 +91,7 @@ class RelativeUCB(Algorithm):
         exploratory_constant: float = 0.51,
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
+        super().__init__(feedback_mechanism)
         self.feedback_mechanism = feedback_mechanism
         self.exploratory_constant = exploratory_constant
         self.time_step = 0

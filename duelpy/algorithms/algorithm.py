@@ -1,8 +1,13 @@
 """A generic superclass which contains the common functions required in the implemented PB-MAB algorithms."""
 
+from duelpy.feedback import FeedbackMechanism
+
 
 class Algorithm:
     """Parent class of all the implemented PB-MAB algorithms."""
+
+    def __init__(self, feedback_mechanism: FeedbackMechanism):
+        self.feedback_mechanism = feedback_mechanism
 
     def step(self) -> None:
         """Run one step of the algorithm.
