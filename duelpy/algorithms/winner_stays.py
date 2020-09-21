@@ -1,5 +1,7 @@
 """Implementation of the 'Winner Stays' algorithm variants for weak and strong regret settings."""
 
+from typing import Optional
+
 import numpy as np
 
 from duelpy.algorithms.algorithm import Algorithm
@@ -21,6 +23,10 @@ class WinnerStaysWeakRegret(Algorithm):
     ----------
     feedback_mechanism
         A FeedbackMechanism object describing the environment.
+    time_horizon
+        How many comparisons the algorithm should do. This does not impact the
+        decision of the algorithm, only for how many steps ``run`` executes.
+        May be ``None`` to indicate a unknown or infinite time horizon.
     random_state
         Optional, used for random choices in the algorithm.
 
@@ -59,9 +65,10 @@ class WinnerStaysWeakRegret(Algorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
+        time_horizon: Optional[int] = None,
         random_state: np.random.RandomState = np.random.RandomState(),
     ) -> None:
-        super().__init__(feedback_mechanism)
+        super().__init__(feedback_mechanism, time_horizon)
         self.feedback_mechanism = feedback_mechanism
         self.random_state = random_state
         self.arm_count = self.feedback_mechanism.get_num_arms()
@@ -143,6 +150,10 @@ class WinnerStaysStrongRegret(Algorithm):
         It should be larger than 1.
         The default is 2, which results in a doubling of the round length.
         This parameter is called beta in [1].
+    time_horizon
+        How many comparisons the algorithm should do. This does not impact the
+        decision of the algorithm, only for how many steps ``run`` executes.
+        May be ``None`` to indicate a unknown or infinite time horizon.
     random_state
         Optional, used for random choices in the algorithm.
 
@@ -179,17 +190,21 @@ class WinnerStaysStrongRegret(Algorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
+        time_horizon: Optional[int] = None,
         exploitation_factor: float = 2,
         random_state: np.random.RandomState = np.random.RandomState(),
     ) -> None:
-        super().__init__(feedback_mechanism)
+        super().__init__(feedback_mechanism, time_horizon)
         if exploitation_factor < 1:
             raise ValueError(
                 "The exploitation_factor parameter needs to be larger than 1."
             )
         self._exploitation_factor = exploitation_factor
         self.feedback_mechanism = feedback_mechanism
-        self._ws = WinnerStaysWeakRegret(feedback_mechanism, random_state)
+        # time_horizon is None since we control the execution manually
+        self._ws = WinnerStaysWeakRegret(
+            feedback_mechanism, time_horizon=None, random_state=random_state
+        )
         self._round_index = 0
         self._round_length = 0
         self._current_round_iteration = 0

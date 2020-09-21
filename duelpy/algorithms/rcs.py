@@ -40,6 +40,10 @@ class RelativeConfidenceSampling(Algorithm):
     ----------
     feedback_mechanism
         A FeedbackMechanism object describing the environment.
+    time_horizon
+        How many comparisons the algorithm should do. This does not impact the
+        decision of the algorithm, only for how many steps ``run`` executes.
+        May be ``None`` to indicate a unknown or infinite time horizon.
     exploratory_constant
         A parameter which is used in calculating the upper confidence bounds. The confidence
         radius grows proportional to the square root of this value. A higher upper confidence
@@ -79,8 +83,8 @@ class RelativeConfidenceSampling(Algorithm):
     >>> arms = list(range(len(preference_matrix)))
     >>> random_state = np.random.RandomState(20)
     >>> feedback_mechanism = PreferenceMatrix(preference_matrix, arms, random_state)
-    >>> rcs = RelativeConfidenceSampling(feedback_mechanism=feedback_mechanism, exploratory_constant=0.6, random_state=random_state)
-    >>> rcs.run(100)
+    >>> rcs = RelativeConfidenceSampling(feedback_mechanism=feedback_mechanism, time_horizon=100, exploratory_constant=0.6, random_state=random_state)
+    >>> rcs.run()
 
     The best arm in this case is the last arm (index 2)
 
@@ -92,10 +96,11 @@ class RelativeConfidenceSampling(Algorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
+        time_horizon: Optional[int] = None,
         exploratory_constant: float = 0.501,
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
-        super().__init__(feedback_mechanism)
+        super().__init__(feedback_mechanism, time_horizon)
         self.feedback_mechanism = feedback_mechanism
         if exploratory_constant <= 0.5:
             raise ValueError("Value of exploratory constant must be greater than 0.5")

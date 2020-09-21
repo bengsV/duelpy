@@ -44,6 +44,10 @@ class RelativeUCB(Algorithm):
     ----------
     feedback_mechanism
         A FeedbackMechanism object describing the environment.
+    time_horizon
+        How many comparisons the algorithm should do. This does not impact the
+        decision of the algorithm, only for how many steps ``run`` executes.
+        May be ``None`` to indicate a unknown or infinite time horizon.
     exploratory_constant
         Optional, The confidence radius grows proportional to the square root of this value. Corresponds to `alpha` in
         [1]_. The value of exploratory_constant must be greater than 0.5.Default value is 0.51
@@ -76,8 +80,13 @@ class RelativeUCB(Algorithm):
     ... ])
     >>> random_state = np.random.RandomState(43)
     >>> feedback_mechanism = PreferenceMatrix(preference_matrix=preference_matrix, random_state=random_state)
-    >>> test_object = RelativeUCB(feedback_mechanism=feedback_mechanism, exploratory_constant=0.6, random_state=random_state)
-    >>> test_object.run(100)
+    >>> test_object = RelativeUCB(
+    ...     feedback_mechanism=feedback_mechanism,
+    ...     time_horizon=100,
+    ...     exploratory_constant=0.6,
+    ...     random_state=random_state,
+    ... )
+    >>> test_object.run()
     >>> test_object.get_champion()
     2
     >>> regret_history, cumul_regret = feedback_mechanism.calculate_weak_regret(2)
@@ -88,10 +97,11 @@ class RelativeUCB(Algorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
+        time_horizon: Optional[int] = None,
         exploratory_constant: float = 0.51,
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
-        super().__init__(feedback_mechanism)
+        super().__init__(feedback_mechanism, time_horizon)
         self.feedback_mechanism = feedback_mechanism
         self.exploratory_constant = exploratory_constant
         self.time_step = 0
