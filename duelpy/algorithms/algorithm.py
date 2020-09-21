@@ -5,7 +5,12 @@ class Algorithm:
     """Parent class of all the implemented PB-MAB algorithms."""
 
     def step(self) -> None:
-        """Run one round of the algorithm."""
+        """Run one step of the algorithm.
+
+        This corresponds to a logical step of the algorithm and may perform
+        multiple comparisons. What exactly a "logical step" is depends on the
+        algorithm.
+        """
         raise NotImplementedError
 
     def run(self, rounds: int) -> None:
