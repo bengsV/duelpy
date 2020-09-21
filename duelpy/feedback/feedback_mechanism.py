@@ -26,6 +26,16 @@ class FeedbackMechanism:
         """
         raise NotImplementedError
 
+    def get_num_duels(self) -> int:
+        """Get the number of duels that were already performed.
+
+        Returns
+        -------
+        int
+            The number of duels.
+        """
+        raise NotImplementedError
+
     def get_arms(self) -> list:
         """Get the pool of arms available."""
         return self.arms

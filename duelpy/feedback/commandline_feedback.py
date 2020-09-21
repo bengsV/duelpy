@@ -6,8 +6,9 @@ from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 class CommandlineFeedback(FeedbackMechanism):
     """Compare two arms based on human feedback on the CLI."""
 
-    def __init(self, arms: list) -> None:
+    def __init__(self, arms: list) -> None:
         super().__init__(arms)
+        self._num_duels = 0
 
     def duel(self, arm_i_index: int, arm_j_index: int) -> bool:
         """Perform a duel between two arms based on human feedback.
@@ -32,4 +33,15 @@ class CommandlineFeedback(FeedbackMechanism):
             print('Please choose one of "i" or "j"')
             result = input("[i/j] ")
         arm_i_wins = result == "i"
+        self._num_duels += 1
         return arm_i_wins
+
+    def get_num_duels(self) -> int:
+        """Get the number of duels that were already performed.
+
+        Returns
+        -------
+        int
+            The number of duels.
+        """
+        return self._num_duels
