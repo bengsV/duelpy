@@ -18,8 +18,8 @@ def _run_decision_experiment() -> None:
         algorithm.step()
         print("Preference estimate is now")
         print(algorithm.preference_estimate)
-    print("Estimated Copeland winners:")
-    print(algorithm.get_pac_copeland_winners())
+    print("Estimated Copeland winner:")
+    print(algorithm.get_copeland_winner())
 
 
 if __name__ == "__main__":

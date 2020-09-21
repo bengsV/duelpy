@@ -2,17 +2,17 @@
 
 
 from typing import Optional
-from typing import Set
 from typing import Tuple
 
 import numpy as np
 
+from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
-class Savage:
+class Savage(SingleCopelandProducer):
     r"""Determine the PAC-best arm with the SAVAGE algorithm.
 
     SAVAGE is a general algorithm that can infer some information about an
@@ -86,7 +86,7 @@ class Savage:
 
     >>> algorithm = Savage(feedback_mechanism)
     >>> algorithm.run()
-    >>> list(algorithm.get_pac_copeland_winners())[0]
+    >>> algorithm.get_copeland_winner()
     2
     """
 
@@ -96,6 +96,7 @@ class Savage:
         failure_probability: float = 0.1,
         time_horizon: Optional[int] = None,
     ):
+        super().__init__(feedback_mechanism, time_horizon)
         self.feedback_mechanism = feedback_mechanism
         self.failure_probability = failure_probability
         self.time_horizon = time_horizon
@@ -244,7 +245,7 @@ class Savage:
 
         Once this function returns ``True``, you can query the
         probably-approximately-correct result with the
-        ``get_pac_copeland_winner`` function.
+        ``get_copeland_winner`` function.
 
         Returns
         -------
@@ -259,12 +260,12 @@ class Savage:
     def run(self) -> None:
         """Run the algorithm until it can make a prediction.
 
-        The prediction can then be queried with the ``get_pac_copeland_winner`` function.
+        The prediction can then be queried with the ``get_copeland_winner`` function.
         """
         while not self.is_finished():
             self.step()
 
-    def get_pac_copeland_winners(self) -> Set[int]:
+    def get_copeland_winner(self) -> Optional[int]:
         """Find a Copeland winner with the SAVAGE algorithm.
 
         Note that only the correctness of any one of the Copeland winners is
@@ -279,6 +280,8 @@ class Savage:
             failure probability refers to any individual arm, but not all arms
             together.
         """
-        return (
+        if len(self._relevant_arm_combinations) > 0:
+            return None
+        return list(
             self.preference_estimate.get_mean_estimate_matrix().get_copeland_winners()
-        )
+        )[0]
