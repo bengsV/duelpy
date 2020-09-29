@@ -69,7 +69,6 @@ class WinnerStaysWeakRegret(Algorithm):
         random_state: np.random.RandomState = np.random.RandomState(),
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        self.feedback_mechanism = feedback_mechanism
         self.random_state = random_state
         self.arm_count = self.feedback_mechanism.get_num_arms()
         self.win_deltas = np.zeros((self.arm_count,))
@@ -200,7 +199,6 @@ class WinnerStaysStrongRegret(Algorithm):
                 "The exploitation_factor parameter needs to be larger than 1."
             )
         self._exploitation_factor = exploitation_factor
-        self.feedback_mechanism = feedback_mechanism
         # time_horizon is None since we control the execution manually
         self._ws = WinnerStaysWeakRegret(
             feedback_mechanism, time_horizon=None, random_state=random_state

@@ -97,9 +97,7 @@ class Savage(SingleCopelandProducer):
         time_horizon: Optional[int] = None,
     ):
         super().__init__(feedback_mechanism, time_horizon)
-        self.feedback_mechanism = feedback_mechanism
         self.failure_probability = failure_probability
-        self.time_horizon = time_horizon
 
         # The number of random variables that we attempt to estimate
         # (corresponds to the upper triangle of the preference matrix).

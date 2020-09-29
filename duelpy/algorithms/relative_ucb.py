@@ -102,7 +102,6 @@ class RelativeUCB(Algorithm):
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        self.feedback_mechanism = feedback_mechanism
         self.exploratory_constant = exploratory_constant
         self.time_step = 0
         # Each step in the code refers to lines of RUCB algorithm presented in the paper.

@@ -91,8 +91,7 @@ class InterleavedFiltering(Algorithm):
         random_state: np.random.RandomState = np.random.RandomState(),
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        self.time_horizon = time_horizon
-        self.feedback_mechanism = feedback_mechanism
+        assert self.time_horizon is not None  # for mypy
         self.failure_probability = 1 / (
             self.time_horizon * (self.feedback_mechanism.get_num_arms() ** 2)
         )
