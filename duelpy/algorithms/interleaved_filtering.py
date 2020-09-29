@@ -38,7 +38,8 @@ class InterleavedFiltering(Algorithm):
     feedback_mechanism
         A FeedbackMechanism object describing the environment.
     time_horizon
-        For how many time steps the algorithm should run (must be >= the number of arms).
+        For how many time steps the algorithm should run (must be >= the number
+        of arms).
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
 
@@ -77,7 +78,7 @@ class InterleavedFiltering(Algorithm):
     >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=random_state)
     >>> time_horizon = 750
     >>> interleaved_filtering = InterleavedFiltering(feedback_mechanism, time_horizon, random_state=random_state)
-    >>> interleaved_filtering.run(time_horizon)
+    >>> interleaved_filtering.run()
     >>> condorcet_winner = interleaved_filtering.get_condorcet_winner()
     >>> condorcet_winner
     2
@@ -89,8 +90,8 @@ class InterleavedFiltering(Algorithm):
         time_horizon: int,
         random_state: np.random.RandomState = np.random.RandomState(),
     ) -> None:
-        self.time_horizon = time_horizon
-        self.feedback_mechanism = feedback_mechanism
+        super().__init__(feedback_mechanism, time_horizon)
+        assert self.time_horizon is not None  # for mypy
         self.failure_probability = 1 / (
             self.time_horizon * (self.feedback_mechanism.get_num_arms() ** 2)
         )
@@ -198,14 +199,3 @@ class InterleavedFiltering(Algorithm):
         while len(self.arms_without_candidate) != 0:
             self.explore()
         self.exploit()
-
-    def run(self, rounds: int) -> None:
-        """Run the algorithm with a given comparison budget.
-
-        Parameters
-        ----------
-        rounds
-            The number of rounds for which the algorithm is run.
-        """
-        if self.total_comparisons < rounds:
-            self.step()

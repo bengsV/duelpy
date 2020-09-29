@@ -2,17 +2,17 @@
 
 
 from typing import Optional
-from typing import Set
 from typing import Tuple
 
 import numpy as np
 
+from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
-class Savage:
+class Savage(SingleCopelandProducer):
     r"""Determine the PAC-best arm with the SAVAGE algorithm.
 
     SAVAGE is a general algorithm that can infer some information about an
@@ -86,7 +86,7 @@ class Savage:
 
     >>> algorithm = Savage(feedback_mechanism)
     >>> algorithm.run()
-    >>> list(algorithm.get_pac_copeland_winners())[0]
+    >>> algorithm.get_copeland_winner()
     2
     """
 
@@ -96,9 +96,8 @@ class Savage:
         failure_probability: float = 0.1,
         time_horizon: Optional[int] = None,
     ):
-        self.feedback_mechanism = feedback_mechanism
+        super().__init__(feedback_mechanism, time_horizon)
         self.failure_probability = failure_probability
-        self.time_horizon = time_horizon
 
         # The number of random variables that we attempt to estimate
         # (corresponds to the upper triangle of the preference matrix).
@@ -201,12 +200,8 @@ class Savage:
 
         return True
 
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-        """
+    def explore(self) -> None:
+        """Run one step of exploration."""
         # Find the next arm to sample. This could probably be optimized by choosing
         # a better data structure, but I'm trying to keep it simple and relatively
         # close to the paper for now.
@@ -239,12 +234,29 @@ class Savage:
             }
         )
 
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winner = self.get_copeland_winner()
+        assert winner is not None
+        self.feedback_mechanism.duel(winner, winner)
+
+    def step(self) -> None:
+        """Take a step in the algorithm.
+
+        Includes determining the next sample, asking for feedback once and
+        updating the environment candidates based on this new data.
+        """
+        if len(self._relevant_arm_combinations) > 0:
+            self.explore()
+        else:
+            self.exploit()
+
     def is_finished(self) -> bool:
         """Determine whether enough data for a PAC prediction is available.
 
         Once this function returns ``True``, you can query the
         probably-approximately-correct result with the
-        ``get_pac_copeland_winner`` function.
+        ``get_copeland_winner`` function.
 
         Returns
         -------
@@ -254,17 +266,20 @@ class Savage:
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
         # in the reference paper.
-        return len(self._relevant_arm_combinations) == 0
+        return len(self._relevant_arm_combinations) == 0 and (
+            self.time_horizon is None
+            or self.feedback_mechanism.get_num_duels() >= self.time_horizon
+        )
 
     def run(self) -> None:
         """Run the algorithm until it can make a prediction.
 
-        The prediction can then be queried with the ``get_pac_copeland_winner`` function.
+        The prediction can then be queried with the ``get_copeland_winner`` function.
         """
         while not self.is_finished():
             self.step()
 
-    def get_pac_copeland_winners(self) -> Set[int]:
+    def get_copeland_winner(self) -> Optional[int]:
         """Find a Copeland winner with the SAVAGE algorithm.
 
         Note that only the correctness of any one of the Copeland winners is
@@ -279,6 +294,8 @@ class Savage:
             failure probability refers to any individual arm, but not all arms
             together.
         """
-        return (
+        if len(self._relevant_arm_combinations) > 0:
+            return None
+        return list(
             self.preference_estimate.get_mean_estimate_matrix().get_copeland_winners()
-        )
+        )[0]
