@@ -2,6 +2,6 @@
 
 from duelpy.feedback.commandline_feedback import CommandlineFeedback
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
-from duelpy.feedback.preference_matrix import PreferenceMatrix
+from duelpy.feedback.matrix_feedback import MatrixFeedback
 
-__all__ = ["FeedbackMechanism", "PreferenceMatrix", "CommandlineFeedback"]
+__all__ = ["FeedbackMechanism", "MatrixFeedback", "CommandlineFeedback"]

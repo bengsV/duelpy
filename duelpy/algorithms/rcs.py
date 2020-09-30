@@ -74,7 +74,7 @@ class RelativeConfidenceSampling(Algorithm):
     --------
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
@@ -82,7 +82,7 @@ class RelativeConfidenceSampling(Algorithm):
     ... ])
     >>> arms = list(range(len(preference_matrix)))
     >>> random_state = np.random.RandomState(20)
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, arms, random_state)
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, arms, random_state)
     >>> rcs = RelativeConfidenceSampling(feedback_mechanism=feedback_mechanism, time_horizon=100, exploratory_constant=0.6, random_state=random_state)
     >>> rcs.run()
 

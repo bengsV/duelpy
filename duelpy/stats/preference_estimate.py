@@ -7,9 +7,9 @@ from typing import Tuple
 
 import numpy as np
 
-from duelpy.feedback.preference_matrix import PreferenceMatrix
 from duelpy.stats.confidence_radius import ConfidenceRadius
 from duelpy.stats.confidence_radius import TrivialConfidenceRadius
+from duelpy.stats.preference_matrix import PreferenceMatrix
 
 
 class PreferenceEstimate:
@@ -265,7 +265,7 @@ class PreferenceEstimate:
                     1 - preference_matrix_sample[first_arm][second_arm]
                 )
 
-        return PreferenceMatrix(preference_matrix_sample, random_state=random_state)
+        return PreferenceMatrix(preference_matrix_sample)
 
     def __str__(self) -> str:
         """Produce a string representation of the estimate."""

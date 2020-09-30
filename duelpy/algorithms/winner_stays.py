@@ -46,14 +46,14 @@ class WinnerStaysWeakRegret(Algorithm):
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
 
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=np.random.RandomState(3))
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=np.random.RandomState(3))
     >>> ws_wr = WinnerStaysWeakRegret(feedback_mechanism, random_state=np.random.RandomState(3))
     >>> for t in range(100):
     ...    ws_wr.step()
@@ -171,13 +171,13 @@ class WinnerStaysStrongRegret(Algorithm):
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=np.random.RandomState(1))
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=np.random.RandomState(1))
     >>> ws_wr = WinnerStaysStrongRegret(feedback_mechanism, random_state=np.random.RandomState(1))
     >>> for t in range(100):
     ...     ws_wr.step()

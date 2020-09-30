@@ -72,13 +72,13 @@ class Savage(SingleCopelandProducer):
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=np.random.RandomState(42))
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=np.random.RandomState(42))
 
     Obviously, the last arm (index 2) is expected to win against the most other
     arms. That makes it the Copeland winner, as SAVAGE is correctly able to

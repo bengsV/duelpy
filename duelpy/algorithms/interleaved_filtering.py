@@ -68,14 +68,14 @@ class InterleavedFiltering(Algorithm):
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
 
-    >>> from duelpy.feedback import PreferenceMatrix
+    >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
     >>> random_state=np.random.RandomState(3)
-    >>> feedback_mechanism = PreferenceMatrix(preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
     >>> time_horizon = 750
     >>> interleaved_filtering = InterleavedFiltering(feedback_mechanism, time_horizon, random_state=random_state)
     >>> interleaved_filtering.run()
