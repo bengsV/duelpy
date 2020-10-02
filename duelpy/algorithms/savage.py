@@ -25,7 +25,7 @@ class Savage(SingleCopelandProducer):
       previous samples too unlikely) and
     - those environment variables (preference matrix entries) that are no
       longer relevant on the current environment candidates (for example the
-      arms that cannot be the Copeland winner). See Figure 1 in [1]_ for an
+      arms that cannot be the Copeland winner). See Figure 1 in :cite:`urvoy2013generic` for an
       illustration. In this case :math:`\mu` is the preference matrix while
       :math:`x_1` and :math:`x_2` are two entries of the matrix (without loss
       of generality it is sufficient to estimate the upper-right triangle of
@@ -57,15 +57,6 @@ class Savage(SingleCopelandProducer):
     failure_probability
     preference_estimate
         The current estimate of the preference matrix.
-
-    References
-    ----------
-    This implements the Sensitivity Analysis of VAriables for Generic
-    Exploration (SAVAGE) [1]_ algorithm.
-
-    .. [1] Urvoy, Tanguy, et al. "Generic exploration and k-armed voting
-           bandits." International Conference on Machine Learning. 2013.
-           (http://proceedings.mlr.press/v28/urvoy13-supp.pdf)
 
     Examples
     --------

@@ -14,8 +14,8 @@ class InterleavedFiltering(Algorithm):
     r"""Implements the Interleaved Filtering algorithm.
 
     This is an explore-then-exploit algorithm assuming a total order over arms, strong stochastic transitivity,
-    and the stochastic triangle inequality. The Interleaved Filtering algorithm [1]_ gives the Condorcet winner which is the best arm in the provided set of arms.
-    The algorithm is explained in [1]_.
+    and the stochastic triangle inequality. The Interleaved Filtering algorithm :cite:`yue2012k` gives the Condorcet winner which is the best arm in the provided set of arms.
+    The algorithm is explained in :cite:`yue2012k`.
 
     Exploration:
 
@@ -49,19 +49,15 @@ class InterleavedFiltering(Algorithm):
         Allowed failure-probability (:math:`\delta`), i.e. probability that the actual value lies outside of the computed confidence interval.
         Derived from the Hoeffding bound.
     candidate_arm
-        Randomly selected arm (corresponds to :math:`\hat{b}` in [1]_) from the list of arms.
+        Randomly selected arm (corresponds to :math:`\hat{b}` in :cite:`yue2012k`) from the list of arms.
     arms_without_candidate
-        The remaining set of arms (corresponds to W in [1]_) after removing the candidate arm.
+        The remaining set of arms (corresponds to W in :cite:`yue2012k`) after removing the candidate arm.
     preference_estimate
         Estimation of a preference matrix based on samples.
     total_comparisons
-        Total number of comparisons (corresponds to :math:`\hat{T}` in [1]_) made to find the condorcet winner.
+        Total number of comparisons (corresponds to :math:`\hat{T}` in :cite:`yue2012k`) made to find the condorcet winner.
     feedback_mechanism
     time_horizon
-
-    References
-    ----------
-    .. [1] Yisong Yue, Josef Broder, Robert Kleinberg, and Thorsten Joachims. The K-armed Dueling Bandits Problem. Journal of Computer and System Sciences, 78(5):1538–1556, 2012.
 
     Examples
     --------
@@ -98,7 +94,7 @@ class InterleavedFiltering(Algorithm):
         self.candidate_arm = random_state.choice(self.feedback_mechanism.get_arms())
         self.arms_without_candidate = self.feedback_mechanism.get_arms().copy()
         self.arms_without_candidate.remove(self.candidate_arm)
-        # See the proof of Lemma 4 in [1]_. The factor `8` corresponds to `m` in the proof.
+        # See the proof of Lemma 4 in the paper. The factor `8` corresponds to `m` in the proof.
         self.preference_estimate = PreferenceEstimate(
             feedback_mechanism.get_num_arms(),
             confidence_radius=HoeffdingConfidenceRadius(

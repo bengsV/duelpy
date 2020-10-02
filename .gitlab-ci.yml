@@ -53,9 +53,11 @@ doc_test_build:
   stage: test
   script:
   - pip install --upgrade sphinx
+  - pip install sphinxcontrib-bibtex
   - pip install -r requirements.txt
   - sphinx-apidoc -o _doc duelpy
   - cp sphinx/index.rst _doc/index.rst
+  - cp sphinx/refs.bib _doc/refs.bib
   - sphinx-build -c sphinx -b html _doc doc_test
   artifacts:
     expose_as: 'docs'
@@ -69,9 +71,11 @@ doc_deploy_build:
   stage: deploy
   script:
   - pip install --upgrade sphinx
+  - pip install sphinxcontrib-bibtex
   - pip install -r requirements.txt
   - sphinx-apidoc -o _doc duelpy
   - cp sphinx/index.rst _doc/index.rst
+  - cp sphinx/refs.bib _doc/refs.bib
   - sphinx-build -c sphinx -b html _doc public
   artifacts:
     paths:
