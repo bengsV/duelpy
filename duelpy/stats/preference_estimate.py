@@ -90,7 +90,7 @@ class PreferenceEstimate:
         """
         samples = self.get_num_samples(first_arm_index, second_arm_index)
         wins = self.wins.get((first_arm_index, second_arm_index), 0)
-        if samples == 0:
+        if samples == 0 or first_arm_index == second_arm_index:
             return 1 / 2
         else:
             return wins / samples
