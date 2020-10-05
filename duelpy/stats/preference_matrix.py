@@ -52,15 +52,15 @@ class PreferenceMatrix:
         Optional[int]
             The index of the Condorcet winner if one exists.
         """
-        # select one arm each time from the pool of total arms to check whether it is a Condorcet winner or not
-        for arm_idx in range(self.get_num_arms()):
-            # preference_probabilities of selected arm with all arms present in pool of total arms.
-            preference_probabilities = np.asarray(self.preferences[arm_idx])
-            # preference_probability of selected arm with itself is not required as arm are not compared with itself.
-            preference_probabilities = np.delete(preference_probabilities, arm_idx)
-            # The arm is the Condorcet winner if it is expected to win (win probability >1/2) against all other arms.
-            if np.amin(preference_probabilities) >= 0.5:
-                return arm_idx
+        copeland_scores = self.get_copeland_scores()
+        copeland_winners = argmax_set(copeland_scores)
+        # condorcet winner is an arm that beats k-1 arms where k is the total number of the arms.
+        # Also,  we can say that condorcet winner is an arm whose copeland score is equal to k-1 arms.
+        if (
+            len(copeland_winners) == 1
+            and copeland_scores[copeland_winners[0]] == self.get_num_arms() - 1
+        ):
+            return copeland_winners[0]
         return None
 
     def get_copeland_winners(self) -> Set[int]:
@@ -75,12 +75,28 @@ class PreferenceMatrix:
         Set[int]
             The indices of the Copeland winners.
         """
-        num_arms = self.get_num_arms()
-        expected_wins = np.zeros(num_arms)
-        for first_arm_idx in range(num_arms):
-            for second_arm_idx in range(first_arm_idx + 1, num_arms):
-                if self.preferences[first_arm_idx, second_arm_idx] > 1 / 2:
-                    expected_wins[first_arm_idx] += 1
-                else:
-                    expected_wins[second_arm_idx] += 1
-        return argmax_set(expected_wins)
+        return set(argmax_set(self.get_copeland_scores()))
+
+    def get_copeland_scores(self) -> np.array:
+        """Calculate Copeland scores for each arm.
+
+        The Copeland score of an arm is the number of other arms that the arm is expected to win against.
+
+        Returns
+        -------
+        np.array
+            A 1-D array with the Copeland scores.
+        """
+        return (self.preferences > 0.5).sum(axis=1)
+
+    def get_normalized_copeland_scores(self) -> np.array:
+        """Calculate the normalized Copeland scores for each arm.
+
+        The normalized Copeland score of an arm is the fraction of other arms it is expected to win against.
+
+        Returns
+        -------
+        np.array
+            A 1-D array with the normalized Copeland scores.
+        """
+        return self.get_copeland_scores() / (self.get_num_arms() - 1)
