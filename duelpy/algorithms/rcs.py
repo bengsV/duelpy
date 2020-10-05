@@ -87,7 +87,7 @@ class RelativeConfidenceSampling(Algorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
-        time_horizon: Optional[int] = None,
+        time_horizon: int,
         exploratory_constant: float = 0.501,
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
