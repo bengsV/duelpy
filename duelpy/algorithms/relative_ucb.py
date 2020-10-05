@@ -15,7 +15,7 @@ from duelpy.util.utility_functions import argmax_set
 class RelativeUCB(Algorithm):
     """Implementation of the relative upper confidence bound algorithm.
 
-    In the algorithm presented in paper :cite:`zoghi2014relative2`, we assume that there exists a Condorcet winner.
+    In the algorithm presented in paper :cite:`zoghi2014dueling`, we assume that there exists a Condorcet winner.
     This algorithm is extension of the Upper Confidence Bound (UCB) algorithm for regular multi-armed bandits. It is motivated by learning
     from the relative feedback rather than real valued feedback between two arms. It works for both finite as well as
     for infinite time horizon. The major goals of this algorithm are to minimize cumulative regret over time for the K
@@ -50,7 +50,7 @@ class RelativeUCB(Algorithm):
         May be ``None`` to indicate a unknown or infinite time horizon.
     exploratory_constant
         Optional, The confidence radius grows proportional to the square root of this value. Corresponds to `alpha` in
-        :cite:`zoghi2014relative2`. The value of exploratory_constant must be greater than 0.5.Default value is 0.51
+        :cite:`zoghi2014dueling`. The value of exploratory_constant must be greater than 0.5.Default value is 0.51
     random_state
         Optional, used for random choices in the algorithm.
 
@@ -116,7 +116,7 @@ class RelativeUCB(Algorithm):
         where `t` is the current round of the algorithm and `alpha` is the
         exploratory constant.
 
-        Refer :cite:`zoghi2014relative2` for further details.
+        Refer :cite:`zoghi2014dueling` for further details.
         """
         failure_probability = 1 / (self.time_step ** (2 * self.exploratory_constant))
         confidence_radius = HoeffdingConfidenceRadius(failure_probability)
