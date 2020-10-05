@@ -15,7 +15,7 @@ class BeatTheMeanBandit:
     """Implements the 'Beat the Mean Bandit' algorithm.
 
     This is an explore-then-exploit algorithm assuming a total order over arms, relaxed stochastic transitivity and the stochastic triangle inequality.
-    The Beat the Mean algorithm [1]_ gives the Condorcet winner which is the best arm in the provided set of arms.
+    The Beat the Mean algorithm :cite:`yue2011beat` gives the Condorcet winner which is the best arm in the provided set of arms.
     It proceeds in a sequence of rounds, and maintains a working set of active arms during each round.
     For each active arm, an empirical estimate is maintained for how likely an arm is to beat the mean bandit of the working set.
     In each iteration, an arm with the fewest recorded comparisons is selected for comparison.
@@ -37,10 +37,6 @@ class BeatTheMeanBandit:
     feedback_mechanism
     time_horizon
     random_state
-
-    References
-    ----------
-    .. [1] Yisong Yue and Thorsten Joachims. "Beat the Mean Bandit." Proceedings of International Conference on Machine Learning (ICML), pages 241-248, 2011.
 
     Examples
     --------
@@ -160,19 +156,15 @@ class ComparisonHistory:
     Attributes
     ----------
     working_set
-        Stores the set of active arms. Corresponds to W1 in [1]_.
+        Stores the set of active arms. Corresponds to W1 in :cite:`yue2011beat`.
     comparisons
-        Stores the total number of comparisons of a specific arm. Corresponds to n_b in [1]_.
+        Stores the total number of comparisons of a specific arm. Corresponds to n_b in :cite:`yue2011beat`.
     wins
-        Stores the number of wins of each arm. Corresponds to w_b in [1]_.
+        Stores the number of wins of each arm. Corresponds to w_b in :cite:`yue2011beat`.
     probability_estimate
-        Stores the empirical estimate of arms versus the mean bandit. Corresponds to P_b in [1]_.
+        Stores the empirical estimate of arms versus the mean bandit. Corresponds to P_b in :cite:`yue2011beat`.
     arm_sum_comparisons
         A numpy array which stores the total number of comparisons of each arm in the corresponding index.
-
-    References
-    ----------
-    .. [1] Yisong Yue and Thorsten Joachims. "Beat the Mean Bandit." Proceedings of International Conference on Machine Learning (ICML), pages 241-248, 2011.
     """
 
     def __init__(

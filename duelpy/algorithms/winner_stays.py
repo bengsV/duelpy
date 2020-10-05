@@ -10,7 +10,7 @@ from duelpy.util.utility_functions import argmax_set
 
 
 class WinnerStaysWeakRegret(Algorithm):
-    """Implements the weak regret version of the "Winner Stays" algorithm [1].
+    """Implements the weak regret version of the "Winner Stays" algorithm :cite:`chen2017dueling`.
 
     This algorithm is tournament-based and minimizes the expected regret of the best arm.
     It assumes at the very least that a Condorcet winner exists, but the expected regret improves if the arms can additionally be ranked.
@@ -33,13 +33,9 @@ class WinnerStaysWeakRegret(Algorithm):
     Attributes
     ----------
     win_deltas
-        Stores the difference between won and lost rounds for each arm. Corresponds to the C(t,i) values in [1]_.
+        Stores the difference between won and lost rounds for each arm. Corresponds to the C(t,i) values in :cite:`chen2017dueling`.
     feedback_mechanism
     random_state
-
-    References
-    ----------
-    .. [1] Chen, Bangrui, and Peter I. Frazier. "Dueling bandits with weak regret." Proceedings of the 34th International Conference on Machine Learning-Volume 70. JMLR. org, 2017.
 
     Examples
     --------
@@ -133,7 +129,7 @@ class WinnerStaysWeakRegret(Algorithm):
 
 
 class WinnerStaysStrongRegret(Algorithm):
-    """Implements the strong regret version of the "Winner Stays" algorithm [1].
+    """Implements the strong regret version of the "Winner Stays" algorithm :cite:`chen2017dueling`.
 
     This algorithm is based on the weak regret version.
     It interleaves the weak regret algorithm with exponentially increasing periods of pure exploitation (pulling the currently believed-to-be-best arm twice).
@@ -148,7 +144,7 @@ class WinnerStaysStrongRegret(Algorithm):
         Determines the length of rounds, i.e. how often the best arm should be pulled in each round.
         It should be larger than 1.
         The default is 2, which results in a doubling of the round length.
-        This parameter is called beta in [1].
+        This parameter is called beta in :cite:`chen2017dueling`.
     time_horizon
         How many comparisons the algorithm should do. This does not impact the
         decision of the algorithm, only for how many steps ``run`` executes.
@@ -161,10 +157,6 @@ class WinnerStaysStrongRegret(Algorithm):
     feedback_mechanism
     exploitation_factor
     random_state
-
-    References
-    ----------
-    .. [1] Chen, Bangrui, and Peter I. Frazier. "Dueling bandits with weak regret." Proceedings of the 34th International Conference on Machine Learning-Volume 70. JMLR. org, 2017.
 
     Examples
     --------

@@ -9,6 +9,11 @@ Open-Source Python package for preference-based multi-armed Bandits algorithms.
    
    duelpy
 
+.. rubric:: References
+
+.. bibliography:: refs.bib
+   :cited:
+
 Indices and tables
 ==================
 

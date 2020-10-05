@@ -12,7 +12,7 @@ from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 class RelativeConfidenceSampling(Algorithm):
     """An implementation of the Relative Confidence Sampling algorithm.
 
-    The Relative Confidence Sampling algorithm is based on [1]_.
+    The Relative Confidence Sampling algorithm is based on :cite:`zoghi2014relative`.
     The algorithm assumes that a Condorcet winner among the given arms exists.
     The goal of the algorithm is to reduce the cumulative regret as quickly as possible.
     This is done by conducting duels among the candidate arms and eliminating the sub-optimal
@@ -48,8 +48,8 @@ class RelativeConfidenceSampling(Algorithm):
         A parameter which is used in calculating the upper confidence bounds. The confidence
         radius grows proportional to the square root of this value. A higher upper confidence
         bound results in more exploration.
-        Corresponds to `alpha` in [1]_. The value of exploratory_constant must be greater than 0.5.
-        Default value is 0.501 which has been used in the experiments related to RCS in [1]_.
+        Corresponds to `alpha` in :cite:`zoghi2014relative`. The value of exploratory_constant must be greater than 0.5.
+        Default value is 0.501 which has been used in the experiments related to RCS in :cite:`zoghi2014relative`.
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
 
@@ -60,15 +60,6 @@ class RelativeConfidenceSampling(Algorithm):
     random_state
     time_step
         Number of rounds the algorithm has executed.
-
-    References
-    ----------
-    This implements Relative Confidence Sampling [1]_ algorithm.
-
-    .. [1] Masrour Zoghi, Shimon A. Whiteson, Maarten de Rijke and Remi
-     Munos. "Relative Confidence Sampling for Efficient On-line Ranker Evaluation".
-     In Proceedings of ACM International Conference on Web Search and Data Mining
-     (WSDM), pages 73–82, 2014b.
 
     Examples
     --------
