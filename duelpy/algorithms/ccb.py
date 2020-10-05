@@ -17,7 +17,7 @@ from duelpy.util.utility_functions import argmax_set
 class CopelandConfidenceBound(Algorithm):
     """Implement the Copeland Confidence Bound(CCB) algorithm.
 
-    The Copeland Confidence Bound algorithm is based on [1]_.
+    The Copeland Confidence Bound algorithm is based on :cite:`zoghi2015copeland`.
     CCB is designed for smaller number of arms. The goal of the CCB algorithm
     is to minimize the Copeland regret. This is done by conducting duels which
     are most informative about the precedence of the participating arms in terms
@@ -46,14 +46,6 @@ class CopelandConfidenceBound(Algorithm):
     and thus help in their quick elimination from the list of possible winners.
     4. Finally, a duel is conducted between `a_c` and `a_d` and the result is recorded.
 
-    References
-    ----------
-    This implements Copeland Confidence Bound [1]_ algorithm.
-
-     .. [1] Masrour Zoghi, Zohar S. Karnin, Shimon Whiteson, and Maarten de Rijke.
-     "Copeland Dueling Bandits" In Proceedings of Advances in Neural Information
-     Processing Systems (NIPS), pages 307–315, 2015a.
-
     Parameters
     ----------
     feedback_mechanism
@@ -62,7 +54,7 @@ class CopelandConfidenceBound(Algorithm):
         A parameter which is used in calculating the upper confidence bounds.
         The confidence radius grows proportional to the square root of this value.
         A higher upper confidence bound results in more exploration.
-        Corresponds to `alpha` in [1]_. The value of exploratory_constant must
+        Corresponds to `alpha` in :cite:`zoghi2015copeland`. The value of exploratory_constant must
         be greater than 0.5.
     time_horizon
         Number of times the method ``run`` executes.
@@ -73,18 +65,18 @@ class CopelandConfidenceBound(Algorithm):
     ----------
     copeland_winner_candidates
         The arms which have a higher possibilty of becoming a Copeland winner.
-        Corresponds to `B_t` in [1]_.
+        Corresponds to `B_t` in :cite:`zoghi2015copeland`.
     max_allowed_losses
         Maximum allowed losses for a Copeland winner.
-        Corresponds to `L_C` in [1]_.
+        Corresponds to `L_C` in :cite:`zoghi2015copeland`.
     respective_opponents
         A dictionary which has every arm as a key. Each value in this dictionary
         is a list. This list consists of the arms which are strong opponents to the
         arm present as the key.
-        Corresponds to `B_t_i` in [1]_.
+        Corresponds to `B_t_i` in :cite:`zoghi2015copeland`.
     time_step
         Number of rounds the algorithm has executed.
-        Corresponds to `t` in [1]_.
+        Corresponds to `t` in :cite:`zoghi2015copeland`.
 
     Examples
     --------
