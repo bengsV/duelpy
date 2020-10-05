@@ -82,6 +82,8 @@ class RelativeConfidenceSampling(Algorithm):
     >>> regret_history, cumul_regret = feedback_mechanism.calculate_weak_regret(best_arm=2)
     >>> np.round(cumul_regret, 2)
     1.0
+    >>> rcs.get_condorcet_winner()
+    2
     """
 
     def __init__(
@@ -120,6 +122,18 @@ class RelativeConfidenceSampling(Algorithm):
         champion_won = self.feedback_mechanism.duel(champion, challenger)
         # Enter the duel result
         self._preference_estimate.enter_sample(champion, challenger, champion_won)
+
+    def get_condorcet_winner(self) -> Optional[int]:
+        """Determine a Condorcet winner using RCS algorithm.
+
+        Returns
+        -------
+        Optional[int]
+            The index of a Condorcet winner, if existent, among the given arms.
+        """
+        return (
+            self._preference_estimate.get_mean_estimate_matrix().get_condorcet_winner()
+        )
 
     def _update_confidence_radius(self) -> None:
         """Update the confidence radius using latest failure probability.
