@@ -14,8 +14,8 @@ class InterleavedFiltering(Algorithm):
     r"""Implements the Interleaved Filtering algorithm.
 
     This is an explore-then-exploit algorithm assuming a total order over arms, strong stochastic transitivity,
-    and the stochastic triangle inequality. The Interleaved Filtering algorithm :cite:`yue2012k` gives the Condorcet winner which is the best arm in the provided set of arms.
-    The algorithm is explained in :cite:`yue2012k`.
+    and the stochastic triangle inequality. The Interleaved Filtering algorithm :cite:`yue2012bandits` gives the Condorcet winner which is the best arm in the provided set of arms.
+    The algorithm is explained in :cite:`yue2012bandits`.
 
     Exploration:
 
@@ -49,13 +49,13 @@ class InterleavedFiltering(Algorithm):
         Allowed failure-probability (:math:`\delta`), i.e. probability that the actual value lies outside of the computed confidence interval.
         Derived from the Hoeffding bound.
     candidate_arm
-        Randomly selected arm (corresponds to :math:`\hat{b}` in :cite:`yue2012k`) from the list of arms.
+        Randomly selected arm (corresponds to :math:`\hat{b}` in :cite:`yue2012bandits`) from the list of arms.
     arms_without_candidate
-        The remaining set of arms (corresponds to W in :cite:`yue2012k`) after removing the candidate arm.
+        The remaining set of arms (corresponds to W in :cite:`yue2012bandits`) after removing the candidate arm.
     preference_estimate
         Estimation of a preference matrix based on samples.
     total_comparisons
-        Total number of comparisons (corresponds to :math:`\hat{T}` in :cite:`yue2012k`) made to find the condorcet winner.
+        Total number of comparisons (corresponds to :math:`\hat{T}` in :cite:`yue2012bandits`) made to find the condorcet winner.
     feedback_mechanism
     time_horizon
 
