@@ -27,6 +27,7 @@ disable=
     no-else-return, # I think a clear "else" is more readable in some cases
     line-too-long, # handled by black (differently)
     too-few-public-methods, # such classes can still be useful
+    unsubscriptable-object, # faulty in py39, https://github.com/PyCQA/pylint/issues/3882
 
 [SIMILARITIES]
 
