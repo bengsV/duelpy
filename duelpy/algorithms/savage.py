@@ -237,10 +237,19 @@ class Savage(SingleCopelandProducer):
         Includes determining the next sample, asking for feedback once and
         updating the environment candidates based on this new data.
         """
-        if len(self._relevant_arm_combinations) > 0:
+        if not self.exploration_finished():
             self.explore()
         else:
             self.exploit()
+
+    def exploration_finished(self) -> bool:
+        """Determine whether the exploration phase is finished.
+
+        If no time horizon is provided, this coincides with is_finished. Once
+        this function returns ``True``, the algorithm will have finished
+        computing a PAC Copeland winner.
+        """
+        return len(self._relevant_arm_combinations) == 0
 
     def is_finished(self) -> bool:
         """Determine whether enough data for a PAC prediction is available.
@@ -257,10 +266,9 @@ class Savage(SingleCopelandProducer):
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
         # in the reference paper.
-        return len(self._relevant_arm_combinations) == 0 and (
-            self.time_horizon is None
-            or self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        )
+        if self.time_horizon is not None:
+            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
+        return self.exploration_finished()
 
     def run(self) -> None:
         """Run the algorithm until it can make a prediction.
@@ -285,7 +293,7 @@ class Savage(SingleCopelandProducer):
             failure probability refers to any individual arm, but not all arms
             together.
         """
-        if len(self._relevant_arm_combinations) > 0:
+        if not self.exploration_finished():
             return None
         return list(
             self.preference_estimate.get_mean_estimate_matrix().get_copeland_winners()
