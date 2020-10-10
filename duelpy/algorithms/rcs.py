@@ -3,13 +3,13 @@ from typing import Optional
 
 import numpy as np
 
-from duelpy.algorithms.algorithm import Algorithm
+from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
-class RelativeConfidenceSampling(Algorithm):
+class RelativeConfidenceSampling(CondorcetProducer):
     """An implementation of the Relative Confidence Sampling algorithm.
 
     The Relative Confidence Sampling algorithm is based on :cite:`zoghi2014ranker`.
