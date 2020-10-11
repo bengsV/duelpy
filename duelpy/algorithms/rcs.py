@@ -40,6 +40,8 @@ class RelativeConfidenceSampling(CondorcetProducer):
     ----------
     feedback_mechanism
         A FeedbackMechanism object describing the environment.
+    random_state
+        A numpy random state. Defaults to an unseeded state when not specified.
     time_horizon
         How many comparisons the algorithm should do. This does not impact the
         decision of the algorithm, only for how many steps ``run`` executes.
@@ -50,8 +52,6 @@ class RelativeConfidenceSampling(CondorcetProducer):
         bound results in more exploration.
         Corresponds to `alpha` in :cite:`zoghi2014ranker`. The value of exploratory_constant must be greater than 0.5.
         Default value is 0.501 which has been used in the experiments related to RCS in :cite:`zoghi2014ranker`.
-    random_state
-        A numpy random state. Defaults to an unseeded state when not specified.
 
     Attributes
     ----------
@@ -90,19 +90,18 @@ class RelativeConfidenceSampling(CondorcetProducer):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        exploratory_constant: float = 0.501,
         random_state: Optional[np.random.RandomState] = None,
+        exploratory_constant: float = 0.501,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        if exploratory_constant <= 0.5:
-            raise ValueError("Value of exploratory constant must be greater than 0.5")
-        self.exploratory_constant = exploratory_constant
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()
         )
+        if exploratory_constant <= 0.5:
+            raise ValueError("Value of exploratory constant must be greater than 0.5")
+        self.exploratory_constant = exploratory_constant
         self.time_step = 0
-
-        self._preference_estimate = PreferenceEstimate(
+        self.preference_estimate = PreferenceEstimate(
             self.feedback_mechanism.get_num_arms()
         )
         # Number of times each arm was already chosen as the champion
@@ -113,7 +112,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
     def step(self) -> None:
         """Run one round of the algorithm."""
         self.time_step += 1
-        # Update and set the new confidence radius in `_preference_estimate` as per
+        # Update and set the new confidence radius in `preference_estimate` as per
         # the current `time_step`
         self._update_confidence_radius()
 
@@ -121,7 +120,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
         challenger = self._select_challenger_for(champion)
         champion_won = self.feedback_mechanism.duel(champion, challenger)
         # Enter the duel result
-        self._preference_estimate.enter_sample(champion, challenger, champion_won)
+        self.preference_estimate.enter_sample(champion, challenger, champion_won)
 
     def get_condorcet_winner(self) -> Optional[int]:
         """Determine a Condorcet winner using RCS algorithm.
@@ -132,7 +131,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
             The index of a Condorcet winner, if existent, among the given arms.
         """
         return (
-            self._preference_estimate.get_mean_estimate_matrix().get_condorcet_winner()
+            self.preference_estimate.get_mean_estimate_matrix().get_condorcet_winner()
         )
 
     def _update_confidence_radius(self) -> None:
@@ -146,7 +145,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
         """
         failure_probability = 1 / (self.time_step ** (2 * self.exploratory_constant))
         confidence_radius = HoeffdingConfidenceRadius(failure_probability)
-        self._preference_estimate.set_confidence_radius(confidence_radius)
+        self.preference_estimate.set_confidence_radius(confidence_radius)
 
     def _run_simulated_tournament(self) -> int:
         """Run a simulated tournament among all arms to pick the champion.
@@ -162,7 +161,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
         int
             The champion of the tournament.
         """
-        sampled_preference_matrix = self._preference_estimate.sample_preference_matrix(
+        sampled_preference_matrix = self.preference_estimate.sample_preference_matrix(
             self.random_state
         )
         condorcet_winner = sampled_preference_matrix.get_condorcet_winner()
@@ -193,7 +192,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
             The arm which is selected as the challenger to the champion.
         """
         upper_confidence_bounds = [
-            self._preference_estimate.get_upper_estimate(arm_j, champion)
+            self.preference_estimate.get_upper_estimate(arm_j, champion)
             for arm_j in range(self.feedback_mechanism.get_num_arms())
         ]
         challenger = np.argmax(upper_confidence_bounds)
