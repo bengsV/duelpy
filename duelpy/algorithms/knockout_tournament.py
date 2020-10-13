@@ -1,0 +1,232 @@
+"""Implementation of the knockout tournament algorithm."""
+
+from itertools import combinations
+from typing import Optional
+
+import numpy as np
+
+from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.feedback import FeedbackMechanism
+from duelpy.stats import PreferenceEstimate
+from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
+
+
+class KnockoutTournament(CondorcetProducer):
+    """Implementation of the knockout tournament algorithm.
+
+    The algorithm was originally introduced in :cite:`Falahatgar2017maximum`. It's an epsilon-delta-PAC algorithm. The goal is
+    to find the epsilon Condorcet winner while minimizing the number of comparisons.
+    The algorithm assumes a total order over the existing arms and that strong stochastic transitivity,
+    stochastic triangle inequality and relaxed stochastic transitivity hold. It takes the set of arms as
+    an input and compares them in rounds. At the end of each round, the size of the input is halved.
+    The winning arm for a round is decided based on the allowed sub-optimality ``epsilon`` and with a
+    confidence interval based on the failure probability.
+    The algorithm runs in rounds, where in each round it randomly pairs the arms into group and the winners
+    are proceeded into the next round. For example that we have four arms (A, B, C, D). It will first group
+    the arms in pairs like [A, B] as the first pair and [C, D] as the second pair. After grouping them in
+    pairs, the algorithm pulls out the winner from each pair, and the winners move to the next round.
+
+    Parameters
+    ----------
+    feedback_mechanism
+        A FeedbackMechanism object describing the environment.
+    time_horizon
+         The number of steps that the algorithm is supposed to be run.
+    epsilon
+        The optimality of the winning arm. Corresponds to `epsilon` in :cite:`Falahatgar2017maximum`. Default value is 0.05
+        which has been used in the experiments in :cite:`Falahatgar2017maximum`.
+    failure_probability
+        The probability that the result is not an epsilon Condorcet winner. Corresponds to `delta` in :cite:`Falahatgar2017maximum`.
+        Default value is 0.1 which has been used in the experiments in :cite:`Falahatgar2017maximum`.
+    stochasticity
+        The assumed stochastic transitivity parameter. Corresponds to `gamma` in :cite:`Falahatgar2017maximum`. Default value is
+        0.6 which has been used in the experiments in :cite:`Falahatgar2017maximum`.
+
+    Attributes
+    ----------
+    feedback_mechanism
+    tournament_arms
+        The arms that are still in the tournament.
+    epsilon
+    failure_probability
+    stochasticity
+    time_step
+         Number of rounds the algorithm has executed.
+
+    Examples
+    --------
+    Define a preference-based multi-armed bandit problem through a preference
+    matrix:
+
+    >>> from duelpy.feedback import MatrixFeedback
+    >>> preference_matrix = np.array([
+    ...     [0.5, 0.1, 0.1],
+    ...     [0.9, 0.5, 0.3],
+    ...     [0.9, 0.7, 0.5],
+    ... ])
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=np.random.RandomState(100))
+    >>> knockout_tournament = KnockoutTournament(feedback_mechanism, epsilon=0.05, failure_probability=0.1, stochasticity=0.6, time_horizon=200)
+    >>> knockout_tournament.run()
+    >>> best_arm = knockout_tournament.get_condorcet_winner()
+    >>> best_arm
+    2
+    >>> feedback_mechanism.get_num_duels()
+    268
+
+    In this example the epsilon Condorcet winner is the arm with index 2.
+    """
+
+    # pylint: disable=too-many-arguments
+    def __init__(
+        self,
+        feedback_mechanism: FeedbackMechanism,
+        time_horizon: Optional[int] = None,
+        epsilon: float = 0.05,
+        failure_probability: float = 0.1,
+        stochasticity: float = 0.6,
+    ):
+        self.tournament_arms = set(range(feedback_mechanism.get_num_arms()))
+        self.stochasticity = stochasticity
+        super().__init__(feedback_mechanism, time_horizon)
+        self.time_step = 1
+        self.epsilon = epsilon
+        self.failure_probability = failure_probability
+
+        # Confidence radius is derived using the Hoeffding's inequality and the Union bound, It's used
+        # in selecting a challenger.
+        # Refer page 20 of :cite:`Falahatgar2017maximum` for confidence radius derivation.
+
+        def probability_scaling(num_samples: int) -> float:
+            return 4 * num_samples ** 2
+
+        self.preference_estimate = PreferenceEstimate(
+            num_arms=feedback_mechanism.get_num_arms(),
+            confidence_radius=HoeffdingConfidenceRadius(
+                failure_probability=self.failure_probability,
+                probability_scaling_factor=probability_scaling,
+            ),
+        )
+
+    def explore(self) -> None:
+        """Execute one round of the algorithm.
+
+        Arms are paired into groups, and each pairs of arms is compared repeatedly.
+
+        """
+        winning_arms = set()
+
+        current_epsilon = ((np.power(2, 1 / 3) - 1) * self.epsilon) / (
+            self.stochasticity * np.power(2, self.time_step / 3)
+        )
+
+        current_failure_probability = self.failure_probability / np.power(
+            2, self.time_step
+        )
+
+        pairs = combinations(self.tournament_arms, 2)
+        for arm_i, arm_j in pairs:
+            winning_arms.add(
+                self._determine_winner(
+                    arm_i, arm_j, current_epsilon, current_failure_probability
+                )
+            )
+
+        self.tournament_arms = winning_arms
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winner = self.get_condorcet_winner()
+        assert winner is not None
+        self.feedback_mechanism.duel(winner, winner)
+
+    def step(self) -> None:
+        """Take a step in the algorithm.
+
+        Includes determining the next sample, asking for feedback once and
+        updating the environment candidates based on this new data.
+        """
+        if len(self.tournament_arms) > 1:
+            self.explore()
+        else:
+            self.exploit()
+            self.time_step += 1
+
+    def is_finished(self) -> bool:
+        """Determine if the algorithm execution is finished.
+
+        The execution is finished when the time horizon is reached or when no time horizon was given and the Condorcet winner has been found".
+
+        Returns
+        -------
+        bool
+            Whether the algorithm is finished.
+        """
+        return (self.time_horizon is None and len(self.tournament_arms) == 1) or (
+            self.time_horizon is not None
+            and self.time_horizon <= self.feedback_mechanism.get_num_duels()
+        )
+
+    def get_condorcet_winner(self) -> Optional[int]:
+        """Get the estimated Condorcet winner if it is ready.
+
+        Returns
+        -------
+        int
+            The index of the winning arm
+        """
+        return self.tournament_arms.pop() if len(self.tournament_arms) == 1 else None
+
+    def _determine_winner(
+        self,
+        arm_i: int,
+        arm_j: int,
+        current_epsilon: float,
+        current_failure_probability: float,
+    ) -> int:
+        """Determine the preferred arm by repeated comparison.
+
+        Compare function output the winning arm, and the preferred arm proceed to the next round.
+
+        Parameters
+        ----------
+        arm_i
+            index of the first arm
+        arm_j
+            index of the second arm
+        Returns
+        -------
+        int
+            The index of the winning arm
+        """
+
+        def probability_scaling(num_samples: int) -> float:
+            return 4 * num_samples ** 2
+
+        confidence_radius = HoeffdingConfidenceRadius(
+            failure_probability=self.failure_probability,
+            probability_scaling_factor=probability_scaling,
+        )
+        estimate_probability_arm_i = 0.5
+
+        # In order to gain more confidence about the winning arm in each COMPARE, we repeat each
+        # comparison several times. Comparison stops when it reaches the comparison budget and output the arm with more wins.
+        comparison_budget = (1 / (2 * np.power(current_epsilon, 2))) * np.log(
+            2 / current_failure_probability
+        )
+        rounds = 0
+
+        while (
+            np.abs(estimate_probability_arm_i - 0.5)
+            <= confidence_radius(rounds) - current_epsilon
+            and rounds <= comparison_budget
+        ):
+            # update information about the preferred and eliminated arms
+            self.preference_estimate.enter_sample(
+                arm_j, arm_i, self.feedback_mechanism.duel(arm_i, arm_j)
+            )
+            rounds += 1
+            estimate_probability_arm_i = self.preference_estimate.get_mean_estimate(
+                arm_j, arm_i
+            )
+
+        return arm_j if estimate_probability_arm_i <= 0.5 else arm_i
