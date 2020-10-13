@@ -109,6 +109,7 @@ class RelativeUCB(Algorithm):
             random_state if random_state is not None else np.random.RandomState()
         )
 
+    # pylint: disable=duplicate-code
     def _update_confidence_radius(self) -> None:
         """Update the confidence radius using latest failure probability.
 
