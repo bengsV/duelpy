@@ -2,6 +2,7 @@
 
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
+from duelpy.algorithms.ccb import CopelandConfidenceBound
 from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.knockout_tournament import KnockoutTournament
 from duelpy.algorithms.rcs import RelativeConfidenceSampling
@@ -20,4 +21,5 @@ __all__ = [
     "Algorithm",
     "InterleavedFiltering",
     "KnockoutTournament",
+    "CopelandConfidenceBound",
 ]
