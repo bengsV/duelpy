@@ -190,8 +190,18 @@ class InterleavedFiltering(Algorithm):
         """
         self.feedback_mechanism.duel(self.candidate_arm, self.candidate_arm)
 
+    def exploration_finished(self) -> bool:
+        """Determine whether the exploration phase is finished.
+
+        If no time horizon is provided, this coincides with is_finished. Once
+        this function returns ``True``, the algorithm will have finished
+        computing a PAC Copeland winner.
+        """
+        return len(self.arms_without_candidate) != 0
+
     def step(self) -> None:
         """Execute one step of the algorithm."""
-        while len(self.arms_without_candidate) != 0:
+        if not self.exploration_finished():
             self.explore()
-        self.exploit()
+        else:
+            self.exploit()
