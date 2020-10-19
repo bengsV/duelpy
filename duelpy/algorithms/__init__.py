@@ -6,6 +6,7 @@ from duelpy.algorithms.copeland_confidence_bound import CopelandConfidenceBound
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSampling
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSamplingPlus
 from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
+from duelpy.algorithms.kl_divergence_based_pac import KLDivergenceBasedPAC
 from duelpy.algorithms.knockout_tournament import KnockoutTournament
 from duelpy.algorithms.mallows import MallowsMPI
 from duelpy.algorithms.mallows import MallowsMPR
@@ -17,6 +18,7 @@ from duelpy.algorithms.plackett_luce import PlackettLucePACItem
 from duelpy.algorithms.relative_confidence_sampling import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
+from duelpy.algorithms.scalable_copeland_bandits import ScalableCopelandBandits
 from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.algorithms.single_elimination_tournament import SingleEliminationTop1Select
 from duelpy.algorithms.single_elimination_tournament import SingleEliminationTopKSorting
@@ -56,6 +58,8 @@ algorithm_list = [
     PlackettLucePACItem,
     PlackettLuceAMPR,
     OptMax,
+    ScalableCopelandBandits,
+    KLDivergenceBasedPAC,
 ]
 # This is not really needed, but otherwise zimports doesn't understand the
 # __all__ construct and complains that the Algorithm import is unnecessary.
