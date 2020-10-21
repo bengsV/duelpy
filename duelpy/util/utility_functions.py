@@ -1,4 +1,5 @@
 """Implementation of various helper functions."""
+from typing import List
 from typing import Optional
 from typing import Set
 
@@ -69,3 +70,38 @@ def argmax_set(array: np.array, exclude_indexes: Optional[Set[int]] = None) -> n
     indices = set(np.ndarray.flatten(np.argwhere(array == max_value)))
     indices = indices - set(exclude_indexes) if exclude_indexes is not None else indices
     return list(indices)
+
+
+def pop_random(
+    input_list: List[int], random_state: np.random.RandomState, amount: int = 1
+) -> List[int]:
+    """Remove randomly chosen elements from a given list and return them.
+
+    If the list contains less than or exactly `amount` elements, all elements are chosen.
+
+    Parameters
+    ----------
+    input_list
+        The list from which an arm should be removed.
+    random_state
+        The random state to use.
+    amount
+        The amount of elements to pick, defaults to 1.
+
+    Returns
+    -------
+    List[int]
+        The list containing the removed elements.
+    """
+    if len(input_list) <= amount:
+        list_copy = input_list.copy()
+        input_list.clear()
+        return list_copy
+    else:
+        picked = []
+        left_over = input_list
+        for _ in range(amount):
+            random_index = random_state.randint(0, len(input_list))
+            removed_element = left_over.pop(random_index)
+            picked.append(removed_element)
+        return picked
