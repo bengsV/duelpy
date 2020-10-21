@@ -1,6 +1,5 @@
 """Utilities for estimating preference matrices based on samples."""
 
-from typing import Callable
 from typing import Tuple
 
 import numpy as np
@@ -103,6 +102,11 @@ class PreferenceEstimate:
         self.num_arms = num_arms
         self.wins = np.zeros((num_arms, num_arms))
         self.confidence_radius = confidence_radius
+        self._cached_mean_estimate = np.full((num_arms, num_arms), 0.5)
+        self._cached_radius = np.full(
+            (num_arms, num_arms), confidence_radius(0), dtype=np.float64
+        )
+        np.fill_diagonal(self._cached_radius, 0.0)
 
     def set_confidence_radius(self, confidence_radius: ConfidenceRadius) -> None:
         """Set the confidence radius to the given parameter.
@@ -113,6 +117,8 @@ class PreferenceEstimate:
             The confidence radius to be set as the new `confidence_radius`.
         """
         self.confidence_radius = confidence_radius
+        self._cached_radius = np.full((self.num_arms, self.num_arms), np.nan)
+        np.fill_diagonal(self._cached_radius, 0.0)
 
     def enter_sample(
         self, first_arm_index: int, second_arm_index: int, first_won: bool
@@ -136,6 +142,25 @@ class PreferenceEstimate:
         else:
             self.wins[second_arm_index][first_arm_index] += 1
 
+        if first_arm_index == second_arm_index:
+            # Nothing to update, the preference is known.
+            return
+
+        # based on wins array, already updated
+        samples = self.get_num_samples(first_arm_index, second_arm_index)
+
+        prev = self._cached_mean_estimate[first_arm_index][second_arm_index]
+        win_indicator = 1 if first_won else 0
+        new_mean = prev + (win_indicator - prev) / samples
+
+        self._cached_mean_estimate[first_arm_index][second_arm_index] = new_mean
+        self._cached_mean_estimate[second_arm_index][first_arm_index] = 1 - new_mean
+        # Confidence radius estimates are computed on-demand, since they are
+        # not always necessary and need to be changed when the confidence
+        # radius changes.
+        self._cached_radius[first_arm_index][second_arm_index] = np.nan
+        self._cached_radius[second_arm_index][first_arm_index] = np.nan
+
     def get_mean_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the estimate of the win probability of `first_arm_index` against `second_arm_index`.
 
@@ -151,12 +176,7 @@ class PreferenceEstimate:
         float
             The estimated probability that `first_arm_index` wins against `second_arm_index`.
         """
-        samples = self.get_num_samples(first_arm_index, second_arm_index)
-        wins = self.wins[first_arm_index, second_arm_index]
-        if samples == 0 or first_arm_index == second_arm_index:
-            return 1 / 2
-        else:
-            return wins / samples
+        return self._cached_mean_estimate[first_arm_index][second_arm_index]
 
     def get_confidence_interval(
         self, first_arm_index: int, second_arm_index: int
@@ -176,13 +196,32 @@ class PreferenceEstimate:
             The lower and upper bound of the confidence estimate for the
             probability that `first_arm_index` wins against `second_arm_index`.
         """
-        if first_arm_index == second_arm_index:
-            return 0.5, 0.5
-        mean = self.get_mean_estimate(first_arm_index, second_arm_index)
-        confidence_radius = self.confidence_radius(
-            self.get_num_samples(first_arm_index, second_arm_index)
+        return (
+            self.get_lower_estimate(first_arm_index, second_arm_index),
+            self.get_upper_estimate(first_arm_index, second_arm_index),
         )
-        return max(mean - confidence_radius, 0), min(mean + confidence_radius, 1)
+
+    def _get_confidence_radius(self, first_arm_idx: int, second_arm_idx: int) -> float:
+        """Get the confidence radius and fill the cache if necessary.
+
+        Parameters
+        ----------
+        first_arm_idx
+            The first arm of the duel.
+        second_arm_idx
+            The second arm of the duel.
+
+        Returns
+        -------
+        float
+            The current confidence value.
+        """
+        if np.isnan(self._cached_radius[first_arm_idx][second_arm_idx]):
+            num_samples = self.get_num_samples(first_arm_idx, second_arm_idx)
+            radius = self.confidence_radius(num_samples)
+            self._cached_radius[first_arm_idx][second_arm_idx] = radius
+            self._cached_radius[second_arm_idx][first_arm_idx] = radius
+        return self._cached_radius[first_arm_idx][second_arm_idx]
 
     def get_upper_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the upper estimate of the win probability of `first_arm_index` against `second_arm_index`.
@@ -199,22 +238,20 @@ class PreferenceEstimate:
         float
             The upper bound of the confidence estimate for the probability that `first_arm_index` wins against `second_arm_index`.
         """
-        if first_arm_index == second_arm_index:
-            return 1 / 2
-        mean = self.get_mean_estimate(first_arm_index, second_arm_index)
-        confidence_radius = self.confidence_radius(
-            self.get_num_samples(first_arm_index, second_arm_index)
+        return min(
+            self._cached_mean_estimate[first_arm_index][second_arm_index]
+            + self._get_confidence_radius(first_arm_index, second_arm_index),
+            1,
         )
-        return min(mean + confidence_radius, 1)
 
-    def get_lower_estimate(self, first_arm: int, second_arm: int) -> float:
+    def get_lower_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the lower estimate of the win probability of `first_arm` against `second_arm`.
 
         Parameters
         ----------
-        first_arm
+        first_arm_index
             The first arm of the duel.
-        second_arm
+        second_arm_index
             The second arm of the duel.
 
         Returns
@@ -222,13 +259,11 @@ class PreferenceEstimate:
         float
             The lower bound of the confidence estimate for the probability that `first_arm` wins against `second_arm`.
         """
-        if first_arm == second_arm:
-            return 1 / 2
-        mean = self.get_mean_estimate(first_arm, second_arm)
-        confidence_radius = self.confidence_radius(
-            self.get_num_samples(first_arm, second_arm)
+        return max(
+            self._cached_mean_estimate[first_arm_index][second_arm_index]
+            - self._get_confidence_radius(first_arm_index, second_arm_index),
+            0,
         )
-        return max(mean - confidence_radius, 0)
 
     def get_num_samples(self, first_arm_index: int, second_arm_index: int) -> int:
         """Get the number of times a duel between first_arm and second_arms was sampled.
@@ -251,16 +286,18 @@ class PreferenceEstimate:
             + self.wins[second_arm_index][first_arm_index]
         )
 
-    def _estimate_to_matrix(
-        self, estimate_function: Callable[[int, int], float]
-    ) -> PreferenceMatrix:
-        matrix = np.zeros((self.num_arms, self.num_arms))
-        for first_arm_idx in range(self.num_arms):
-            for second_arm_idx in range(self.num_arms):
-                matrix[first_arm_idx, second_arm_idx] = estimate_function(
-                    first_arm_idx, second_arm_idx
-                )
-        return PreferenceMatrix(matrix)
+    def _get_radius_matrix(self) -> np.array:
+        """Seed the confidence radius cache and return it.
+
+        Returns
+        -------
+        np.array
+            A numpy matrix containing the current confidence radius values.
+        """
+        for (first_idx, second_idx) in np.argwhere(np.isnan(self._cached_radius)):
+            # Seed the cache.
+            self._get_confidence_radius(first_idx, second_idx)
+        return self._cached_radius
 
     def get_mean_estimate_matrix(self) -> PreferenceMatrix:
         """Get the current mean estimates as a PreferenceMatrix.
@@ -270,7 +307,7 @@ class PreferenceEstimate:
         PreferenceMatrix
             The current mean estimate.
         """
-        return self._estimate_to_matrix(self.get_mean_estimate)
+        return PreferenceMatrix(self._cached_mean_estimate)
 
     def get_upper_estimate_matrix(self) -> PreferenceMatrix:
         """Get the current upper estimates as a PreferenceMatrix.
@@ -280,7 +317,11 @@ class PreferenceEstimate:
         PreferenceMatrix
             The current mean estimate.
         """
-        return self._estimate_to_matrix(self.get_upper_estimate)
+        return PreferenceMatrix(
+            np.clip(
+                self._cached_mean_estimate + self._get_radius_matrix(), a_min=0, a_max=1
+            )
+        )
 
     def get_lower_estimate_matrix(self) -> PreferenceMatrix:
         """Get the current lower estimates as a PreferenceMatrix.
@@ -290,7 +331,11 @@ class PreferenceEstimate:
         PreferenceMatrix
             The current mean estimate.
         """
-        return self._estimate_to_matrix(self.get_lower_estimate)
+        return PreferenceMatrix(
+            np.clip(
+                self._cached_mean_estimate - self._get_radius_matrix(), a_min=0, a_max=1
+            )
+        )
 
     def sample_preference_matrix(
         self, random_state: np.random.RandomState
