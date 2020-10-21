@@ -239,25 +239,13 @@ class PreferenceEstimate:
             A PreferenceMatrix object which is initialized from a preference matrix which
             is sampled on a Beta distribution.
         """
-        # The diagonal values remain 0.5 whereas the other values change after sampling.
-        preference_matrix_sample = np.full((self.num_arms, self.num_arms), 0.5)
-        random_state = (
-            random_state if random_state is not None else np.random.RandomState()
-        )
-
-        # Fill the preference matrix `preference_matrix_sample`(denoted by q).
-        # Sample the values for q[i][j] such that i < j and fill q[j][i] = 1 - q[i][j].
-        for first_arm in range(self.num_arms):
-            for second_arm in range(first_arm + 1, self.num_arms):
-                preference_matrix_sample[first_arm][second_arm] = random_state.beta(
-                    self.wins[first_arm, second_arm] + 1,
-                    self.wins[second_arm, first_arm] + 1,
-                )
-                preference_matrix_sample[second_arm][first_arm] = (
-                    1 - preference_matrix_sample[first_arm][second_arm]
-                )
-
-        return PreferenceMatrix(preference_matrix_sample)
+        # Construct the parameters of a beta distribution to sample preference
+        # probabilities.
+        beta_a = self.wins + 1
+        beta_b = beta_a.T
+        # Only the upper triangle is important, the rest is adjusted afterwards.
+        upper_triangle_preferences = random_state.beta(beta_a, beta_b)
+        return PreferenceMatrix.from_upper_triangle(upper_triangle_preferences)
 
     def __str__(self) -> str:
         """Produce a string representation of the estimate."""

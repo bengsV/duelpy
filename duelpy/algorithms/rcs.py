@@ -81,7 +81,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
 
     >>> regret_history, cumul_regret = feedback_mechanism.calculate_weak_regret(best_arm=2)
     >>> np.round(cumul_regret, 2)
-    1.0
+    0.8
     >>> rcs.get_condorcet_winner()
     2
     """
