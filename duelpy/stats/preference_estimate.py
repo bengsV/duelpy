@@ -13,6 +13,80 @@ from duelpy.stats.preference_matrix import PreferenceMatrix
 class PreferenceEstimate:
     """An estimation of a preference matrix based on samples.
 
+    Consider this example:
+
+    >>> preference_estimate = PreferenceEstimate(
+    ...     num_arms = 3,
+    ...     confidence_radius=TrivialConfidenceRadius(0.5)
+    ... )
+
+    In the beginning, nothing is known yet.
+
+    >>> preference_estimate.get_mean_estimate_matrix()
+    array([[0.5, 0.5, 0.5],
+           [0.5, 0.5, 0.5],
+           [0.5, 0.5, 0.5]])
+    >>> preference_estimate.get_upper_estimate_matrix()
+    array([[0.5, 1. , 1. ],
+           [1. , 0.5, 1. ],
+           [1. , 1. , 0.5]])
+    >>> preference_estimate.get_lower_estimate_matrix()
+    array([[0.5, 0. , 0. ],
+           [0. , 0.5, 0. ],
+           [0. , 0. , 0.5]])
+
+    If we enter a sampled win, the estimated probability of that arm increases
+    and the inverse probability decreases accordingly.
+
+    >>> preference_estimate.enter_sample(0, 1, first_won=True)
+    >>> preference_estimate.get_mean_estimate_matrix()
+    array([[0.5, 1. , 0.5],
+           [0. , 0.5, 0.5],
+           [0.5, 0.5, 0.5]])
+
+    When entering more samples, the probability keeps adjusting. Let's make it
+    one win out of four.
+    >>> preference_estimate.enter_sample(0, 1, first_won=False)
+    >>> preference_estimate.enter_sample(0, 1, first_won=True)
+    >>> preference_estimate.enter_sample(0, 1, first_won=True)
+    >>> preference_estimate.get_mean_estimate_matrix()
+    array([[0.5 , 0.75, 0.5 ],
+           [0.25, 0.5 , 0.5 ],
+           [0.5 , 0.5 , 0.5 ]])
+
+    Meanwhile the confidence intervals have adjusted as well:
+
+    >>> preference_estimate.get_upper_estimate_matrix()
+    array([[0.5 , 1.  , 1.  ],
+           [0.75, 0.5 , 1.  ],
+           [1.  , 1.  , 0.5 ]])
+    >>> preference_estimate.get_lower_estimate_matrix()
+    array([[0.5 , 0.25, 0.  ],
+           [0.  , 0.5 , 0.  ],
+           [0.  , 0.  , 0.5 ]])
+
+    And if we tighten the confidence radius, they get changed yet again:
+
+    >>> preference_estimate.set_confidence_radius(TrivialConfidenceRadius(0.1))
+    >>> preference_estimate.get_upper_estimate_matrix()
+    array([[0.5 , 0.85, 0.6 ],
+           [0.35, 0.5 , 0.6 ],
+           [0.6 , 0.6 , 0.5 ]])
+    >>> preference_estimate.get_lower_estimate_matrix()
+    array([[0.5 , 0.65, 0.4 ],
+           [0.15, 0.5 , 0.4 ],
+           [0.4 , 0.4 , 0.5 ]])
+
+    We can now also sample a complete preference matrix from a beta
+    distribution:
+
+    >>> preference_estimate.sample_preference_matrix(
+    ...     random_state=np.random.RandomState(42)
+    ... )
+    array([[0.5       , 0.72606244, 0.4978376 ],
+           [0.27393756, 0.5       , 0.44364733],
+           [0.5021624 , 0.55635267, 0.5       ]])
+
     Parameters
     ----------
     num_arms
