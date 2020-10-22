@@ -43,3 +43,16 @@ class AllCopelandProducer(Algorithm):
         might be approximate.
         """
         raise NotImplementedError
+
+
+class CopelandRankingProducer(Algorithm):
+    """An Algorithm that computes or estimates the Copeland ranking over the arms."""
+
+    def get_ranking(self) -> Optional[Collection[int]]:
+        """Return the computed Copeland ranking if it is ready.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times. If this is a PAC algorithm, the result
+        might be approximate.
+        """
+        raise NotImplementedError
