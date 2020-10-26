@@ -1,8 +1,6 @@
 """Utilities for estimating preference matrices based on samples."""
 
 from typing import Callable
-from typing import Dict
-from typing import FrozenSet
 from typing import Tuple
 
 import numpy as np
@@ -29,8 +27,7 @@ class PreferenceEstimate:
         confidence_radius: ConfidenceRadius = TrivialConfidenceRadius(),
     ) -> None:
         self.num_arms = num_arms
-        self.wins: Dict[Tuple[int, int], int] = dict()
-        self.num_samples: Dict[FrozenSet[int], int] = dict()
+        self.wins = np.zeros((num_arms, num_arms))
         self.confidence_radius = confidence_radius
 
     def set_confidence_radius(self, confidence_radius: ConfidenceRadius) -> None:
@@ -61,17 +58,9 @@ class PreferenceEstimate:
         # the information. That would restrict us to comparable arm
         # representations though.
         if first_won:
-            self.wins[(first_arm_index, second_arm_index)] = (
-                self.wins.get((first_arm_index, second_arm_index), 0) + 1
-            )
+            self.wins[first_arm_index][second_arm_index] += 1
         else:
-            self.wins[(second_arm_index, first_arm_index)] = (
-                self.wins.get((second_arm_index, first_arm_index), 0) + 1
-            )
-        # Order does not matter here, hence index with a set.
-        self.num_samples[frozenset((second_arm_index, first_arm_index))] = (
-            self.num_samples.get(frozenset((second_arm_index, first_arm_index)), 0) + 1
-        )
+            self.wins[second_arm_index][first_arm_index] += 1
 
     def get_mean_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the estimate of the win probability of `first_arm_index` against `second_arm_index`.
@@ -89,7 +78,7 @@ class PreferenceEstimate:
             The estimated probability that `first_arm_index` wins against `second_arm_index`.
         """
         samples = self.get_num_samples(first_arm_index, second_arm_index)
-        wins = self.wins.get((first_arm_index, second_arm_index), 0)
+        wins = self.wins[first_arm_index, second_arm_index]
         if samples == 0 or first_arm_index == second_arm_index:
             return 1 / 2
         else:
@@ -183,7 +172,10 @@ class PreferenceEstimate:
             The number of times a duel between the two arms was sampled,
             regardless of the arm order.
         """
-        return self.num_samples.get(frozenset((first_arm_index, second_arm_index)), 0)
+        return (
+            self.wins[first_arm_index][second_arm_index]
+            + self.wins[second_arm_index][first_arm_index]
+        )
 
     def _estimate_to_matrix(
         self, estimate_function: Callable[[int, int], float]
@@ -247,25 +239,13 @@ class PreferenceEstimate:
             A PreferenceMatrix object which is initialized from a preference matrix which
             is sampled on a Beta distribution.
         """
-        # The diagonal values remain 0.5 whereas the other values change after sampling.
-        preference_matrix_sample = np.full((self.num_arms, self.num_arms), 0.5)
-        random_state = (
-            random_state if random_state is not None else np.random.RandomState()
-        )
-
-        # Fill the preference matrix `preference_matrix_sample`(denoted by q).
-        # Sample the values for q[i][j] such that i < j and fill q[j][i] = 1 - q[i][j].
-        for first_arm in range(self.num_arms):
-            for second_arm in range(first_arm + 1, self.num_arms):
-                preference_matrix_sample[first_arm][second_arm] = random_state.beta(
-                    self.wins.get((first_arm, second_arm), 0) + 1,
-                    self.wins.get((second_arm, first_arm), 0) + 1,
-                )
-                preference_matrix_sample[second_arm][first_arm] = (
-                    1 - preference_matrix_sample[first_arm][second_arm]
-                )
-
-        return PreferenceMatrix(preference_matrix_sample)
+        # Construct the parameters of a beta distribution to sample preference
+        # probabilities.
+        beta_a = self.wins + 1
+        beta_b = beta_a.T
+        # Only the upper triangle is important, the rest is adjusted afterwards.
+        upper_triangle_preferences = random_state.beta(beta_a, beta_b)
+        return PreferenceMatrix.from_upper_triangle(upper_triangle_preferences)
 
     def __str__(self) -> str:
         """Produce a string representation of the estimate."""

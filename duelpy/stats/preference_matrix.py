@@ -25,6 +25,42 @@ class PreferenceMatrix:
     ):
         self.preferences = preferences
 
+    @staticmethod
+    def from_upper_triangle(matrix: np.array) -> "PreferenceMatrix":
+        """Construct a coherent preference matrix from an upper triangle.
+
+        All entries below the diagonal (including the diagonal) are ignored.
+        The diagonal is filled in with 0.5, the lower triangle is filled in to
+        match the upper triangle.
+
+        >>> matrix = np.array([[-1, 0.3, 0.2],
+        ...                    [42, 0.1, 0.8],
+        ...                    [ 0,  -5, 0.1]])
+        >>> PreferenceMatrix.from_upper_triangle(matrix)
+        array([[0.5, 0.3, 0.2],
+               [0.7, 0.5, 0.8],
+               [0.8, 0.2, 0.5]])
+
+        Parameters
+        ----------
+        matrix
+            The upper-triangle matrix. All entries below the diagonal are
+            ignored.
+
+        Returns
+        -------
+        PreferenceMatrix
+            The resulting coherent preference matrix.
+        """
+        upper_triangle = np.triu(matrix)
+        # For some reason pylint mistakenly assumes that upper_triangle is a
+        # tuple and therefore has no "T" member.
+        # pylint: disable=no-member
+        lower_triangle = np.tril(1 - upper_triangle.T, -1)
+        result = upper_triangle + lower_triangle
+        np.fill_diagonal(result, 0.5)
+        return PreferenceMatrix(result)
+
     # Unfortunately numpy's indexing is not typed, so we can't type this either
     # if we don't want to lose any of its power.
     def __getitem__(self, key: Any) -> Any:
@@ -100,3 +136,7 @@ class PreferenceMatrix:
             A 1-D array with the normalized Copeland scores.
         """
         return self.get_copeland_scores() / (self.get_num_arms() - 1)
+
+    def __repr__(self) -> str:
+        """Compute a string representation of the preference matrix."""
+        return repr(self.preferences)

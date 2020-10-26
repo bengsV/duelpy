@@ -175,9 +175,7 @@ class RelativeUCB(Algorithm):
         for arm_i in range(self.feedback_mechanism.get_num_arms()):
             for arm_j in range(self.feedback_mechanism.get_num_arms()):
                 if self.preference_estimate.get_mean_estimate(arm_i, arm_j) > 0.5:
-                    arms_win_count[arm_i] += self.preference_estimate.wins.get(
-                        (arm_i, arm_j), 0
-                    )
+                    arms_win_count[arm_i] += self.preference_estimate.wins[arm_i, arm_j]
 
         winner_arm = int(np.argmax(arms_win_count))
         return winner_arm
