@@ -27,8 +27,16 @@ class ConfidenceRadius:
 class TrivialConfidenceRadius(ConfidenceRadius):
     """A trivial confidence radius that contains no information.
 
-    Only useful as a place-holder. Always returns a confidence-radius of 1.
+    Only useful as a place-holder. Always returns a pre-determined confidence-radius.
+
+    Parameters
+    ----------
+    radius
+        The constant confidence radius to return.
     """
+
+    def __init__(self, radius: float = 1.0):
+        self._radius = radius
 
     def __call__(self, num_samples: int) -> float:
         """Compute the confidence radius.
@@ -43,7 +51,7 @@ class TrivialConfidenceRadius(ConfidenceRadius):
         float
             The confidence radius around the empirical mean.
         """
-        return 1
+        return self._radius
 
 
 class HoeffdingConfidenceRadius(ConfidenceRadius):
