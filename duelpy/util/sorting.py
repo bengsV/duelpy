@@ -1,0 +1,262 @@
+"""Collection of various sorting algorithms which allow a step-by-step execution."""
+
+from typing import Callable
+from typing import List
+from typing import Optional
+
+import numpy as np
+
+
+class SortingAlgorithm:
+    """Superclass for sorting algorithms."""
+
+    def __init__(
+        self,
+        items: List[int],
+        compare_fn: Callable[[int, int], int],
+        random_state: np.random.RandomState,
+    ):
+        self.items = items
+        self.compare_fn = compare_fn
+        self.random_state = random_state
+
+    def step(self) -> None:
+        """Execute one step of sorting."""
+        raise NotImplementedError
+
+    def is_finished(self) -> bool:
+        """Determine whether the sorting is complete."""
+        raise NotImplementedError
+
+    def get_result(self) -> Optional[List[int]]:
+        """Get sorted list."""
+        raise NotImplementedError
+
+    @staticmethod
+    def get_comparison_bound(num_arms: int) -> float:
+        """Get a bound on the amount of comparisons made."""
+        raise NotImplementedError
+
+
+class MergeSort(SortingAlgorithm):
+    """MergeSort algorithm."""
+
+    class Node:
+        """Helper class."""
+
+        def __init__(self, result: List[int]):
+            # notice the implicit link here, result is not copied!
+            # editing node.result will therefore change node.parent.left or right, since the list instance is the same
+            # the slicing will create new lists though
+            self.result = result
+            split_index = int(np.ceil(len(self.result) / 2))
+            self.left = self.result[:split_index]
+            self.right = self.result[split_index:]
+
+    def __init__(
+        self,
+        items: List[int],
+        compare_fn: Callable[[int, int], int],
+        random_state: np.random.RandomState,
+    ):
+        super().__init__(items, compare_fn, random_state)
+        # prepare all recursion steps
+        # the list todo contains all nodes of the tree that is implicitly created when running mergesort
+        self.todo = [MergeSort.Node(self.items)]
+        index = 0
+
+        while len(self.todo) > index:
+            node = self.todo[-1]
+            if len(node.result) > 1:
+                self.todo.append(MergeSort.Node(node.right))
+                self.todo.append(MergeSort.Node(node.left))
+            index += 1
+        self.current_node: MergeSort.Node = self.todo[-1]
+        self.index_left = 0
+        self.index_right = 0
+
+        self._is_finished = False
+        self.result: Optional[List[int]] = None
+
+    def step(self) -> None:
+        """Execute one sort step."""
+        if self._is_finished:
+            return
+        if (
+            len(self.current_node.left) == self.index_left
+            and len(self.current_node.right) == self.index_right
+        ):
+            # merge step completed, next node is selected from todo
+            if len(self.todo) > 0:
+                self.current_node = self.todo.pop()
+                self.current_node.result.clear()
+                self.index_left = 0
+                self.index_right = 0
+            else:
+                self._is_finished = True
+                self.result = self.current_node.result
+        else:
+            # merge two lists, by adding one item
+
+            # compare the current element of both child lists
+            if self.index_left < len(self.current_node.left) and self.index_right < len(
+                self.current_node.right
+            ):
+                arm_left = self.current_node.left[self.index_left]
+                arm_right = self.current_node.right[self.index_right]
+
+                comparison_result = 0
+                while comparison_result == 0:
+                    comparison_result = self.compare_fn(arm_left, arm_right)
+                if comparison_result == 1:
+                    self.current_node.result.append(arm_left)
+                    self.index_left += 1
+                else:
+                    self.current_node.result.append(arm_right)
+                    self.index_right += 1
+            else:
+                # if there are nodes left in one list, one of them is added
+
+                if self.index_left < len(self.current_node.left):
+                    arm_left = self.current_node.left[self.index_left]
+                    self.current_node.result.append(arm_left)
+                    self.index_left += 1
+
+                if self.index_right < len(self.current_node.right):
+                    arm_right = self.current_node.right[self.index_right]
+                    self.current_node.result.append(arm_right)
+                    self.index_right += 1
+
+    def is_finished(self) -> bool:
+        """Determine whether the sorting is complete."""
+        return self._is_finished
+
+    def get_result(self) -> Optional[List[int]]:
+        """Get sorted list."""
+        return self.result
+
+    @staticmethod
+    def get_comparison_bound(num_arms: int) -> float:
+        """Get the upper bound for the amount of comparisons made by the two-way top-down merge sort algorithm."""
+        # For details see Theorem 1 of Flajolet, P. and Golin, M. J. Mellin transforms and asymptotics: The mergesort recurrence.Acta Inf., 31(7):673–696, 1994
+        return int(np.ceil(num_arms * np.log2(num_arms) - 0.91392 * num_arms + 1))
+
+
+class Quicksort(SortingAlgorithm):
+    """Quicksort algorithm."""
+
+    class Node:
+        """Helper class."""
+
+        def __init__(
+            self,
+            items: List[int],
+            random_state: np.random.RandomState,
+            parent: Optional["Quicksort.Node"] = None,
+        ):
+            self.items = items
+            self.random_state = random_state
+            self.parent = parent
+            self.left: Optional["Quicksort.Node"] = None
+            self.right: Optional["Quicksort.Node"] = None
+            random_index = self.random_state.randint(0, len(items))
+            self.pivot = items[random_index]
+            self.items.pop(random_index)
+            self.marked = False
+
+        def mark(self) -> None:
+            """Mark the node as done."""
+            self.marked = True
+
+        def __repr__(self) -> str:
+            """Transform the object to a human-readable string."""
+            return f"Quicksort.Node({self.items},{self.pivot},marked:{self.marked},parent:{self.parent is not None},left:{self.left is not None},right:{self.right is not None})"
+
+    def __init__(
+        self,
+        items: List[int],
+        compare_fn: Callable[[int, int], int],
+        random_state: np.random.RandomState,
+    ):
+        super().__init__(items, compare_fn, random_state)
+        self.current_node = Quicksort.Node(items, self.random_state)
+        self.result: Optional[List[int]] = None
+        self._is_finished = False
+
+    @staticmethod
+    def _merge_children(node: "Quicksort.Node") -> List[int]:
+        left_list: List[int] = []
+        if node.left is not None:
+            left_list = node.left.items
+        right_list: List[int] = []
+        if node.right is not None:
+            right_list = node.right.items
+        return left_list + [node.pivot] + right_list
+
+    # pylint: disable=too-many-branches
+    def step(self) -> None:
+        """Execute one sort step."""
+        if self.is_finished():
+            return
+        if (
+            self.current_node.left is None
+            and self.current_node.right is None
+            and len(self.current_node.items) > 1
+        ):
+            # create new child nodes with smaller problems
+            current_list = self.current_node.items.copy()
+            list_left = []
+            list_right = []
+            while len(current_list) > 0:
+                for item in current_list:
+                    comparison_result = self.compare_fn(self.current_node.pivot, item)
+                    if comparison_result == 1:
+                        list_right.append(item)
+                        current_list.remove(item)
+                    elif comparison_result == -1:
+                        list_left.append(item)
+                        current_list.remove(item)
+
+            if len(list_left) > 0:
+                self.current_node.left = Quicksort.Node(
+                    list_left, self.random_state, self.current_node
+                )
+                if len(list_left) == 1:
+                    self.current_node.left.mark()
+            if len(list_right) > 0:
+                self.current_node.right = Quicksort.Node(
+                    list_right, self.random_state, self.current_node
+                )
+                if len(list_right) == 1:
+                    self.current_node.right.mark()
+        elif self.current_node.left is not None and not self.current_node.left.marked:
+            # solve left child
+            self.current_node = self.current_node.left
+            self.step()  # this branch does not count as a step
+        elif self.current_node.right is not None and not self.current_node.right.marked:
+            # solve right child
+            self.current_node = self.current_node.right
+            self.step()  # this branch does not count as a step
+        elif self.current_node.parent is not None:
+            # move to parent and merge results of children
+            self.current_node.items = self._merge_children(self.current_node)
+            self.current_node.mark()
+            self.current_node = self.current_node.parent
+            self.step()  # this branch does not count as a step
+        else:
+            # Quicksort terminates, root reached
+            self.result = self._merge_children(self.current_node)
+            self._is_finished = True
+
+    def is_finished(self) -> bool:
+        """Determine whether the sorting is complete."""
+        return self._is_finished
+
+    def get_result(self) -> Optional[List[int]]:
+        """Get sorted list."""
+        return self.result
+
+    @staticmethod
+    def get_comparison_bound(num_arms: int) -> float:
+        """Get the upper bound for the amount of comparisons made by the Quicksort algorithm."""
+        return num_arms ** 2 / 2
