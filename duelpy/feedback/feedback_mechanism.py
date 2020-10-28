@@ -38,7 +38,7 @@ class FeedbackMechanism:
 
     def get_arms(self) -> list:
         """Get the pool of arms available."""
-        return self.arms
+        return self.arms.copy()
 
     def get_num_arms(self) -> int:
         """Get the number of arms."""
