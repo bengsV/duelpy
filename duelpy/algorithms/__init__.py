@@ -9,6 +9,7 @@ from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.knockout_tournament import KnockoutTournament
 from duelpy.algorithms.mallows import MallowsMPI
 from duelpy.algorithms.mallows import MallowsMPR
+from duelpy.algorithms.merge_rucb import MergeRUCB
 from duelpy.algorithms.multisort import Multisort
 from duelpy.algorithms.optmax import OptMax
 from duelpy.algorithms.plackett_luce import PlackettLuceAMPR
@@ -46,6 +47,7 @@ algorithm_list = [
     MallowsMPI,
     MallowsMPR,
     Multisort,
+    MergeRUCB,
     SequentialElimination,
     SingleEliminationTopKSorting,
     SingleEliminationTop1Select,
