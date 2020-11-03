@@ -10,6 +10,7 @@ from duelpy.algorithms.mallows import MallowsMPR
 from duelpy.algorithms.rcs import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
+from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
 from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
 
@@ -24,6 +25,7 @@ __all__ = [
     "InterleavedFiltering",
     "KnockoutTournament",
     "CopelandConfidenceBound",
+    "SequentialElimination",
     "MallowsMPI",
     "MallowsMPR",
 ]
