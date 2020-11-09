@@ -15,19 +15,33 @@ from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
 from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
 
-__all__ = [
-    "Savage",
-    "WinnerStaysWeakRegret",
-    "WinnerStaysStrongRegret",
-    "BeatTheMeanBandit",
-    "RelativeConfidenceSampling",
-    "RelativeUCB",
-    "Algorithm",
-    "InterleavedFiltering",
-    "KnockoutTournament",
-    "CopelandConfidenceBound",
-    "SequentialElimination",
-    "MallowsMPI",
-    "MallowsMPR",
-    "DoubleThompsonSampling",
+# Pylint insists that algorithm_list and interfaces are constants and should be
+# named in UPPER_CASE. Technically that is correct, but it doesn't feel quite
+# right for this use case. Its not a typical constant. A similar use-case would
+# be numpy's np.core.numerictypes.allTypes, which is also not names in
+# UPPER_CASE.
+# pylint: disable=invalid-name
+
+# Make the actual algorithm classes available for easy enumeration in
+# experiments and tests.
+algorithm_list = [
+    Savage,
+    WinnerStaysWeakRegret,
+    WinnerStaysStrongRegret,
+    BeatTheMeanBandit,
+    RelativeConfidenceSampling,
+    RelativeUCB,
+    InterleavedFiltering,
+    KnockoutTournament,
+    CopelandConfidenceBound,
+    MallowsMPI,
+    MallowsMPR,
+    SequentialElimination,
+    DoubleThompsonSampling,
 ]
+# This is not really needed, but otherwise zimports doesn't understand the
+# __all__ construct and complains that the Algorithm import is unnecessary.
+interfaces = [Algorithm]
+
+# Generate __all__ for tab-completion etc.
+__all__ = ["Algorithm"] + [algorithm.__name__ for algorithm in algorithm_list]
