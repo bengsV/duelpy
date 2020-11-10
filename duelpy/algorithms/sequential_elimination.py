@@ -9,6 +9,7 @@ from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.stats.preference_estimate import PreferenceEstimate
+from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
@@ -165,12 +166,16 @@ class SequentialElimination(SingleCopelandProducer):
             self._remaining_arms, random_state=np.random.RandomState()
         )[0]
 
-        comparison_result = self.determine_better_arm(
-            competing_arm=random_competing_arm,
-        )
-        if comparison_result:
-            # competing arm beats the anchor arm.
-            self._anchor_arm = random_competing_arm
+        try:
+            comparison_result = self.determine_better_arm(
+                competing_arm=random_competing_arm,
+            )
+            if comparison_result:
+                # competing arm beats the anchor arm.
+                self._anchor_arm = random_competing_arm
+        except AlgorithmFinishedException:
+            # Algorithm was terminated, explore will not be called anymore.
+            pass
 
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
@@ -217,6 +222,12 @@ class SequentialElimination(SingleCopelandProducer):
         competing_arm
             Arm that challenges the current anchor arm.
 
+        Raises
+        ------
+        AlgorithmFinishedException
+            If the comparison budget is exceeded before the better arm could be
+            determined.
+
         Returns
         -------
         bool
@@ -253,6 +264,8 @@ class SequentialElimination(SingleCopelandProducer):
             and np.absolute(calibrated_preference_estimate - bias_mean)
             <= confidence_radius
         ):
+            if self.is_finished():
+                raise AlgorithmFinishedException()
             current_iteration_count += 1
             feedback_result = self.feedback_mechanism.duel(
                 competing_arm, self._anchor_arm
