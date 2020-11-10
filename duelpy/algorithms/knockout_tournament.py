@@ -9,6 +9,7 @@ from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
+from duelpy.util.exceptions import AlgorithmFinishedException
 
 
 class KnockoutTournament(CondorcetProducer):
@@ -65,13 +66,13 @@ class KnockoutTournament(CondorcetProducer):
     ...     [0.9, 0.7, 0.5],
     ... ])
     >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=np.random.RandomState(100))
-    >>> knockout_tournament = KnockoutTournament(feedback_mechanism, epsilon=0.05, failure_probability=0.1, stochasticity=0.6, time_horizon=200)
+    >>> knockout_tournament = KnockoutTournament(feedback_mechanism, epsilon=0.1, failure_probability=0.3, stochasticity=0.6, time_horizon=300)
     >>> knockout_tournament.run()
     >>> best_arm = knockout_tournament.get_condorcet_winner()
     >>> best_arm
     2
     >>> feedback_mechanism.get_num_duels()
-    268
+    300
 
     In this example the epsilon Condorcet winner is the arm with index 2.
     """
@@ -124,12 +125,15 @@ class KnockoutTournament(CondorcetProducer):
         )
 
         pairs = combinations(self.tournament_arms, 2)
-        for arm_i, arm_j in pairs:
-            winning_arms.add(
-                self._determine_winner(
-                    arm_i, arm_j, current_epsilon, current_failure_probability
+        try:
+            for arm_i, arm_j in pairs:
+                winning_arms.add(
+                    self._determine_winner(
+                        arm_i, arm_j, current_epsilon, current_failure_probability
+                    )
                 )
-            )
+        except AlgorithmFinishedException:
+            return
 
         self.tournament_arms = winning_arms
 
@@ -193,6 +197,13 @@ class KnockoutTournament(CondorcetProducer):
             index of the first arm
         arm_j
             index of the second arm
+
+        Raises
+        ------
+        AlgorithmFinishedException
+            If the comparison budget is reached.
+
+
         Returns
         -------
         int
@@ -228,5 +239,7 @@ class KnockoutTournament(CondorcetProducer):
             estimate_probability_arm_i = self.preference_estimate.get_mean_estimate(
                 arm_j, arm_i
             )
+            if self.is_finished():
+                raise AlgorithmFinishedException()
 
         return arm_j if estimate_probability_arm_i <= 0.5 else arm_i
