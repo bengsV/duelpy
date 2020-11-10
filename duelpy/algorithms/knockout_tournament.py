@@ -174,7 +174,7 @@ class KnockoutTournament(CondorcetProducer):
         int
             The index of the winning arm
         """
-        return self.tournament_arms.pop() if len(self.tournament_arms) == 1 else None
+        return list(self.tournament_arms)[0] if len(self.tournament_arms) == 1 else None
 
     def _determine_winner(
         self,
