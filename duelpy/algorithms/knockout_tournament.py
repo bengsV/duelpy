@@ -149,7 +149,7 @@ class KnockoutTournament(CondorcetProducer):
             self.explore()
         else:
             self.exploit()
-            self.time_step += 1
+        self.time_step += 1
 
     def is_finished(self) -> bool:
         """Determine if the algorithm execution is finished.
