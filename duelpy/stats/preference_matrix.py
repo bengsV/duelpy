@@ -158,6 +158,18 @@ class PreferenceMatrix:
             normalized_copeland_scores[arm_i] + normalized_copeland_scores[arm_j]
         )
 
+    def get_epsilon_condorcet_winners(self, epsilon: float) -> Set[int]:
+        """Find all epsilon-Condorcet winners."""
+        candidates = list(range(self.get_num_arms()))
+        for arm_1 in range(self.get_num_arms()):
+            for arm_2 in range(self.get_num_arms()):
+                if arm_1 == arm_2 or arm_1 not in candidates:
+                    continue
+                if self.preferences[arm_1, arm_2] <= 1 / 2 - epsilon:
+                    candidates.remove(arm_1)
+                    break
+        return set(candidates)
+
     def __repr__(self) -> str:
         """Compute a string representation of the preference matrix."""
         return repr(self.preferences)
