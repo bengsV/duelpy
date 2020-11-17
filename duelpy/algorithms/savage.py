@@ -175,32 +175,36 @@ class Savage(SingleCopelandProducer):
         # close to the paper for now.
         next_sample = None
         current_lowest_sample_count = np.infty
+        arms_to_remove = set()
         for arm_pair in self._relevant_arm_combinations:
             if (
                 self.preference_estimate.get_num_samples(*arm_pair)
                 < current_lowest_sample_count
             ):
-                next_sample = arm_pair
-                current_lowest_sample_count = self.preference_estimate.get_num_samples(
-                    *arm_pair
-                )
+                if not self.copeland_independence_test(arm_pair):
+                    next_sample = arm_pair
+                    current_lowest_sample_count = self.preference_estimate.get_num_samples(
+                        *arm_pair
+                    )
+                else:
+                    arms_to_remove.add(arm_pair)
 
-        # To keep mypy happy. Cannot happen due to initialization of
-        # current_lowest_sample_count.
-        assert next_sample is not None
+        if next_sample is not None:
+            # Sample a duel and keep track of the results.
+            self.preference_estimate.enter_sample(
+                *next_sample, self.feedback_mechanism.duel(*next_sample)
+            )
 
-        # Sample a duel and keep track of the results.
-        self.preference_estimate.enter_sample(
-            *next_sample, self.feedback_mechanism.duel(*next_sample)
-        )
+        # According to the algorithm in the paper, we should always check *all*
+        # remaining candidate pairs after making a sample and prune the list of
+        # remaining candidates.
 
-        self._relevant_arm_combinations.difference_update(
-            {
-                arm_pair
-                for arm_pair in self._relevant_arm_combinations
-                if self.copeland_independence_test(arm_pair)
-            }
-        )
+        # We do it slightly differently here: we only do the "independence
+        # test" and remove arms when they would otherwise have been a candidate
+        # for exploration in this step. That leads to the same order of arm
+        # exploration, but it reduces the number of necessary checks and
+        # spreads the computation cost more evenly among the time steps.
+        self._relevant_arm_combinations.difference_update(arms_to_remove)
 
     def exploit(self) -> None:
         """Run one step of exploitation."""
