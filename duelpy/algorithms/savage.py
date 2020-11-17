@@ -145,6 +145,9 @@ class Savage(SingleCopelandProducer):
         bool
             Whether more information about the arm pair is still needed.
         """
+        most_certain_wins = np.max(
+            self.preference_estimate.get_pessimistic_copeland_score_estimates()
+        )
         # Set of viable hypotheses is represented implicitly by a set of confidence
         # intervals.
         (lower_bound, upper_bound) = self.preference_estimate.get_confidence_interval(
@@ -155,38 +158,12 @@ class Savage(SingleCopelandProducer):
             # its win is is not important for the Copeland score.
             return True
 
-        # The remainder of the function corresponds to the "Cop" check in the
-        # paper.
-        # Determines whether we already know that some other arm has a
-        # higher Copeland score (with at least 1-failure_probability probability).
-        # Compute pessimistic estimates for all Copeland scores.
-        num_arms = self.feedback_mechanism.get_num_arms()
-        expected_wins = np.zeros(num_arms)
-        for arm in range(num_arms):
-            for other_arm in range(arm + 1, num_arms):
-                (
-                    lower_bound,
-                    upper_bound,
-                ) = self.preference_estimate.get_confidence_interval(arm, other_arm)
-                if lower_bound > 1 / 2:
-                    expected_wins[arm] += 1
-                elif upper_bound < 1 / 2:
-                    expected_wins[other_arm] += 1
-        most_certain_wins = np.max(expected_wins)
-
+        possible_wins = (
+            self.preference_estimate.get_optimistic_copeland_score_estimates()
+        )
         # Compute optimistic estimates for the arm pair.
         for arm in arm_pair:
-            possible_wins = 0
-            for other_arm in range(num_arms):
-                if other_arm == arm:
-                    continue
-                (_, upper_bound) = self.preference_estimate.get_confidence_interval(
-                    arm, other_arm
-                )
-                if upper_bound > 1 / 2:
-                    possible_wins += 1
-            # There is still something interesting to learn.
-            if possible_wins > most_certain_wins:
+            if possible_wins[arm] > most_certain_wins:
                 return False
 
         return True
