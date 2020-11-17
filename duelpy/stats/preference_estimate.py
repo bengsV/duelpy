@@ -337,6 +337,25 @@ class PreferenceEstimate:
             )
         )
 
+    def get_pessimistic_copeland_score_estimates(self) -> np.array:
+        """Get pessimistic estimates for every arm's Copeland score.
+
+        This only counts wins that have a probability of above 50% in the
+        pessimistic estimate. Those wins are "certain", assuming the confidence
+        interval is correct.
+        """
+        wins = self.get_lower_estimate_matrix().preferences > 1 / 2
+        return wins.sum(axis=1)
+
+    def get_optimistic_copeland_score_estimates(self) -> np.array:
+        """Get optimistic estimates for every arm's Copeland score.
+
+        This counts every win that is considered possible within the confidence
+        interval.
+        """
+        wins = self.get_upper_estimate_matrix().preferences > 1 / 2
+        return wins.sum(axis=1)
+
     def sample_preference_matrix(
         self, random_state: np.random.RandomState
     ) -> PreferenceMatrix:
