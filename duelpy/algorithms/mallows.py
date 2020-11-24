@@ -10,6 +10,7 @@ from duelpy.algorithms.interfaces import CopelandRankingProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
+from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.sorting import MergeSort
 from duelpy.util.sorting import SortingAlgorithm
 from duelpy.util.utility_functions import pop_random
@@ -65,7 +66,7 @@ class MallowsMPI(CondorcetProducer):
     >>> comparisons = feedback_mechanism.get_num_duels()
     >>> arm = mallows.get_condorcet_winner()
     >>> arm, comparisons
-    (2, 65)
+    (2, 18)
     """
 
     def __init__(
@@ -105,6 +106,8 @@ class MallowsMPI(CondorcetProducer):
         ):
             result = self.feedback_mechanism.duel(self._best_arm, rival_arm)
             self.preference_estimate.enter_sample(self._best_arm, rival_arm, result)
+            if self.is_finished():
+                return
         if (
             self.preference_estimate.get_upper_estimate(self._best_arm, rival_arm)
             < 1 / 2
@@ -251,11 +254,18 @@ class MallowsMPR(CopelandRankingProducer):
         arm_2
             The second arm.
 
+        Raises
+        ------
+        AlgorithmFinishedException
+            If the comparison budget is reached.
+
         Returns
         -------
         int
             1 if the first arm is better, -1 if the second arm is better, 0 if not sure yet.
         """
+        if self.is_finished():
+            raise AlgorithmFinishedException()
         first_arm_won = self.feedback_mechanism.duel(arm_1, arm_2)
         self.preference_estimate.enter_sample(arm_1, arm_2, first_arm_won)
         if self.preference_estimate.get_lower_estimate(arm_1, arm_2) > 0.5:
@@ -267,7 +277,10 @@ class MallowsMPR(CopelandRankingProducer):
 
     def explore(self) -> None:
         """Explore arms by advancing the sorting algorithm."""
-        self._sorting_algorithm.step()
+        try:
+            self._sorting_algorithm.step()
+        except AlgorithmFinishedException:
+            pass
         if self._sorting_algorithm.is_finished():
             self._ranking = self._sorting_algorithm.get_result()
 
