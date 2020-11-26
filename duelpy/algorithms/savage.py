@@ -143,7 +143,8 @@ class Savage(SingleCopelandProducer):
         Returns
         -------
         bool
-            Whether more information about the arm pair is still needed.
+            False if more information about the arm pair is still needed. True
+            if the Copeland estimation is not dependant on further information.
         """
         most_certain_wins = np.max(
             self.preference_estimate.get_pessimistic_copeland_score_estimates()
