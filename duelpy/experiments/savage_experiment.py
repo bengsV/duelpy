@@ -248,7 +248,13 @@ def _main() -> None:
         runs=args.runs,
         base_random_seed=args.base_random_seed,
     )
-    if not args.profile:
+    if args.profile:
+        final_results = results[results["time_step"] == args.time_horizon]
+        averaged_times = (
+            final_results[["algorithm", "wall_clock"]].groupby(["algorithm"]).mean()
+        )
+        print(averaged_times)
+    else:
         plot_results(results)
 
 
