@@ -143,8 +143,12 @@ class Savage(SingleCopelandProducer):
         Returns
         -------
         bool
-            Whether more information about the arm pair is still needed.
+            False if more information about the arm pair is still needed. True
+            if the Copeland estimation is not dependant on further information.
         """
+        most_certain_wins = np.max(
+            self.preference_estimate.get_pessimistic_copeland_score_estimates()
+        )
         # Set of viable hypotheses is represented implicitly by a set of confidence
         # intervals.
         (lower_bound, upper_bound) = self.preference_estimate.get_confidence_interval(
@@ -155,38 +159,12 @@ class Savage(SingleCopelandProducer):
             # its win is is not important for the Copeland score.
             return True
 
-        # The remainder of the function corresponds to the "Cop" check in the
-        # paper.
-        # Determines whether we already know that some other arm has a
-        # higher Copeland score (with at least 1-failure_probability probability).
-        # Compute pessimistic estimates for all Copeland scores.
-        num_arms = self.feedback_mechanism.get_num_arms()
-        expected_wins = np.zeros(num_arms)
-        for arm in range(num_arms):
-            for other_arm in range(arm + 1, num_arms):
-                (
-                    lower_bound,
-                    upper_bound,
-                ) = self.preference_estimate.get_confidence_interval(arm, other_arm)
-                if lower_bound > 1 / 2:
-                    expected_wins[arm] += 1
-                elif upper_bound < 1 / 2:
-                    expected_wins[other_arm] += 1
-        most_certain_wins = np.max(expected_wins)
-
+        possible_wins = (
+            self.preference_estimate.get_optimistic_copeland_score_estimates()
+        )
         # Compute optimistic estimates for the arm pair.
         for arm in arm_pair:
-            possible_wins = 0
-            for other_arm in range(num_arms):
-                if other_arm == arm:
-                    continue
-                (_, upper_bound) = self.preference_estimate.get_confidence_interval(
-                    arm, other_arm
-                )
-                if upper_bound > 1 / 2:
-                    possible_wins += 1
-            # There is still something interesting to learn.
-            if possible_wins > most_certain_wins:
+            if possible_wins[arm] > most_certain_wins:
                 return False
 
         return True
@@ -198,32 +176,36 @@ class Savage(SingleCopelandProducer):
         # close to the paper for now.
         next_sample = None
         current_lowest_sample_count = np.infty
+        arms_to_remove = set()
         for arm_pair in self._relevant_arm_combinations:
             if (
                 self.preference_estimate.get_num_samples(*arm_pair)
                 < current_lowest_sample_count
             ):
-                next_sample = arm_pair
-                current_lowest_sample_count = self.preference_estimate.get_num_samples(
-                    *arm_pair
-                )
+                if not self.copeland_independence_test(arm_pair):
+                    next_sample = arm_pair
+                    current_lowest_sample_count = self.preference_estimate.get_num_samples(
+                        *arm_pair
+                    )
+                else:
+                    arms_to_remove.add(arm_pair)
 
-        # To keep mypy happy. Cannot happen due to initialization of
-        # current_lowest_sample_count.
-        assert next_sample is not None
+        if next_sample is not None:
+            # Sample a duel and keep track of the results.
+            self.preference_estimate.enter_sample(
+                *next_sample, self.feedback_mechanism.duel(*next_sample)
+            )
 
-        # Sample a duel and keep track of the results.
-        self.preference_estimate.enter_sample(
-            *next_sample, self.feedback_mechanism.duel(*next_sample)
-        )
+        # According to the algorithm in the paper, we should always check *all*
+        # remaining candidate pairs after making a sample and prune the list of
+        # remaining candidates.
 
-        self._relevant_arm_combinations.difference_update(
-            {
-                arm_pair
-                for arm_pair in self._relevant_arm_combinations
-                if self.copeland_independence_test(arm_pair)
-            }
-        )
+        # We do it slightly differently here: we only do the "independence
+        # test" and remove arms when they would otherwise have been a candidate
+        # for exploration in this step. That leads to the same order of arm
+        # exploration, but it reduces the number of necessary checks and
+        # spreads the computation cost more evenly among the time steps.
+        self._relevant_arm_combinations.difference_update(arms_to_remove)
 
     def exploit(self) -> None:
         """Run one step of exploitation."""
