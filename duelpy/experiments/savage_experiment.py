@@ -82,14 +82,39 @@ def run_single_algorithm(
     return pd.DataFrame(data)
 
 
+# This function will be replaced in order to make the experiments more
+# flexible, so its not worth refactoring this right now.
+# pylint: disable=too-many-arguments
 def run_experiment(
     algorithms: List[Type[Algorithm]],
     time_horizon: int,
     num_arms: int,
     runs: int,
+    n_jobs: int,
     base_random_seed: int,
-) -> None:
-    """Run the experiment."""
+) -> pd.DataFrame:
+    """Run the experiment.
+
+    Parameters
+    ----------
+    algorithms
+        A list of algorithms to run.
+    time_horizon
+        For how long each algorithm should be run.
+    num_arms
+        How many arms to include in the generated problems.
+    runs
+        How often each algorithm should be run.
+    n_jobs
+        How many jobs to execute in parallel.
+    base_random_seed
+        Used to derive random states for each experiment.
+
+    Returns
+    -------
+    DataFrame
+        The experiment results.
+    """
     start_time = time.time()
     failure_probability = (
         1 / time_horizon
@@ -112,10 +137,10 @@ def run_experiment(
                 )
 
     jobs = list(job_producer())
-    result = Parallel(n_jobs=-1, verbose=10)(jobs)
+    result = Parallel(n_jobs=n_jobs, verbose=10)(jobs)
     runtime = time.time() - start_time
     print(f"Experiments took {round(runtime)}s.")
-    plot_results(pd.concat(result))
+    return pd.concat(result)
 
 
 def plot_results(data: pd.DataFrame) -> None:
@@ -195,19 +220,42 @@ def _main() -> None:
         type=int,
         help="Base random seed for reproducible results.",
     )
+    parser.add_argument(
+        "--jobs",
+        dest="n_jobs",
+        default=-1,
+        type=int,
+        help="How many experiments to run in parallel. The special value -1 stands for the number of processor cores.",
+    )
+    parser.add_argument(
+        "--profile",
+        dest="profile",
+        action="store_true",
+        default=False,
+        help="Enable profiling mode. This disables parallelism and plotting. Intended for use with cProfile.",
+    )
 
     args = parser.parse_args()
     algorithms = [
         algorithm_names_to_algorithms[algorithm] for algorithm in args.algorithms
     ]
 
-    run_experiment(
+    results = run_experiment(
         algorithms=algorithms,
+        n_jobs=1 if args.profile else args.n_jobs,
         time_horizon=args.time_horizon,
         num_arms=args.num_arms,
         runs=args.runs,
         base_random_seed=args.base_random_seed,
     )
+    if args.profile:
+        final_results = results[results["time_step"] == args.time_horizon]
+        averaged_times = (
+            final_results[["algorithm", "wall_clock"]].groupby(["algorithm"]).mean()
+        )
+        print(averaged_times)
+    else:
+        plot_results(results)
 
 
 if __name__ == "__main__":
