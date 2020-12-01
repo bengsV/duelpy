@@ -2,6 +2,7 @@
 
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
+from duelpy.algorithms.beat_the_mean import BeatTheMeanBanditPAC
 from duelpy.algorithms.copeland_confidence_bound import CopelandConfidenceBound
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSampling
 from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
@@ -29,6 +30,7 @@ algorithm_list = [
     WinnerStaysWeakRegret,
     WinnerStaysStrongRegret,
     BeatTheMeanBandit,
+    BeatTheMeanBanditPAC,
     RelativeConfidenceSampling,
     RelativeUCB,
     InterleavedFiltering,

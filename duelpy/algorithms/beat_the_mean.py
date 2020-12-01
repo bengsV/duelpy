@@ -1,9 +1,11 @@
 """Find the Condorcet winner in a PB-MAB problem using the 'Beat the Mean Bandit' algorithm."""
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 import numpy as np
 
+from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import ConfidenceRadius
@@ -384,4 +386,128 @@ class ComparisonHistory:
         """
         return min(self.probability_estimate) + self.confidence_radius(
             self.get_min_comparison(worst_arms=worst_arms)
+        )
+
+
+class BeatTheMeanBanditPAC(BeatTheMeanBandit):
+    r"""The PAC variant of the Beat the Mean Bandit algorithm.
+
+    The goal of this algorithm is to find the Condorcet winner.
+
+    It is assumed that a total order over the arms exists. Additionally relaxed stochastic transitivity and the stochastic triangle inequality are assumed.
+
+    In the PAC setting (no time horizon given), the sample complexity is bound by :math:`O\left(\frac{N \gamma^6}{\epsilon^2} \log\frac{Nc}{\delta}\right)`.
+    The constant :math:`c` is given as :math:`\left\lceil \frac{864}{\gamma^6\epsilon^2}\log \frac{N}{\delta}\right\rceil`.
+
+    The PAC setting for Beat the Mean Bandit algorithm takes an 'explore then exploit' approach. In PAC setting,
+    the exploration conditions for Beat the Mean Bandit algorithm is different from the Online setting. There are two
+    termination cases for PAC exploration, the first case is when the active set has been reduced to a single bandit.
+    The second case is when the number of comparisons recorded for each remaining bandit is at least ``opt_n``
+    (Corresponds to :math:`N'` in section 3.1.2 in :cite:`busa2018preference`).We do not use
+    the time horizon in Beat-the-Mean PAC setting (i.e., we set ``time_horizon = None``); it is used only in the online setting.
+
+    Parameters
+    ----------
+    feedback_mechanism
+        A FeedbackMechanism object describing the environment. This parameter has been taken from the parent class.
+    random_state
+        A numpy random state. Defaults to an unseeded state when not specified.
+    gamma
+        The relaxed stochastic transitivity (corresponds to :math:`\gamma` in :cite:`yue2011beat`) that the
+        algorithm should assume for the given problem setting. The value must be greater than :math:`0`.
+        A higher value corresponds to a stronger assumption, where :math:`1` corresponds to strong stochastic
+        transitivity. In theory it is not possible to assume more than a gamma of :math:`1`, but in practice you can
+        still specify higher values. This will lead to tighter confidence intervals and possibly better results,
+        but the theoretical guarantees do not hold in that case. Formally this corresponds to the following
+        assumed property of the calibrated preference matrix: :math:`\Delta_{i, j} \ge \gamma \max \{ \Delta_{i,j}, \Delta{j, k} \}` should hold for all pairwise distinct indices with :math:`\Delta_{i, j} \ge 0` and
+        :math:`\Delta_{j, k} \ge 0`. This parameter has been taken from the parent class.
+    epsilon
+        :math:`\epsilon` in (:math:`\epsilon,\delta`)PAC algorithms, given by the user.
+    failure_probability
+        Allowed failure-probability (corresponds to :math:`\delta` in Algorithm 2 in :cite:`yue2011beat`),
+        i.e. probability that the actual value lies outside of the computed confidence interval. Derived from the
+        Hoeffding bound.
+    time_horizon
+
+    Attributes
+    ----------
+    opt_n
+        Corresponds to :math:`N'` in section 3.1.2 in :cite:`busa2018preference`.
+    comparison_history
+        A ComparisonHistory object which stores the history of the comparisons between the arms.
+    worst_arms
+        A list of arms which are to be excluded when updating the working set for further rounds. These are the arms
+        with the lowest estimated probability to win against the mean arm.
+    random_state
+
+
+    Examples
+    --------
+    Define a preference-based multi-armed bandit problem through a preference
+    matrix:
+
+    >>> from duelpy.feedback import MatrixFeedback
+    >>> preference_matrix = np.array([
+    ...     [0.5, 0.1, 0.1],
+    ...     [0.9, 0.5, 0.3],
+    ...     [0.9, 0.7, 0.5],
+    ... ])
+    >>> random_state = np.random.RandomState(43)
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
+    >>> btm = BeatTheMeanBanditPAC(feedback_mechanism=feedback_mechanism, random_state=random_state, epsilon=0.001)
+    >>> btm.run()
+    >>> best_arm = btm.get_condorcet_winner()
+    >>> best_arm
+    2
+    """
+
+    # Disabling pylint errors because we are reimplementing the initialization since the superclass expects a time
+    # horizon while it is optional for this class. For reference, take a look at
+    # https://gitlab.com/duelpy/duelpy/-/merge_requests/77#note_448073174
+    def __init__(  # pylint: disable=too-many-arguments,non-parent-init-called,super-init-not-called
+        self,
+        feedback_mechanism: FeedbackMechanism,
+        time_horizon: Optional[int] = None,
+        random_state: np.random.RandomState = None,
+        gamma: float = 1.0,
+        epsilon: float = 0.01,
+        failure_probability: float = 0.1,
+    ):
+        Algorithm.__init__(
+            self, feedback_mechanism=feedback_mechanism, time_horizon=time_horizon
+        )
+        self.random_state = (
+            np.random.RandomState() if random_state is None else random_state
+        )
+        self.worst_arms: List[int] = []
+        # Corresponds to `N'` in section 3.1.2 in :cite:`busa2018preference`
+        self.opt_n = np.ceil(
+            (864 / (gamma ** 6 * epsilon ** 2))
+            * np.log(self.feedback_mechanism.get_num_arms() / failure_probability)
+        )
+
+        def probability_scaling_factor(num_samples: int) -> float:
+            return (num_samples ** 3) * self.opt_n
+
+        confidence_radius = HoeffdingConfidenceRadius(
+            failure_probability=failure_probability,
+            factor=9 * (gamma ** 4) * 2,
+            probability_scaling_factor=probability_scaling_factor,
+        )
+        self.comparison_history = ComparisonHistory(
+            number_of_arms=self.feedback_mechanism.get_num_arms(),
+            confidence_radius=confidence_radius,
+        )
+
+    def exploration_finished(self) -> bool:
+        """Determine whether the exploration phase is finished.
+
+        Returns
+        -------
+        bool
+            Whether the algorithm is finished.
+        """
+        return (
+            len(self.comparison_history.working_set) <= 1
+            or self.comparison_history.get_min_comparison(self.worst_arms) >= self.opt_n
         )
