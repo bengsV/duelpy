@@ -1,5 +1,4 @@
 """Find the Condorcet winner in a PB-MAB problem using the 'Beat the Mean Bandit' algorithm."""
-from typing import List
 from typing import Optional
 from typing import Tuple
 
@@ -57,9 +56,6 @@ class BeatTheMeanBandit(CondorcetProducer):
     ----------
     comparison_history
         A ComparisonHistory object which stores the history of the comparisons between the arms.
-    worst_arms
-        A list of arms which are to be excluded when updating the working set for further rounds. These are the arms
-        with the lowest estimated probability to win against the mean arm.
     random_state
     feedback_mechanism
     time_horizon
@@ -85,7 +81,7 @@ class BeatTheMeanBandit(CondorcetProducer):
     2
     >>> regret_history, cumul_regret = feedback_mechanism.calculate_average_regret(best_arm=best_arm)
     >>> np.round(cumul_regret, 2)
-    1238.8
+    903.1
     """
 
     def __init__(
@@ -99,7 +95,6 @@ class BeatTheMeanBandit(CondorcetProducer):
         self.random_state = (
             np.random.RandomState() if random_state is None else random_state
         )
-        self.worst_arms: List[int] = []
         # time_horizon is initialized as an int in __init__ and can never be None. This
         # assertion is necessary for mypy since time_horizon is defined as
         # Optional[int] in the superclass.
@@ -120,18 +115,17 @@ class BeatTheMeanBandit(CondorcetProducer):
     def explore(self) -> None:
         """Run one step of exploration."""
         arm1, arm2 = self.comparison_history.get_dueling_arms(
-            random_state=self.random_state, worst_arms=self.worst_arms,
+            random_state=self.random_state
         )
         first_won = self.feedback_mechanism.duel(arm_i_index=arm1, arm_j_index=arm2)
         self.comparison_history.enter_sample(arm1=arm1, arm2=arm2, first_won=first_won)
-        if self.comparison_history.get_lower_bound(
-            worst_arms=self.worst_arms
-        ) <= self.comparison_history.get_upper_bound(worst_arms=self.worst_arms):
+        if (
+            self.comparison_history.get_lower_bound()
+            >= self.comparison_history.get_upper_bound()
+        ):
             # Check if the empirically worst bandit is separated from the empirically best one by a sufficient
             # confidence margin.
-            worst_arm = self.comparison_history.get_worst_arm(
-                exclude_indices=self.worst_arms
-            )
+            worst_arm = self.comparison_history.get_worst_arm()
             self.remove_from_working_set(worst_arm)
 
     def exploit(self) -> None:
@@ -159,7 +153,7 @@ class BeatTheMeanBandit(CondorcetProducer):
         bool
             Whether exploration is finished.
         """
-        return len(self.comparison_history.working_set) <= 1
+        return self.comparison_history.size_working_set <= 1
 
     def is_finished(self) -> bool:
         """Determine whether the termination conditions are met.
@@ -182,7 +176,6 @@ class BeatTheMeanBandit(CondorcetProducer):
             The index of the empirically worst arm.
         """
         self.comparison_history.remove_arm_history(worst_arm=worst_arm)
-        self.worst_arms.append(worst_arm)
 
     def get_condorcet_winner(self) -> int:
         """Return the arm with highest empirical estimate.
@@ -192,10 +185,7 @@ class BeatTheMeanBandit(CondorcetProducer):
         int
             The arm with the highest empirical estimate.
         """
-        return argmax_set(
-            array=self.comparison_history.probability_estimate,
-            exclude_indexes=self.worst_arms,
-        )[0]
+        return argmax_set(array=self.comparison_history.probability_estimate)[0]
 
 
 class ComparisonHistory:
@@ -212,31 +202,29 @@ class ComparisonHistory:
     ----------
     working_set
         Stores the set of active arms. Corresponds to :math:`W_l` in :cite:`yue2011beat`.
+    size_working_set
+        Stores the amount of active arms in `working_set`. Using this instead of summing over `working_set` improves performance.
     comparisons
         Stores the total number of comparisons of a specific arm. Corresponds to :math:`n_b` in :cite:`yue2011beat`.
     wins
         Stores the number of wins of each arm. Corresponds to :math:`w_b` in :cite:`yue2011beat`.
     probability_estimate
-        Stores the empirical estimate of arms versus the mean bandit. Corresponds to :math:`\hat{P}_b` in
-        :cite:`yue2011beat`.
-    arm_sum_comparisons
-        A numpy array which stores the total number of comparisons of each arm in the corresponding index.
+        Stores the empirical estimate of arms versus the mean bandit. Corresponds to :math:`\hat{P}_b` in :cite:`yue2011beat`.
     confidence_radius
-    number_of_arms
     """
 
     def __init__(
         self, number_of_arms: int, confidence_radius: ConfidenceRadius
     ) -> None:
-        self.number_of_arms = number_of_arms
         self.confidence_radius = confidence_radius
-        self.working_set = np.arange(self.number_of_arms)
+        self.working_set = np.full(number_of_arms, True, dtype=bool)
+        self.size_working_set = number_of_arms
         self.comparisons = np.zeros((number_of_arms, number_of_arms), dtype=int)
         self.wins = np.zeros((number_of_arms, number_of_arms), dtype=int)
         self.probability_estimate = np.full(number_of_arms, 0.5)
-        self.arm_sum_comparisons = np.zeros(number_of_arms, dtype=int)
+        self._comparison_count_cache = np.zeros(number_of_arms, dtype=int)
 
-    def get_min_comparison(self, worst_arms: List[int]) -> int:
+    def get_min_comparison(self) -> int:
         """Return the minimum value in comparisons.
 
         Returns
@@ -244,27 +232,13 @@ class ComparisonHistory:
         int
             The minimum value in comparisons.
         """
-        current_comparison = np.zeros(self.number_of_arms, dtype=int)
-        for arm in self.working_set:
-            current_comparison[arm] = np.sum(self.comparisons[arm, :])
-        if worst_arms is None or len(worst_arms) == 0:
-            return min(current_comparison)
-        else:
-            mask = np.zeros(current_comparison.size, dtype=bool)
-            mask[worst_arms] = True
-            min_value = np.min(np.ma.array(current_comparison, mask=mask))
-            return min_value
+        return min(self._comparison_count_cache[self.working_set])
 
-    def get_dueling_arms(
-        self, random_state: np.random.RandomState, worst_arms: List[int],
-    ) -> Tuple[int, int]:
+    def get_dueling_arms(self, random_state: np.random.RandomState) -> Tuple[int, int]:
         """Return the least sampled arm and a random challenger.
 
         Parameters
         ----------
-        worst_arms
-            A list containing the worst arms. These are the arms with the lowest estimated probability to win
-            against the mean arm.
         random_state
             A numpy random state. Defaults to an unseeded state when not specified.
 
@@ -275,21 +249,17 @@ class ComparisonHistory:
         arm2
             The index of arm to compare against.
         """
-        for arm in self.working_set:
-            self.arm_sum_comparisons[arm] = np.sum(self.comparisons[arm, :])
-
         arm1 = random_state.choice(
-            argmin_set(array=self.arm_sum_comparisons, exclude_indexes=worst_arms)
-        )  # break ties randomly excluding the worst_arms
+            argmin_set(
+                array=np.ma.array(self._comparison_count_cache, mask=~self.working_set)
+            )
+        )  # break ties randomly within the working set
 
-        working_set_copy = np.delete(
-            self.working_set, np.argwhere(self.working_set == arm1)
-        )
-
+        arm1_mask = np.full(self.working_set.shape, True, dtype=np.bool)
+        arm1_mask[arm1] = False
         arm2 = random_state.choice(
-            working_set_copy
+            np.argwhere(self.working_set & arm1_mask).flatten()
         )  # select arm2 from the current working_set at random
-
         return arm1, arm2
 
     def enter_sample(self, arm1: int, arm2: int, first_won: bool) -> None:
@@ -307,23 +277,19 @@ class ComparisonHistory:
         if first_won:
             self.wins[arm1][arm2] += 1
         self.comparisons[arm1][arm2] += 1
-        self.comparisons[arm2][arm1] += 1
-        self.set_probability_estimate(arm=arm1)
+        self._comparison_count_cache[arm1] += 1
 
-    def set_probability_estimate(self, arm: int) -> None:
-        """Set the estimate of the win probability of the arm.
+        self.update_probability_estimate()
 
-        Parameters
-        ----------
-        arm
-            The arm for which the win probability is to be estimated.
-        """
-        wins = np.sum(self.wins[arm, :])
-        comparisons = np.sum(self.comparisons[arm, :])
-        if comparisons == 0:
-            self.probability_estimate[arm] = 0.5
-        else:
-            self.probability_estimate[arm] = wins / comparisons
+    def update_probability_estimate(self) -> None:
+        """Set the estimate of the win probability of the arm."""
+        wins = np.sum(self.wins, axis=1)
+        self.probability_estimate = np.divide(
+            wins,
+            self._comparison_count_cache,
+            out=np.full(wins.shape, 0.5),
+            where=self._comparison_count_cache != 0,
+        )
 
     def remove_arm_history(self, worst_arm: int) -> None:
         """Remove the worst arm and the associated comparison history.
@@ -336,24 +302,14 @@ class ComparisonHistory:
         worst_arm
             The index of the empirically worst arm.
         """
-        self.comparisons[worst_arm, :] = 0
-        self.comparisons[:, worst_arm] = 0
-        self.wins[:, worst_arm] = 0
-        self.wins[worst_arm, :] = 0
-        for arm in self.working_set:
-            self.set_probability_estimate(arm=arm)  # update the probability_estimate
-        self.working_set = np.delete(
-            self.working_set, np.argwhere(self.working_set == worst_arm)
-        )
+        self._comparison_count_cache -= self.comparisons[worst_arm, :]
+        if self.working_set[worst_arm]:
+            self.size_working_set -= 1
+            self.working_set[worst_arm] = False
+        self.update_probability_estimate()  # update the probability_estimate
 
-    def get_worst_arm(self, exclude_indices: List[int]) -> int:
+    def get_worst_arm(self) -> int:
         """Get the empirically worst arm from the current ``working_set``.
-
-        Parameters
-        ----------
-        exclude_indices
-            A list containing the worst arms. These are the arms with the lowest estimated probability to win
-            against the mean arm.
 
         Returns
         -------
@@ -361,10 +317,10 @@ class ComparisonHistory:
             The index of the empirically worst arm in the current ``working_set``.
         """
         return argmin_set(
-            array=self.probability_estimate, exclude_indexes=exclude_indices
+            array=np.ma.array(self.probability_estimate, mask=~self.working_set)
         )[0]
 
-    def get_upper_bound(self, worst_arms: List[int]) -> float:
+    def get_upper_bound(self) -> float:
         """Get the upper bound for empirically worst arm.
 
         Returns
@@ -372,11 +328,11 @@ class ComparisonHistory:
         float
             The upper bound for empirically worst arm.
         """
-        return max(self.probability_estimate) - self.confidence_radius(
-            self.get_min_comparison(worst_arms=worst_arms)
-        )
+        return min(
+            self.probability_estimate[self.working_set]
+        ) + self.confidence_radius(self.get_min_comparison())
 
-    def get_lower_bound(self, worst_arms: List[int]) -> float:
+    def get_lower_bound(self) -> float:
         """Get the lower bound for empirically best arm.
 
         Returns
@@ -384,8 +340,8 @@ class ComparisonHistory:
         float
             The lower bound for empirically best arm.
         """
-        return min(self.probability_estimate) + self.confidence_radius(
-            self.get_min_comparison(worst_arms=worst_arms)
+        return max(self.probability_estimate) - self.confidence_radius(
+            self.get_min_comparison()
         )
 
 
@@ -397,7 +353,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     It is assumed that a total order over the arms exists. Additionally relaxed stochastic transitivity and the stochastic triangle inequality are assumed.
 
     In the PAC setting (no time horizon given), the sample complexity is bound by :math:`O\left(\frac{N \gamma^6}{\epsilon^2} \log\frac{Nc}{\delta}\right)`.
-    The constant :math:`c` is given as :math:`\left\lceil \frac{864}{\gamma^6\epsilon^2}\log \frac{N}{\delta}\right\rceil`.
+    The constant :math:`c` is given as :math:`\left\lceil \frac{36}{\gamma^6\epsilon^2}\log \frac{N}{\delta}\right\rceil`.
 
     The PAC setting for Beat the Mean Bandit algorithm takes an 'explore then exploit' approach. In PAC setting,
     the exploration conditions for Beat the Mean Bandit algorithm is different from the Online setting. There are two
@@ -435,9 +391,6 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
         Corresponds to :math:`N'` in section 3.1.2 in :cite:`busa2018preference`.
     comparison_history
         A ComparisonHistory object which stores the history of the comparisons between the arms.
-    worst_arms
-        A list of arms which are to be excluded when updating the working set for further rounds. These are the arms
-        with the lowest estimated probability to win against the mean arm.
     random_state
 
 
@@ -464,7 +417,8 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     # Disabling pylint errors because we are reimplementing the initialization since the superclass expects a time
     # horizon while it is optional for this class. For reference, take a look at
     # https://gitlab.com/duelpy/duelpy/-/merge_requests/77#note_448073174
-    def __init__(  # pylint: disable=non-parent-init-called,super-init-not-called
+    # pylint: disable=non-parent-init-called,super-init-not-called
+    def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,
@@ -479,20 +433,19 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
         self.random_state = (
             np.random.RandomState() if random_state is None else random_state
         )
-        self.worst_arms: List[int] = []
         # Corresponds to `N'` in section 3.1.2 in :cite:`busa2018preference`
         self.opt_n = np.ceil(
-            (864 / (gamma ** 6 * epsilon ** 2))
+            36
+            / (gamma ** 6 * epsilon ** 2)
             * np.log(self.feedback_mechanism.get_num_arms() / failure_probability)
         )
 
-        def probability_scaling_factor(num_samples: int) -> float:
-            return (num_samples ** 3) * self.opt_n
+        prob_scaling = (self.feedback_mechanism.get_num_arms() ** 3) * self.opt_n
 
         confidence_radius = HoeffdingConfidenceRadius(
             failure_probability=failure_probability,
             factor=9 * (gamma ** 4) * 2,
-            probability_scaling_factor=probability_scaling_factor,
+            probability_scaling_factor=lambda x: prob_scaling,
         )
         self.comparison_history = ComparisonHistory(
             number_of_arms=self.feedback_mechanism.get_num_arms(),
@@ -508,6 +461,6 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
             Whether the algorithm is finished.
         """
         return (
-            len(self.comparison_history.working_set) <= 1
-            or self.comparison_history.get_min_comparison(self.worst_arms) >= self.opt_n
+            self.comparison_history.size_working_set <= 1
+            or self.comparison_history.get_min_comparison() >= self.opt_n
         )
