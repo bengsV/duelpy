@@ -72,7 +72,7 @@ class InterleavedFiltering(Algorithm):
     ... ])
     >>> random_state=np.random.RandomState(3)
     >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
-    >>> time_horizon = 750
+    >>> time_horizon = 1500
     >>> interleaved_filtering = InterleavedFiltering(feedback_mechanism, time_horizon, random_state=random_state)
     >>> interleaved_filtering.run()
     >>> condorcet_winner = interleaved_filtering.get_condorcet_winner()
@@ -101,7 +101,6 @@ class InterleavedFiltering(Algorithm):
                 self.failure_probability, factor=8,
             ),
         )
-        self.total_comparisons = 0
 
     def get_condorcet_winner(self) -> int:
         """Return the estimated Condorcet winner, assuming the algorithm has already run.
@@ -121,9 +120,8 @@ class InterleavedFiltering(Algorithm):
                 arm,
                 self.feedback_mechanism.duel(self.candidate_arm, arm),
             )
-            self.total_comparisons += 1
             # Terminate explore
-            if self.total_comparisons == self.time_horizon:
+            if self.feedback_mechanism.get_num_duels() == self.time_horizon:
                 break
         updated_arms_without_candidate = self._prune_arms()
         (self.arms_without_candidate) = self._find_candidate_arm(
@@ -197,7 +195,7 @@ class InterleavedFiltering(Algorithm):
         this function returns ``True``, the algorithm will have finished
         computing a PAC Copeland winner.
         """
-        return len(self.arms_without_candidate) != 0
+        return len(self.arms_without_candidate) == 0
 
     def step(self) -> None:
         """Execute one step of the algorithm."""
