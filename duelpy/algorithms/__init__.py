@@ -23,6 +23,9 @@ from duelpy.algorithms.plackett_luce import PlackettLuceAMPR
 from duelpy.algorithms.plackett_luce import PlackettLucePACItem
 from duelpy.algorithms.relative_confidence_sampling import RelativeConfidenceSampling
 from duelpy.algorithms.relative_ucb import RelativeUCB
+from duelpy.algorithms.rmed import Rmed1
+from duelpy.algorithms.rmed import Rmed2
+from duelpy.algorithms.rmed import Rmed2FH
 from duelpy.algorithms.savage import Savage
 from duelpy.algorithms.scalable_copeland_bandits import ScalableCopelandBandits
 from duelpy.algorithms.sequential_elimination import SequentialElimination
@@ -74,6 +77,9 @@ regret_minimizing_algorithms = [
     BinarySearchRanking,
     BordaRanking,
     CwRmed,
+    Rmed1,
+    Rmed2,
+    Rmed2FH,
 ]
 other_algorithms = [ApproximateProbability]
 # This is not really needed, but otherwise zimports doesn't understand the
