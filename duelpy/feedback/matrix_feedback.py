@@ -202,13 +202,10 @@ class MatrixFeedback(FeedbackMechanism):
         """
         regret_history = []
         cumulative_regret = 0.0
-        normalized_copeland_scores = (
-            self.preference_matrix.get_normalized_copeland_scores()
-        )
-        max_normalized_copeland_score = np.amax(normalized_copeland_scores)
+
         for arm_i, arm_j in self.history:
-            regret = max_normalized_copeland_score - 0.5 * (
-                normalized_copeland_scores[arm_i] + normalized_copeland_scores[arm_j]
+            regret = self.preference_matrix.calculate_average_copeland_regret_arms(
+                arm_i, arm_j
             )
             regret_history.append(regret)
             cumulative_regret += regret
