@@ -103,10 +103,7 @@ class PreferenceEstimate:
         self.wins = np.zeros((num_arms, num_arms))
         self.confidence_radius = confidence_radius
         self._cached_mean_estimate = np.full((num_arms, num_arms), 0.5)
-        self._cached_radius = np.full(
-            (num_arms, num_arms), confidence_radius(0), dtype=np.float64
-        )
-        np.fill_diagonal(self._cached_radius, 0.0)
+        self._cached_radius = None
 
     def set_confidence_radius(self, confidence_radius: ConfidenceRadius) -> None:
         """Set the confidence radius to the given parameter.
@@ -117,8 +114,7 @@ class PreferenceEstimate:
             The confidence radius to be set as the new `confidence_radius`.
         """
         self.confidence_radius = confidence_radius
-        self._cached_radius = np.full((self.num_arms, self.num_arms), np.nan)
-        np.fill_diagonal(self._cached_radius, 0.0)
+        self._cached_radius = None
 
     def enter_sample(
         self, first_arm_index: int, second_arm_index: int, first_won: bool
@@ -155,11 +151,6 @@ class PreferenceEstimate:
 
         self._cached_mean_estimate[first_arm_index][second_arm_index] = new_mean
         self._cached_mean_estimate[second_arm_index][first_arm_index] = 1 - new_mean
-        # Confidence radius estimates are computed on-demand, since they are
-        # not always necessary and need to be changed when the confidence
-        # radius changes.
-        self._cached_radius[first_arm_index][second_arm_index] = np.nan
-        self._cached_radius[second_arm_index][first_arm_index] = np.nan
 
     def get_mean_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the estimate of the win probability of `first_arm_index` against `second_arm_index`.
@@ -216,12 +207,17 @@ class PreferenceEstimate:
         float
             The current confidence value.
         """
-        if np.isnan(self._cached_radius[first_arm_idx][second_arm_idx]):
-            num_samples = self.get_num_samples(first_arm_idx, second_arm_idx)
-            radius = self.confidence_radius(num_samples)
-            self._cached_radius[first_arm_idx][second_arm_idx] = radius
-            self._cached_radius[second_arm_idx][first_arm_idx] = radius
-        return self._cached_radius[first_arm_idx][second_arm_idx]
+        # Do not use the cache, since it might be "dirty" and we do not want to
+        # re-compute it entirely here. Its possible to be a little more clever
+        # with partial cache invalidations, but that adds book-keeping
+        # overhead. If this function is used (in place of requesting one of the
+        # matrices directly), its likely that only some specific samples will
+        # be requested.
+        if first_arm_idx == second_arm_idx:
+            return 0
+        return self.confidence_radius(
+            self.get_num_samples(first_arm_idx, second_arm_idx)
+        )
 
     def get_upper_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the upper estimate of the win probability of `first_arm_index` against `second_arm_index`.
@@ -294,9 +290,21 @@ class PreferenceEstimate:
         np.array
             A numpy matrix containing the current confidence radius values.
         """
-        for (first_idx, second_idx) in np.argwhere(np.isnan(self._cached_radius)):
-            # Seed the cache.
-            self._get_confidence_radius(first_idx, second_idx)
+        if self._cached_radius is None:
+            num_samples = self.wins + self.wins.T
+            # Use numpy to find the set of sample-sizes we're interested in and map
+            # the results back to the full matrix.
+            unique_num_samples, inverse_indices = np.unique(
+                num_samples, return_inverse=True
+            )
+            unique_confidences = np.array(
+                [self.confidence_radius(samples) for samples in unique_num_samples]
+            )
+            full_confidences = unique_confidences[inverse_indices].reshape(
+                num_samples.shape
+            )
+            np.fill_diagonal(full_confidences, 0.0)
+            self._cached_radius = full_confidences
         return self._cached_radius
 
     def get_mean_estimate_matrix(self) -> PreferenceMatrix:
