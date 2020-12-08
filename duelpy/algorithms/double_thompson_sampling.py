@@ -311,26 +311,30 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
         max_normalized_copeland_score = np.amax(normalized_copeland_scores)
 
         regret_one_vs_all = np.zeros(self.feedback_mechanism.get_num_arms())
+        all_arms = np.array(self.feedback_mechanism.get_arms())
         for potential_champion in potential_champion_arms:
-            for arm_j in self.feedback_mechanism.get_arms():
-                average_copeland_regret = max_normalized_copeland_score - 0.5 * (
-                    normalized_copeland_scores[potential_champion]
-                    + normalized_copeland_scores[arm_j]
-                )
-                if (
-                    sample_preference_matrix.preferences[potential_champion][arm_j]
-                    == 0.5
-                ):
-                    continue
-                kl_divergence = rel_entr(
-                    1 - sample_preference_matrix.preferences[potential_champion][arm_j],
-                    0.5,
-                ) + rel_entr(
-                    sample_preference_matrix.preferences[potential_champion][arm_j],
-                    0.5,
-                )
-                regret_one_vs_all[potential_champion] += (
-                    average_copeland_regret / kl_divergence
-                )
+            # All arms whose estimated preference against the potential
+            # champion is not 1/2 (most of the time this will be all arms
+            # except the potential champion itself).
+            challengers = all_arms[
+                sample_preference_matrix.preferences[potential_champion] != 0.5
+            ]
+            # Average Copeland regret of all other arms compared to the
+            # potential champion
+            average_copeland_regret_values = max_normalized_copeland_score - 0.5 * (
+                normalized_copeland_scores[potential_champion]
+                + normalized_copeland_scores[challengers]
+            )
+            kl_divergences = rel_entr(
+                1
+                - sample_preference_matrix.preferences[potential_champion][challengers],
+                0.5,
+            ) + rel_entr(
+                sample_preference_matrix.preferences[potential_champion][challengers],
+                0.5,
+            )
+
+            regret_values = average_copeland_regret_values / kl_divergences
+            regret_one_vs_all[potential_champion] = np.sum(regret_values)
         arm_c = argmin_set(regret_one_vs_all, list(non_potential_champion_arms),)[0]
         return arm_c
