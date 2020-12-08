@@ -138,7 +138,7 @@ class PreferenceMatrix:
         return self.get_copeland_scores() / (self.get_num_arms() - 1)
 
     def calculate_average_copeland_regret_arms(self, arm_i: int, arm_j: int) -> float:
-        """Calculate copeland regret with respect to normalized copeland score.
+        """Calculate Copeland regret with respect to normalized Copeland score.
 
         Parameters
         ----------
