@@ -2,3 +2,4 @@ numpy
 seaborn
 pandas
 joblib
+scipy

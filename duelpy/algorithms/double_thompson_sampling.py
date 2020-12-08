@@ -2,6 +2,7 @@
 from typing import Optional
 
 import numpy as np
+from scipy.special import rel_entr
 
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
@@ -9,7 +10,6 @@ from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.utility_functions import argmax_set
 from duelpy.util.utility_functions import argmin_set
-from duelpy.util.utility_functions import kullback_leibler_divergence
 
 
 class DoubleThompsonSampling(SingleCopelandProducer):
@@ -322,12 +322,15 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
                     == 0.5
                 ):
                     continue
+                kl_divergence = rel_entr(
+                    1 - sample_preference_matrix.preferences[potential_champion][arm_j],
+                    0.5,
+                ) + rel_entr(
+                    sample_preference_matrix.preferences[potential_champion][arm_j],
+                    0.5,
+                )
                 regret_one_vs_all[potential_champion] += (
-                    average_copeland_regret
-                    / kullback_leibler_divergence(
-                        sample_preference_matrix.preferences[potential_champion][arm_j],
-                        0.5,
-                    )
+                    average_copeland_regret / kl_divergence
                 )
         arm_c = argmin_set(regret_one_vs_all, list(non_potential_champion_arms),)[0]
         return arm_c

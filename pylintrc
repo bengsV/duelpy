@@ -9,6 +9,7 @@
 # run arbitrary code.
 extension-pkg-whitelist=
     numpy,
+    scipy,
     multiprocessing,
 
 load-plugins=
