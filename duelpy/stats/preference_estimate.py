@@ -16,8 +16,12 @@ class PreferenceEstimate:
 
     >>> preference_estimate = PreferenceEstimate(
     ...     num_arms = 3,
-    ...     confidence_radius=TrivialConfidenceRadius(0.5)
+    ...     confidence_radius=lambda num_samples: 1/(num_samples + 1)
     ... )
+
+    We use a trivial confidence radius for easy illustration. Note that the
+    results are not accurate, you probably want to use something like
+    HoeffdingConfidenceRadius in practice.
 
     In the beginning, nothing is known yet.
 
@@ -56,25 +60,25 @@ class PreferenceEstimate:
     Meanwhile the confidence intervals have adjusted as well:
 
     >>> preference_estimate.get_upper_estimate_matrix()
-    array([[0.5 , 1.  , 1.  ],
-           [0.75, 0.5 , 1.  ],
+    array([[0.5 , 0.95, 1.  ],
+           [0.45, 0.5 , 1.  ],
            [1.  , 1.  , 0.5 ]])
     >>> preference_estimate.get_lower_estimate_matrix()
-    array([[0.5 , 0.25, 0.  ],
-           [0.  , 0.5 , 0.  ],
+    array([[0.5 , 0.55, 0.  ],
+           [0.05, 0.5 , 0.  ],
            [0.  , 0.  , 0.5 ]])
 
     And if we tighten the confidence radius, they get changed yet again:
 
-    >>> preference_estimate.set_confidence_radius(TrivialConfidenceRadius(0.1))
+    >>> preference_estimate.set_confidence_radius(lambda num_samples: 1/(6 * num_samples + 1))
     >>> preference_estimate.get_upper_estimate_matrix()
-    array([[0.5 , 0.85, 0.6 ],
-           [0.35, 0.5 , 0.6 ],
-           [0.6 , 0.6 , 0.5 ]])
+    array([[0.5 , 0.79, 1.  ],
+           [0.29, 0.5 , 1.  ],
+           [1.  , 1.  , 0.5 ]])
     >>> preference_estimate.get_lower_estimate_matrix()
-    array([[0.5 , 0.65, 0.4 ],
-           [0.15, 0.5 , 0.4 ],
-           [0.4 , 0.4 , 0.5 ]])
+    array([[0.5 , 0.71, 0.  ],
+           [0.21, 0.5 , 0.  ],
+           [0.  , 0.  , 0.5 ]])
 
     We can now also sample a complete preference matrix from a beta
     distribution:
@@ -151,6 +155,7 @@ class PreferenceEstimate:
 
         self._cached_mean_estimate[first_arm_index][second_arm_index] = new_mean
         self._cached_mean_estimate[second_arm_index][first_arm_index] = 1 - new_mean
+        self._cached_radius = None
 
     def get_mean_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the estimate of the win probability of `first_arm_index` against `second_arm_index`.
