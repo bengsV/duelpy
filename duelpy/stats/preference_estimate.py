@@ -60,13 +60,13 @@ class PreferenceEstimate:
     Meanwhile the confidence intervals have adjusted as well:
 
     >>> preference_estimate.get_upper_estimate_matrix()
-    array([[0.5, 1. , 1. ],
-           [1. , 0.5, 1. ],
-           [1. , 1. , 0.5]])
+    array([[0.5 , 0.95, 1.  ],
+           [0.45, 0.5 , 1.  ],
+           [1.  , 1.  , 0.5 ]])
     >>> preference_estimate.get_lower_estimate_matrix()
-    array([[0.5, 0. , 0. ],
-           [0. , 0.5, 0. ],
-           [0. , 0. , 0.5]])
+    array([[0.5 , 0.55, 0.  ],
+           [0.05, 0.5 , 0.  ],
+           [0.  , 0.  , 0.5 ]])
 
     And if we tighten the confidence radius, they get changed yet again:
 
@@ -155,6 +155,7 @@ class PreferenceEstimate:
 
         self._cached_mean_estimate[first_arm_index][second_arm_index] = new_mean
         self._cached_mean_estimate[second_arm_index][first_arm_index] = 1 - new_mean
+        self._cached_radius = None
 
     def get_mean_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
         """Get the estimate of the win probability of `first_arm_index` against `second_arm_index`.
