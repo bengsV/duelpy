@@ -13,35 +13,33 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 
 
 class KnockoutTournament(CondorcetProducer):
-    """Implementation of the knockout tournament algorithm.
+    r"""Implementation of the knockout tournament algorithm.
 
-    The algorithm was originally introduced in :cite:`Falahatgar2017maximum`. It's an epsilon-delta-PAC algorithm. The goal is
-    to find the epsilon Condorcet winner while minimizing the number of comparisons.
-    The algorithm assumes a total order over the existing arms and that strong stochastic transitivity,
-    stochastic triangle inequality and relaxed stochastic transitivity hold. It takes the set of arms as
-    an input and compares them in rounds. At the end of each round, the size of the input is halved.
-    The winning arm for a round is decided based on the allowed sub-optimality ``epsilon`` and with a
-    confidence interval based on the failure probability.
-    The algorithm runs in rounds, where in each round it randomly pairs the arms into group and the winners
-    are proceeded into the next round. For example that we have four arms (A, B, C, D). It will first group
-    the arms in pairs like [A, B] as the first pair and [C, D] as the second pair. After grouping them in
-    pairs, the algorithm pulls out the winner from each pair, and the winners move to the next round.
+    The goal of this algorithm is to find the :math:`\epsilon`-Condorcet winner while minimizing the number of comparisons.
+
+    The algorithm assumes a total order over the existing arms and that strong stochastic transitivity, stochastic triangle inequality and relaxed stochastic transitivity hold.
+
+    The amount of pairwise comparisons made by the algorithm is bound  by :math:`O\left(\frac{N}{\epsilon^2}\left(1+\log\frac{1}{\delta}\right)\right)`, where :math:`N` is the number of arms, :math:`\epsilon` the maximal deviation from the solution and :math:`\delta` is the error probability.
+
+    The algorithm was originally introduced in :cite:`falahatgar2017maximum`. It is an :math:`\epsilon`-:math:`\delta`-PAC algorithm. It takes the set of arms as an input and compares them in rounds. At the end of each round, the size of the input is halved.
+    The winning arm for a round is decided based on the allowed sub-optimality ``epsilon`` and with a confidence interval based on the failure probability.
+    The algorithm runs in rounds, where in each round it randomly pairs the arms into group and the winners are proceeded into the next round. For example that we have four arms (A, B, C, D). It will first group the arms in pairs like [A, B] as the first pair and [C, D] as the second pair. After grouping them in pairs, the algorithm pulls out the winner from each pair, and the winners move to the next round.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
          The number of steps that the algorithm is supposed to be run.
     epsilon
-        The optimality of the winning arm. Corresponds to `epsilon` in :cite:`Falahatgar2017maximum`. Default value is 0.05
-        which has been used in the experiments in :cite:`Falahatgar2017maximum`.
+        The optimality of the winning arm. Corresponds to :math:`\epsilon` in :cite:`falahatgar2017maximum`. Default value is 0.05
+        which has been used in the experiments in :cite:`falahatgar2017maximum`.
     failure_probability
-        The probability that the result is not an epsilon Condorcet winner. Corresponds to `delta` in :cite:`Falahatgar2017maximum`.
-        Default value is 0.1 which has been used in the experiments in :cite:`Falahatgar2017maximum`.
+        The probability that the result is not an epsilon Condorcet winner. Corresponds to :math:`\delta` in :cite:`falahatgar2017maximum`.
+        Default value is 0.1 which has been used in the experiments in :cite:`falahatgar2017maximum`.
     stochasticity
-        The assumed stochastic transitivity parameter. Corresponds to `gamma` in :cite:`Falahatgar2017maximum`. Default value is
-        0.6 which has been used in the experiments in :cite:`Falahatgar2017maximum`.
+        The assumed stochastic transitivity parameter. Corresponds to :math:`\gamma` in :cite:`falahatgar2017maximum`. Default value is
+        0.6 which has been used in the experiments in :cite:`falahatgar2017maximum`.
 
     Attributes
     ----------

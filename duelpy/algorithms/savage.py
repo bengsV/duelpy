@@ -15,6 +15,10 @@ from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 class Savage(SingleCopelandProducer):
     r"""Determine the PAC-best arm with the SAVAGE algorithm.
 
+    This algorithm makes no assumptions about the environment.
+
+    The sample complexity is bounded by :math:`\sum_{i=1}^N O\left(\frac{\log(N/(\delta\Delta_i))}{\Delta_i^2}\right)` if the time horizon :math:`T` is finite and :math:`\sum_{i=1}^N O\left(\frac{\log(NT/\delta}{\Delta_i^2}\right)` otherwise.
+
     SAVAGE is a general algorithm that can infer some information about an
     environment from samples. It works by repeatedly sampling possible
     environments (in the case of PB-MAB, an environment is specified by a
@@ -45,11 +49,11 @@ class Savage(SingleCopelandProducer):
     feedback_mechanism
         The feedback mechanism that specifies the underlying problem.
     failure_probability
-        Upper bound on the probability of failure (the "delta" in
-        epsilon-delta-PAC).
+        Upper bound on the probability of failure (the :math:`\delta` in
+        :math:`\epsilon`-:math:`\delta`-PAC).
     time_horizon
         The number of steps that the algorithm is supposed to be run. Specify
-        `None` for an infinite time horizon.
+        ``None`` for an infinite time horizon.
 
     Attributes
     ----------
@@ -261,7 +265,7 @@ class Savage(SingleCopelandProducer):
             self.step()
 
     def get_copeland_winner(self) -> Optional[int]:
-        """Find a Copeland winner with the SAVAGE algorithm.
+        r"""Find a Copeland winner with the SAVAGE algorithm.
 
         Note that only the correctness of any one of the Copeland winners is
         covered by the failure probability. The probability that all arms in
@@ -271,7 +275,7 @@ class Savage(SingleCopelandProducer):
         Returns
         -------
         Set[int]
-            The indices of the delta-PAC best (Copeland) arms. The "delta"
+            The indices of the :math:`\delta`-PAC best (Copeland) arms. The :math:`\delta`
             failure probability refers to any individual arm, but not all arms
             together.
         """

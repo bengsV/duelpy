@@ -19,13 +19,14 @@ from duelpy.util.utility_functions import pop_random
 class MallowsMPI(CondorcetProducer):
     r"""Implementation of the Mallows Most Preferred Item algorithm.
 
-    This algorithm finds the best arm with a given confidence. It is part of the epsilon-delta-PAC class of
-    algorithms, with epsilon as 0. Best arm refers to the arm ranked first with the highest probability in the Mallows
-    :math:`\phi`-model, this is also a Condorcet winner. The arms are assumed to be sampled from a Mallows distribution, which is stricter than the total order assumption. See :cite:`busa2014preference` for details on this distribution.
-    It proceeds by selecting a random arm and comparing it against another arm until one of
-    them can be considered worse than the other with sufficient confidence. The worse arm is discarded and the winner is compared
-    against a new randomly chosen arm. This continues until only one arm is left, which is then
-    returned. See :cite:`busa2014preference` for more details.
+    This algorithm finds the Condorcet winner with a given error probability.
+
+    It is assumed that the arms are sampled from a Mallows distribution, which is stricter than the total order assumption. See :cite:`busa2014preference` for details on this distribution.
+
+    The amount of pairwise arm comparisons can be upper bounded by :math:`O\left(\frac{N}{\rho^2}\log\frac{N}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the Mallows distribution parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
+
+    This algorithm is part of the :math:`\epsilon`-:math:`\delta`-PAC class of algorithms, with :math:`\epsilon = 0`. The Condorcet winner is determined as the arm ranked first with the highest probability in the Mallows
+    :math:`\phi`-model. The algorithm proceeds by selecting a random arm and comparing it against another arm until one of them can be considered worse than the other with sufficient confidence. The worse arm is discarded and the winner is compared against a new randomly chosen arm. This continues until only one arm is left, which is then returned. See :cite:`busa2014preference` for more details.
 
     Parameters
     ----------
@@ -36,7 +37,7 @@ class MallowsMPI(CondorcetProducer):
     random_state
         Optional, used for random choices in the algorithm.
     failure_probability
-        An upper bound on the acceptable probability to fail, called delta in :cite:`busa2014preference`.
+        An upper bound on the acceptable probability to fail, also called :math:`\delta` in :cite:`busa2014preference`.
 
 
     Attributes
@@ -152,9 +153,14 @@ class MallowsMPI(CondorcetProducer):
 class MallowsMPR(CopelandRankingProducer):
     r"""Implementation of Mallows Most Probable Ranking Algorithm.
 
-    This algorithm recursively builds a Copeland ranking over the arms by sorting them either using Mergesort or Quicksort.
+    This algorithm computes a Copeland ranking with a given error probability.
+
+    It is assumed that the arms are sampled from a Mallows distribution, which is stricter than the total order assumption. See :cite:`busa2014preference` for details on this distribution.
+
+    The amount of pairwise arm comparisons can be upper bounded by :math:`O\left(\frac{N \log_2(N)}{\rho^2}\log\frac{N \log_2(N)}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the Mallows distribution parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
+
+    This algorithm recursively builds a Copeland ranking over the arms by sorting them using either Mergesort or Quicksort.
     Arms are compared repeatedly until sufficient confidence is obtained, this confidence is based on the Mallows :math:`\phi`-model.
-    The arms are assumed to be sampled from a Mallows distribution, which is stricter than the total order assumption. See :cite:`busa2014preference` for details.
 
     Parameters
     ----------
@@ -165,7 +171,7 @@ class MallowsMPR(CopelandRankingProducer):
     random_state
         Used for the random pivot selection in the Quicksort mode.
     failure_probability
-        An upper bound on the acceptable probability to fail, called delta in :cite:`busa2014preference`.
+        An upper bound on the acceptable probability to fail, called :math:`\delta` in :cite:`busa2014preference`.
     sorting_mode
         Determines which sort algorithm should be used, 'merge' for Mergesort or 'quick' for Quicksort.
 
