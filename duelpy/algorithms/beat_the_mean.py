@@ -464,7 +464,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     # Disabling pylint errors because we are reimplementing the initialization since the superclass expects a time
     # horizon while it is optional for this class. For reference, take a look at
     # https://gitlab.com/duelpy/duelpy/-/merge_requests/77#note_448073174
-    def __init__(  # pylint: disable=too-many-arguments,non-parent-init-called,super-init-not-called
+    def __init__(  # pylint: disable=non-parent-init-called,super-init-not-called
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,

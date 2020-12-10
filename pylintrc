@@ -35,3 +35,7 @@ disable=
 # Our algorithms have very similar functionality and therefore have similar
 # imports. That might be a code smell for some projects, but not in our case.
 ignore-imports=yes
+
+[DESIGN]
+
+max-args=9

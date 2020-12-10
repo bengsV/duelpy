@@ -85,7 +85,6 @@ class SequentialElimination(SingleCopelandProducer):
     True
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
