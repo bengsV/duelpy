@@ -39,3 +39,4 @@ ignore-imports=yes
 [DESIGN]
 
 max-args=9
+max-attributes=9

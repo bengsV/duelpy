@@ -13,7 +13,6 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
-# pylint: disable= too-many-instance-attributes
 class SequentialElimination(SingleCopelandProducer):
     r"""Find an epsilon-maximum arm with Sequential Elimination.
 
