@@ -56,3 +56,15 @@ class CopelandRankingProducer(Algorithm):
         might be approximate.
         """
         raise NotImplementedError
+
+
+class AllApproximateCondorcetProducer(Algorithm):
+    """An Algorithm that approximates the Condorcet winner."""
+
+    def get_approximate_condorcet_winners(self) -> Optional[Collection[int]]:
+        """Return all approximate Condorcet winners if they are determined.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times.
+        """
+        raise NotImplementedError

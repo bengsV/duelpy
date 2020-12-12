@@ -1,10 +1,11 @@
 """Collection of various sorting algorithms which allow a step-by-step execution."""
-
 from typing import Callable
 from typing import List
 from typing import Optional
 
 import numpy as np
+
+from duelpy.util.utility_functions import pop_random
 
 
 class SortingAlgorithm:
@@ -159,9 +160,7 @@ class Quicksort(SortingAlgorithm):
             self.parent = parent
             self.left: Optional["Quicksort.Node"] = None
             self.right: Optional["Quicksort.Node"] = None
-            random_index = self.random_state.randint(0, len(items))
-            self.pivot = items[random_index]
-            self.items.pop(random_index)
+            self.pivot = pop_random(self.items, self.random_state)[0]
             self.marked = False
 
         def mark(self) -> None:
@@ -179,7 +178,7 @@ class Quicksort(SortingAlgorithm):
         random_state: np.random.RandomState,
     ):
         super().__init__(items, compare_fn, random_state)
-        self.current_node = Quicksort.Node(items, self.random_state)
+        self.current_node = Quicksort.Node(items.copy(), self.random_state)
         self.result: Optional[List[int]] = None
         self._is_finished = False
 
@@ -201,10 +200,10 @@ class Quicksort(SortingAlgorithm):
         if (
             self.current_node.left is None
             and self.current_node.right is None
-            and len(self.current_node.items) > 1
+            and len(self.current_node.items) > 0
         ):
             # create new child nodes with smaller problems
-            current_list = self.current_node.items.copy()
+            current_list = self.current_node.items
             list_left = []
             list_right = []
             while len(current_list) > 0:
@@ -216,19 +215,14 @@ class Quicksort(SortingAlgorithm):
                     elif comparison_result == -1:
                         list_left.append(item)
                         current_list.remove(item)
-
             if len(list_left) > 0:
                 self.current_node.left = Quicksort.Node(
                     list_left, self.random_state, self.current_node
                 )
-                if len(list_left) == 1:
-                    self.current_node.left.mark()
             if len(list_right) > 0:
                 self.current_node.right = Quicksort.Node(
                     list_right, self.random_state, self.current_node
                 )
-                if len(list_right) == 1:
-                    self.current_node.right.mark()
         elif self.current_node.left is not None and not self.current_node.left.marked:
             # solve left child
             self.current_node = self.current_node.left
@@ -255,6 +249,31 @@ class Quicksort(SortingAlgorithm):
     def get_result(self) -> Optional[List[int]]:
         """Get sorted list."""
         return self.result
+
+    def _gather_intermediate_result(self, node: "Quicksort.Node") -> List[List[int]]:
+        """Get the partial intermediate result associated with a node."""
+        result = []
+        if node.left is not None or node.right is not None:
+            if node.left is not None:
+                result += self._gather_intermediate_result(node.left)
+            result.append([node.pivot])
+            if node.right is not None:
+                result += self._gather_intermediate_result(node.right)
+        else:
+            items = node.items.copy()
+            if not node.marked:
+                items.append(
+                    node.pivot
+                )  # this is not stable, we are unable to insert the pivot at the old position!
+            result.append(items)
+        return result
+
+    def get_intermediate_result(self) -> List[List[int]]:
+        """Get best estimate of the result given the previously executed steps."""
+        root = self.current_node
+        while root.parent is not None:
+            root = root.parent
+        return self._gather_intermediate_result(root)
 
     @staticmethod
     def get_comparison_bound(num_arms: int) -> float:
