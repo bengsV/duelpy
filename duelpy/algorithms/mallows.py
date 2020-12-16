@@ -202,8 +202,6 @@ class MallowsMPR(CopelandRankingProducer):
     ([2, 4, 3, 1, 0], 571)
     """
 
-    # pylint: disable=too-many-instance-attributes
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,

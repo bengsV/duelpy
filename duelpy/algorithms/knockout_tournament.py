@@ -77,7 +77,6 @@ class KnockoutTournament(CondorcetProducer):
     In this example the epsilon Condorcet winner is the arm with index 2.
     """
 
-    # pylint: disable=too-many-arguments
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
