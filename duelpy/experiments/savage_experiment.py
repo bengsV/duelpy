@@ -24,13 +24,15 @@ import seaborn as sns
 
 from duelpy.algorithms import Algorithm
 from duelpy.algorithms import algorithm_list
-from duelpy.experiments.environments import HardCondorcetMatrix
+from duelpy.experiments.environments import environment_list
+from duelpy.feedback import MatrixFeedback
 
 
 def run_single_algorithm(
     task_random_state: np.random.RandomState,
     num_arms: int,
     algorithm_class: Type[Algorithm],
+    environment_class: Type[MatrixFeedback],
     parameters: Dict,
     run_id: int,
 ) -> pd.DataFrame:
@@ -48,9 +50,22 @@ def run_single_algorithm(
         "cum_average_regret": [],
     }
 
-    feedback_mechanism = HardCondorcetMatrix(
-        num_arms=num_arms, random_state=task_random_state
-    )
+    environment_parameters = {
+        "num_arms": num_arms,
+        "random_state": task_random_state,
+    }
+    # Remove parameters that the environment does not expect. For example a
+    # deterministic environment might not take a random state.
+    environment_parameters = {
+        k: v
+        for (k, v) in environment_parameters.items()
+        if k in inspect.getfullargspec(environment_class.__init__)[0]
+    }
+    # This is a bit of a hack, since "MatrixFeedback"'s interface doesn't cover
+    # the constructor. We cannot be sure what parameters the environment class
+    # actually expects. We have to take care that all our environments adhere
+    # to this constructor convention.
+    feedback_mechanism = environment_class(**environment_parameters)
     # Filter accepted parameters.
     parameters["random_state"] = task_random_state
     parameters_to_pass = dict()
@@ -87,6 +102,7 @@ def run_single_algorithm(
 # pylint: disable=too-many-arguments
 def run_experiment(
     algorithms: List[Type[Algorithm]],
+    environment_class: Type[MatrixFeedback],
     time_horizon: int,
     num_arms: int,
     runs: int,
@@ -133,7 +149,12 @@ def run_experiment(
                     (base_random_seed + hash(algorithm_name) + run_id) % 2 ** 32
                 )
                 yield delayed(run_single_algorithm)(
-                    random_state, num_arms, algorithm_class, parameters, run_id,
+                    random_state,
+                    num_arms,
+                    algorithm_class,
+                    environment_class,
+                    parameters,
+                    run_id,
                 )
 
     jobs = list(job_producer())
@@ -184,6 +205,9 @@ def _main() -> None:
     algorithm_names_to_algorithms = {
         algorithm.__name__: algorithm for algorithm in algorithm_list
     }
+    environment_names_to_environments = {
+        environment.__name__: environment for environment in environment_list
+    }
     algorithm_choices_string = " ".join(algorithm_names_to_algorithms.keys())
     parser.add_argument(
         "-a, --algorithms",
@@ -193,6 +217,13 @@ def _main() -> None:
         default=algorithm_names_to_algorithms.keys(),
         help=f"Algorithms to compare. (default: {algorithm_choices_string})",
         choices=algorithm_names_to_algorithms.keys(),
+    )
+    parser.add_argument(
+        "--environment",
+        dest="environment",
+        default="HardCondorcetMatrix",
+        help="Algorithms to compare. (default: HardCondorcetMatrix)",
+        choices=environment_names_to_environments.keys(),
     )
     parser.add_argument(
         "--runs",
@@ -241,9 +272,11 @@ def _main() -> None:
     algorithms = [
         algorithm_names_to_algorithms[algorithm] for algorithm in args.algorithms
     ]
+    environment = environment_names_to_environments[args.environment]
 
     results = run_experiment(
         algorithms=algorithms,
+        environment_class=environment,
         n_jobs=1 if args.profile else args.n_jobs,
         time_horizon=args.time_horizon,
         num_arms=args.num_arms,
