@@ -55,6 +55,16 @@ class Heap:
     (1, 1)
     >>> comparisons
     3
+    >>> heap.delete(1)
+    >>> while not heap.is_finished():
+    ...     heap.step()
+    >>> heap.get_min()
+    (2, 2)
+    >>> heap.delete(1)
+    >>> while not heap.is_finished():
+    ...     heap.step()
+    >>> heap.get_min()
+    (2, 2)
     """
 
     class State(Enum):
@@ -287,3 +297,23 @@ class Heap:
             self._build_node = len(self._data) // 2 - 1
             self._current_node = self._build_node
             self._current_operation = Heap.State.BUILD
+
+    def delete(self, key: int) -> None:
+        """Delete the first element with the given key.
+
+        Parameters
+        ----------
+        key
+            The key of the node to delete.
+        """
+        node_index: int = 0
+        for index, element in enumerate(self._data):
+            if element.key == key:
+                node_index = index
+                break
+        else:
+            return
+        self._data[node_index] = self._data[-1]
+        self._data.pop()
+        self._current_node = node_index
+        self._current_operation = Heap.State.DOWN
