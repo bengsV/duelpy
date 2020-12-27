@@ -14,20 +14,24 @@ import duelpy.util.utility_functions as utility
 
 
 class SequentialElimination(SingleCopelandProducer):
-    r"""Find an epsilon-maximum arm with Sequential Elimination.
+    r"""Implement the Sequential Elimination algorithm.
 
-    This module implements the Sequential Elimination algorithm which was introduced in :cite:`falahatgar2018limits` to
-    find the most preferred arms of a preference-based multi-armed bandit problem.
+    The goal of this algorithm is to find an epsilon-maximum arm.
+
     The algorithm computes a probably-approximately-correct estimation of the Copeland winner.
     An arm is epsilon maximum (where :math:`\epsilon = \epsilon_u-\epsilon_l`), if it is preferable to other arms with
     probability at least :math:`0.5-\epsilon`.
+
     If the anchor arm provided to the algorithm is a good anchor element, then there are only m elements
     for which element a is not :math:`\epsilon_l` preferable. This means, all other elements will be eliminated but
     among these m elements, there can be at most m changes of anchor element. Thus, there can be at most m rounds and
     hence we can bound total comparison rounds by :math:`\mathcal{O}(\lvert S \rvert + m^2)`.
+
     Thus this PAC algorithm reduces the comparisons to at most m elements which are not :math:`\epsilon_l` preferable and
     the remaining n-m elements are :math:`\epsilon_l` perferable and hence are removed with comparison complexity of
     :math:`\mathcal{O}(\lvert S \rvert)`.
+
+     Refer to the paper :cite:`falahatgar2018assumptions`.
 
     Parameters
     ----------
@@ -37,12 +41,12 @@ class SequentialElimination(SingleCopelandProducer):
         The number of steps that the algorithm is supposed to be run. Specify None for an infinite time horizon.
     failure_probability
         Determines the number of iterations that both arms are compared against. Corresponds to :math:`\delta` in
-        :cite:`falahatgar2018limits`. Default value is taken from :cite:`falahatgar2018limits` in section 6 is 0.1.
-    bias_lower
-        Default value is 0.0. Refer to section 3.1.2 in :cite:`falahatgar2018limits`.
-    bias_upper
-        Corresponds to :math:`\epsilon` with default value is 0.5, as given in section 6 of paper
-        :cite:`falahatgar2018limits`.
+        :cite:`falahatgar2018assumptions`. Default value is given in section 6 is 0.1.
+    epsilon_lower
+        Default value is 0.0. Refer to section 3.1.1 in :cite:`falahatgar2018assumptions`.
+    epsilon_upper
+        Corresponds to :math:`\epsilon` with default value is 0.5, as given in section 3.1.1 in
+        :cite:`falahatgar2018assumptions`.
     arms_subset
         Represents the list of arms which is sent by other algorithms and is the subset from list of arms
         fetched from feedback_mechanism.
@@ -61,7 +65,7 @@ class SequentialElimination(SingleCopelandProducer):
     Raises
     ------
     ValueError
-        Raised when the value of upper bias is not greater than lower bias.
+        Raised when the value of upper epsilon is not greater than lower epsilon.
 
     Examples
     --------
@@ -87,22 +91,24 @@ class SequentialElimination(SingleCopelandProducer):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
-        random_state: np.random.RandomState = np.random.RandomState(),
+        random_state: np.random.RandomState = None,
         time_horizon: Optional[int] = None,
         failure_probability: float = 0.1,
-        bias_lower: float = 0.0,
-        bias_upper: float = 0.05,
+        epsilon_lower: float = 0.0,
+        epsilon_upper: float = 0.05,
         arms_subset: Optional[List] = None,
         anchor_arm: Optional[int] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        if bias_upper <= bias_lower:
-            raise ValueError("upper bias must be bigger than lower bias.")
-        self._bias_upper = bias_upper
-        self._bias_lower = bias_lower
+        if epsilon_upper <= epsilon_lower:
+            raise ValueError("upper epsilon must be bigger than lower epsilon.")
+        self._epsilon_upper = epsilon_upper
+        self._epsilon_lower = epsilon_lower
         self.failure_probability = failure_probability
-        self.feedback_mechanism = feedback_mechanism
-        self._random_state = random_state
+        if random_state is not None:
+            self._random_state = random_state
+        else:
+            self._random_state = np.random.RandomState()
         self.preference_estimate = PreferenceEstimate(
             self.feedback_mechanism.get_num_arms()
         )
@@ -141,9 +147,17 @@ class SequentialElimination(SingleCopelandProducer):
 
         Includes determining the next sample, asking for feedback once and
         updating the environment candidates based on this new data.
+
+        Raises
+        ------
+        AlgorithmFinishedException
+            Number of duels has reached time_horizon.
         """
         if not self.exploration_finished():
-            self.explore()
+            try:
+                self.explore()
+            except AlgorithmFinishedException:
+                pass
         else:
             self.exploit()
 
@@ -157,23 +171,20 @@ class SequentialElimination(SingleCopelandProducer):
         """Compare the current anchor arm against a randomly selected arm.
 
         The anchor arm is updated with the arm beating the current anchor arm and the new anchor arm is compared against
-        the remaining arms step by step. Refer to section 3.1.2 in paper :cite:`falahatgar2018limits`.
+        the remaining arms step by step. Refer to section 3.1.1 in paper :cite:`falahatgar2018assumptions`.
         """
-        # randomly select a competing arm.
+        # randomly select a competing arm and after the duel remove that element from arms list.
         random_competing_arm = utility.pop_random(
-            self._remaining_arms, random_state=np.random.RandomState()
+            self._remaining_arms.copy(), random_state=np.random.RandomState()
         )[0]
 
-        try:
-            comparison_result = self.determine_better_arm(
-                competing_arm=random_competing_arm,
-            )
-            if comparison_result:
-                # competing arm beats the anchor arm.
-                self._anchor_arm = random_competing_arm
-        except AlgorithmFinishedException:
-            # Algorithm was terminated, explore will not be called anymore.
-            pass
+        comparison_result = self._is_competing_arm_better(
+            competing_arm=random_competing_arm,
+        )
+        self._remaining_arms.remove(random_competing_arm)
+        if comparison_result:
+            # competing arm beats the anchor arm.
+            self._anchor_arm = random_competing_arm
 
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
@@ -199,7 +210,7 @@ class SequentialElimination(SingleCopelandProducer):
         else:
             return None
 
-    def determine_better_arm(self, competing_arm: int) -> bool:
+    def _is_competing_arm_better(self, competing_arm: int) -> bool:
         r"""Determine if competing arm beats anchor arm.
 
         The calibrated preference probability estimate (:math:`\hat{p}_{i,j}`) for competing arm against anchor arm
@@ -212,8 +223,9 @@ class SequentialElimination(SingleCopelandProducer):
         as mentioned in the paper :cite:`falahatgar2017assumption`, is called confidence value but we have referred it
         as the failure probability.
 
-        The method returns 1 if :math:`\hat{p}_{i,j}` >= :math:`(\epsilon_u + \epsilon_l)/2` otherwise -1 is returned.
-        For more details, please refer to appendix section A.1 Compare Algorithm in :cite:`falahatgar2018limits`.
+        The method returns True if :math:`\hat{p}_{i,j}`  :\ge math:`(\epsilon_u + \epsilon_l)/2` otherwise False is
+        returned.
+        For more details, please refer to appendix section Algorithm 9 in :cite:`falahatgar2018assumptions`.
 
         Parameters
         ----------
@@ -233,17 +245,17 @@ class SequentialElimination(SingleCopelandProducer):
 
         """
         epsilon = (
-            self._bias_upper - self._bias_lower
-        )  # refer to :math:`\epsilon` in paper :cite:`falahatgar2018limits`.
-        bias_mean = (self._bias_upper + self._bias_lower) / 2
+            self._epsilon_upper - self._epsilon_lower
+        )  # refer to :math:`\epsilon` in paper :cite:`falahatgar2018assumptions`.
+        epsilon_mean = (self._epsilon_upper + self._epsilon_lower) / 2
         confidence_radius = 0.5
         current_iteration_count = (
-            0  # refer to variable 't' in paper :cite:`falahatgar2018limits`
+            0  # refer to variable 't' in paper :cite:`falahatgar2018assumptions`
         )
         calibrated_preference_estimate = 0.0
 
         # number of rounds is selected in such a way that compare method selects the winner with :math:`1-\delta`
-        # confidence. See Algorithm 9 of paper :cite:`falahatgar2018limits`.
+        # confidence. See Algorithm 4 of paper :cite:`falahatgar2018assumptions`.
         rounds_for_iteration = int(
             2 * np.log(2 / self.failure_probability) / (np.power(epsilon, 2))
         )
@@ -255,11 +267,11 @@ class SequentialElimination(SingleCopelandProducer):
             self.failure_probability, prob_scaling
         )
 
-        # compare two arms multiple times to get an estimate of their winnings. Refer to Algorithm 9 of paper
-        # :cite:`falahatgar2018limits`.
+        # compare two arms multiple times to get an estimate of their winnings. Refer to Algorithm 4 of paper
+        # :cite:`falahatgar2018assumptions`.
         while (
             current_iteration_count < rounds_for_iteration
-            and np.absolute(calibrated_preference_estimate - bias_mean)
+            and np.absolute(calibrated_preference_estimate - epsilon_mean)
             <= confidence_radius
         ):
             if self.is_finished():
@@ -284,6 +296,5 @@ class SequentialElimination(SingleCopelandProducer):
                     competing_arm, self._anchor_arm
                 )
             )
-
-        # refer to algorithm of COMPARE of Algorithm 9 in paper :cite:`falahatgar2018limits`.
-        return calibrated_preference_estimate >= bias_mean
+        # refer to algorithm of COMPARE of Algorithm 4 in paper :cite:`falahatgar2018assumptions`.
+        return calibrated_preference_estimate >= epsilon_mean
