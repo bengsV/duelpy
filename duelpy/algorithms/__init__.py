@@ -11,6 +11,7 @@ from duelpy.algorithms.knockout_tournament import KnockoutTournament
 from duelpy.algorithms.mallows import MallowsMPI
 from duelpy.algorithms.mallows import MallowsMPR
 from duelpy.algorithms.multisort import Multisort
+from duelpy.algorithms.optmax import OptMax
 from duelpy.algorithms.plackett_luce import PlackettLuceAMPR
 from duelpy.algorithms.plackett_luce import PlackettLucePACItem
 from duelpy.algorithms.relative_confidence_sampling import RelativeConfidenceSampling
@@ -49,6 +50,7 @@ algorithm_list = [
     DoubleThompsonSamplingPlus,
     PlackettLucePACItem,
     PlackettLuceAMPR,
+    OptMax,
 ]
 # This is not really needed, but otherwise zimports doesn't understand the
 # __all__ construct and complains that the Algorithm import is unnecessary.
