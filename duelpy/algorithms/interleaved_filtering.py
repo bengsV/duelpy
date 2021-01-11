@@ -54,8 +54,6 @@ class InterleavedFiltering(Algorithm):
         The remaining set of arms (corresponds to W in :cite:`yue2012bandits`) after removing the candidate arm.
     preference_estimate
         Estimation of a preference matrix based on samples.
-    total_comparisons
-        Total number of comparisons (corresponds to :math:`\hat{T}` in :cite:`yue2012bandits`) made to find the condorcet winner.
     feedback_mechanism
     time_horizon
 
