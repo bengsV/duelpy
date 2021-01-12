@@ -105,7 +105,8 @@ class BeatTheMeanBandit(CondorcetProducer):
             2 * self.time_horizon * self.feedback_mechanism.get_num_arms()
         )
         confidence_radius = HoeffdingConfidenceRadius(
-            failure_probability=self.failure_probability, factor=9 * (gamma ** 4) * 2,
+            failure_probability=self.failure_probability,
+            factor=9 * (gamma ** 4) * 2,
         )
         self.comparison_history = ComparisonHistory(
             number_of_arms=self.feedback_mechanism.get_num_arms(),

@@ -384,10 +384,11 @@ class PlackettLuceAMPR(CopelandRankingProducer):
         for component in components:
             for i, arm_1 in enumerate(component.arms):
                 for arm_2 in component.arms[i + 1 :]:
-                    if 1 / 2 - self._epsilon >= self.preference_estimate.get_lower_estimate(
-                        arm_1, arm_2
-                    ) or 1 / 2 + self._epsilon <= self.preference_estimate.get_upper_estimate(
-                        arm_1, arm_2
+                    if (
+                        1 / 2 - self._epsilon
+                        >= self.preference_estimate.get_lower_estimate(arm_1, arm_2)
+                        or 1 / 2 + self._epsilon
+                        <= self.preference_estimate.get_upper_estimate(arm_1, arm_2)
                     ):
                         return False
         return True

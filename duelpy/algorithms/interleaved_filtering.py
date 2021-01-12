@@ -96,7 +96,8 @@ class InterleavedFiltering(Algorithm):
         self.preference_estimate = PreferenceEstimate(
             feedback_mechanism.get_num_arms(),
             confidence_radius=HoeffdingConfidenceRadius(
-                self.failure_probability, factor=8,
+                self.failure_probability,
+                factor=8,
             ),
         )
 

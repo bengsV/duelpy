@@ -21,7 +21,8 @@ class PreferenceMatrix:
     """
 
     def __init__(
-        self, preferences: np.array,
+        self,
+        preferences: np.array,
     ):
         self.preferences = preferences
 
