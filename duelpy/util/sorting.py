@@ -64,14 +64,11 @@ class MergeSort(SortingAlgorithm):
         # prepare all recursion steps
         # the list todo contains all nodes of the tree that is implicitly created when running mergesort
         self.todo = [MergeSort.Node(self.items)]
-        index = 0
 
-        while len(self.todo) > index:
-            node = self.todo[-1]
+        for node in self.todo:
             if len(node.result) > 1:
                 self.todo.append(MergeSort.Node(node.right))
                 self.todo.append(MergeSort.Node(node.left))
-            index += 1
         self.current_node: MergeSort.Node = self.todo[-1]
         self.index_left = 0
         self.index_right = 0
