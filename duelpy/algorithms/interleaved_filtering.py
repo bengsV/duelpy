@@ -13,8 +13,12 @@ from duelpy.stats.preference_estimate import PreferenceEstimate
 class InterleavedFiltering(Algorithm):
     r"""Implements the Interleaved Filtering algorithm.
 
-    This is an explore-then-exploit algorithm assuming a total order over arms, strong stochastic transitivity,
-    and the stochastic triangle inequality. The Interleaved Filtering algorithm :cite:`yue2012bandits` gives the Condorcet winner which is the best arm in the provided set of arms.
+    This algorithm finds the Condorcet winner.
+
+    A total order over arms, strong stochastic transitivity and the stochastic triangle inequality are assumed.
+
+    If the Condorcet winner is not eliminated, which happens with low probability, the expected regret is bound by :math:`O(N/\epsilon_\ast \log(T))`. :math:`\epsilon_\ast` refers to the win probability of the best arm winning against the second best arm minus 1/2.
+
     The algorithm is explained in :cite:`yue2012bandits`.
 
     Exploration:
@@ -82,12 +86,15 @@ class InterleavedFiltering(Algorithm):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        random_state: np.random.RandomState = np.random.RandomState(),
+        random_state: np.random.RandomState = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
         assert self.time_horizon is not None  # for mypy
         self.failure_probability = 1 / (
             self.time_horizon * (self.feedback_mechanism.get_num_arms() ** 2)
+        )
+        random_state = (
+            random_state if random_state is not None else np.random.RandomState()
         )
         self.candidate_arm = random_state.choice(self.feedback_mechanism.get_arms())
         self.arms_without_candidate = self.feedback_mechanism.get_arms().copy()

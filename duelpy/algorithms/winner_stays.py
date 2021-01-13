@@ -10,21 +10,22 @@ from duelpy.util.utility_functions import argmax_set
 
 
 class WinnerStaysWeakRegret(Algorithm):
-    """Implements the weak regret version of the "Winner Stays" algorithm :cite:`chen2017dueling`.
+    r"""Implements the weak regret version of the "Winner Stays" algorithm :cite:`chen2017dueling`.
 
-    This algorithm is tournament-based and minimizes the expected regret of the best arm.
-    It assumes at the very least that a Condorcet winner exists, but the expected regret improves if the arms can additionally be ranked.
-    It stores the difference between won and lost rounds for each arm. The next actions are then selected from the set of arms with the highest difference.
-    If one of the actions from the previous round is still in this argmax set, it is chosen again.
-    In the first round and if the actions of the previous round are not part of the argmax set, the actions are chosen uniformly random from it.
-    The two chosen actions are guaranteed to be not identical.
+    The goal of this algorithm is to find the Condorcet winner while minimizing the weak regret suffered in the process.
+
+    The algorithm assumes at the very least that a Condorcet winner exists, but the expected regret improves if a total order over the arms exists.
+
+    The incurred weak regret is constant in time and only depends on the number of arms :math:`N`: :math:`O(N^2)`. If a total order over the arms exists, this is improved to :math:`O(N \log(N))`.
+
+    The algorithm is tournament-based. It stores the difference between won and lost duels for each arm. The next arms are then selected from the set of arms with the highest difference. If one of the actions from the previous round is still in this argmax set, it is chosen again. In the first round and if the actions of the previous round are not part of the argmax set, the actions are chosen uniformly at random from it. The two chosen actions are guaranteed to be not identical.
 
     Parameters
     ----------
     feedback_mechanism
         A FeedbackMechanism object describing the environment.
     time_horizon
-        How many comparisons the algorithm should do. This does not impact the
+        How many comparisons the algorithm should make. This does not impact the
         decision of the algorithm, only for how many steps ``run`` executes.
         May be ``None`` to indicate a unknown or infinite time horizon.
     random_state
@@ -33,7 +34,7 @@ class WinnerStaysWeakRegret(Algorithm):
     Attributes
     ----------
     win_deltas
-        Stores the difference between won and lost rounds for each arm. Corresponds to the C(t,i) values in :cite:`chen2017dueling`.
+        Stores the difference between won and lost rounds for each arm. Corresponds to the :math:`C(t,i)` values in :cite:`chen2017dueling`.
     feedback_mechanism
     random_state
 
@@ -62,10 +63,12 @@ class WinnerStaysWeakRegret(Algorithm):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,
-        random_state: np.random.RandomState = np.random.RandomState(),
+        random_state: np.random.RandomState = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        self.random_state = random_state
+        self.random_state = (
+            random_state if random_state is not None else np.random.RandomState()
+        )
         self.arm_count = self.feedback_mechanism.get_num_arms()
         self.win_deltas = np.zeros((self.arm_count,))
         self._last_arm_i = -1
@@ -129,12 +132,16 @@ class WinnerStaysWeakRegret(Algorithm):
 
 
 class WinnerStaysStrongRegret(Algorithm):
-    """Implements the strong regret version of the "Winner Stays" algorithm :cite:`chen2017dueling`.
+    r"""Implements the strong regret version of the "Winner Stays" algorithm :cite:`chen2017dueling`.
 
-    This algorithm is based on the weak regret version.
-    It interleaves the weak regret algorithm with exponentially increasing periods of pure exploitation (pulling the currently believed-to-be-best arm twice).
-    As soon as we have found the best arm, the strong regret in the exploitation phase will be 0.
-    Since the duration is exponentially increasing, this leads to a strong regret of 0 per round in the limit.
+    The goal of this algorithm is to find the Condorcet winner while minimizing the strong regret suffered in the process.
+
+    The algorithm assumes at the very least that a Condorcet winner exists, but the expected regret improves if a total order over the arms exists.
+
+    The incurred strong regret is dependent on the duels made :math:`T` and on the number of arms :math:`N`: :math:`O(N^2 + N \log(T))`. If a total order over the arms exists, this is improved to :math:`O(N \log(T) + N \log(N))`.
+
+    This algorithm is based on the weak regret version. It interleaves the weak regret "winner stays" algorithm with exponentially increasing periods of pure exploitation (pulling the currently believed-to-be-best arm twice).
+    As soon as we have found the best arm, the strong regret in the exploitation phase will be 0. Since the duration is exponentially increasing, this leads to a strong regret of 0 per round in the limit.
 
     Parameters
     ----------

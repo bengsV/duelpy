@@ -16,11 +16,16 @@ from duelpy.util.utility_functions import argmax_set
 class CopelandConfidenceBound(SingleCopelandProducer):
     r"""Implement the Copeland Confidence Bound(CCB) algorithm.
 
+    The goal of the algorithm is to minimize the Copeland regret.
+
+    It is assumed that there are no ties between arms, i.e. the probability of any arm winning against another is never 1/2.
+
+    The bound on the expected regret is given as :math:`O((N^2+(C+L_C)N \ln(T))/\Delta^2)`. :math:`N` is the number of arms, :math:`T` is the time horizon. :math:`C` is the amount of Copeland winners and :math:`L_C` the amount of arms a Copeland winner will lose agains in expectation. For any Copeland winner and any non-Copeland winner, :math:`\Delta` is the smallest absolute distance to 1/2 in the probability of these arms dueling against each other.
+
     The Copeland Confidence Bound algorithm is based on :cite:`zoghi2015copeland`.
     The performance of CCB degrades at about 136 arms in experiments, for details
-    refer :cite:`zoghi2015copeland`.
-    The goal of the algorithm is to minimize the Copeland regret. This is done by
-    conducting duels which are most informative about the precedence of the
+    refer to :cite:`zoghi2015copeland`.
+    It proceeds by conducting duels which are most informative about the precedence of the
     participating arms in terms of their Copeland scores. The confirmed non-Copeland
     winners are eliminated based on the results of the prior duels. After conducting
     sufficient rounds, the set of possible Copeland winners will converge which will
@@ -65,7 +70,7 @@ class CopelandConfidenceBound(SingleCopelandProducer):
         The confidence radius grows proportional to the square root of this value.
         A higher upper confidence bound results in more exploration.
         Corresponds to :math:`\alpha` in :cite:`zoghi2015copeland`. The value of
-        exploratory_constant must be greater than 0.5.
+        `exploratory_constant` must be greater than 0.5.
         Default value is 0.501 which has been used in the experiments for calculating the
         confidence bounds in :cite:`zoghi2014ranker`.
 

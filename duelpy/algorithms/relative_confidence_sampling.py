@@ -10,12 +10,15 @@ from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
 class RelativeConfidenceSampling(CondorcetProducer):
-    """An implementation of the Relative Confidence Sampling algorithm.
+    r"""Implementation of the Relative Confidence Sampling algorithm.
 
-    The Relative Confidence Sampling algorithm is based on :cite:`zoghi2014ranker`.
-    The algorithm assumes that a Condorcet winner among the given arms exists.
-    The goal of the algorithm is to reduce the cumulative regret as quickly as possible.
-    This is done by conducting duels among the candidate arms and eliminating the sub-optimal
+    The goal of this algorithm is to find a Condorcet winner while incurring minimal regret.
+
+    It is assumed that a Condorcet winner exists.
+
+    No regret or sample complexity bounds were established in the source paper :cite:`zoghi2014ranker`.
+
+    The algorithm proceeds by conducting duels among the candidate arms and eliminating the sub-optimal
     arms based on the results of the prior duels. After conducting sufficient rounds, the
     algorithm would always choose the Condorcet winner to conduct a duel with itself. This
     would result in no more regret and thus the goal would be achieved.
@@ -50,7 +53,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
         A parameter which is used in calculating the upper confidence bounds. The confidence
         radius grows proportional to the square root of this value. A higher upper confidence
         bound results in more exploration.
-        Corresponds to `alpha` in :cite:`zoghi2014ranker`. The value of exploratory_constant must be greater than 0.5.
+        Corresponds to :math:`\alpha` in :cite:`zoghi2014ranker`. The value of ``exploratory_constant`` must be greater than 0.5.
         Default value is 0.501 which has been used in the experiments related to RCS in :cite:`zoghi2014ranker`.
 
     Attributes
@@ -135,10 +138,10 @@ class RelativeConfidenceSampling(CondorcetProducer):
         )
 
     def _update_confidence_radius(self) -> None:
-        """Update the confidence radius using latest failure probability.
+        r"""Update the confidence radius using latest failure probability.
 
-        Failure probability for the upper confidence bound is `1/t^(2 * alpha)`
-        where `t` is the current round of the algorithm and `alpha` is the
+        Failure probability for the upper confidence bound is :math:`1/t^(2 * \alpha)`
+        where :math:`t` is the current round of the algorithm and :math:`\alpha` is the
         exploratory constant.
 
         Refer https://arxiv.org/pdf/1312.3393.pdf for further details.
