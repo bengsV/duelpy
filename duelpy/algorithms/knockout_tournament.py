@@ -93,7 +93,7 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
 
         # Confidence radius is derived using the Hoeffding's inequality and the Union bound, It's used
         # in selecting a challenger.
-        # Refer page 20 of :cite:`Falahatgar2017maximum` for confidence radius derivation.
+        # Refer page 20 of :cite:`falahatgar2017maximum` for confidence radius derivation.
 
         def probability_scaling(num_samples: int) -> float:
             return 4 * num_samples ** 2
