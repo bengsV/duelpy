@@ -3,22 +3,20 @@ Welcome to  the Duelpy documentation!
 =====================================
 Open-Source Python package for preference-based multi-armed Bandits algorithms.
 
+For an overview of the problem and algorithms, see ~survey paper~.
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
-   
-   duelpy
 
-.. rubric:: References
+   autoapi/index
+   references
 
-.. bibliography:: refs.bib
-   :cited:
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`search`
 
 Fork this project
 ==================
