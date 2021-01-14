@@ -175,13 +175,11 @@ class DoubleThompsonSampling(SingleCopelandProducer):
 
         # sample preference matrix between the arm through beta distribution
         # sample the preference with champion arm from the sampled preference matrix.
-        sample_preference_with_champion = self.preference_estimate.sample_preference_matrix(
-            self.random_state
-        ).preferences[
-            :
-        ][
-            champion
-        ]
+        sample_preference_with_champion = (
+            self.preference_estimate.sample_preference_matrix(
+                self.random_state
+            ).preferences[:][champion]
+        )
 
         #  Choosing only from uncertain pairs (potential challenger). Ties are broken randomly.
         arm_d = self.random_state.choice(
@@ -336,5 +334,8 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
 
             regret_values = average_copeland_regret_values / kl_divergences
             regret_one_vs_all[potential_champion] = np.sum(regret_values)
-        arm_c = argmin_set(regret_one_vs_all, list(non_potential_champion_arms),)[0]
+        arm_c = argmin_set(
+            regret_one_vs_all,
+            list(non_potential_champion_arms),
+        )[0]
         return arm_c

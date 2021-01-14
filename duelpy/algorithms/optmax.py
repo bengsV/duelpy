@@ -210,9 +210,9 @@ class OptMax(SingleCopelandProducer):
             raise AlgorithmFinishedException
 
         if self.time_horizon is not None:
-            _time_horizon: Optional[
-                int
-            ] = self.time_horizon - self.feedback_mechanism.get_num_duels()
+            _time_horizon: Optional[int] = (
+                self.time_horizon - self.feedback_mechanism.get_num_duels()
+            )
         else:
             _time_horizon = None
         # sequential elimination runs on all the arms.
@@ -283,9 +283,9 @@ class OptMax(SingleCopelandProducer):
         )
 
         if self.time_horizon is not None:
-            _time_horizon: Optional[
-                int
-            ] = self.time_horizon - self.feedback_mechanism.get_num_duels()
+            _time_horizon: Optional[int] = (
+                self.time_horizon - self.feedback_mechanism.get_num_duels()
+            )
         else:
             _time_horizon = None
 
@@ -563,9 +563,9 @@ class OptMax(SingleCopelandProducer):
         ]
 
         if self.time_horizon is not None:
-            _time_horizon: Optional[
-                int
-            ] = self.time_horizon - self.feedback_mechanism.get_num_duels()
+            _time_horizon: Optional[int] = (
+                self.time_horizon - self.feedback_mechanism.get_num_duels()
+            )
         else:
             _time_horizon = None
         # sequential elimination runs on pruned arms with the selected anchor arm.

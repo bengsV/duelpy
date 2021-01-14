@@ -188,8 +188,8 @@ class Savage(SingleCopelandProducer):
             ):
                 if not self.copeland_independence_test(arm_pair):
                     next_sample = arm_pair
-                    current_lowest_sample_count = self.preference_estimate.get_num_samples(
-                        *arm_pair
+                    current_lowest_sample_count = (
+                        self.preference_estimate.get_num_samples(*arm_pair)
                     )
                 else:
                     arms_to_remove.add(arm_pair)
