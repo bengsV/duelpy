@@ -60,8 +60,8 @@ class MergeSort(SortingAlgorithm):
     --------
     >>> rs = np.random.RandomState(2)
     >>> items = rs.uniform(size=10)
-    >>> ms = MergeSort(list(items), lambda x,y: x<y, rs)
-    >>> while not ms.is_finished():
+    >>> ms = MergeSort(list(items), lambda x,y: 1 if x<y else -1, rs)
+    >>> while not ms.is_finished() :
     ...     ms.step()
     >>> ground_truth = np.sort(items)
     >>> all(ground_truth == ms.get_result())
@@ -192,8 +192,8 @@ class Quicksort(SortingAlgorithm):
     --------
     >>> rs = np.random.RandomState(2)
     >>> items = rs.uniform(size=10)
-    >>> qs = Quicksort(list(items) ,lambda x,y: x<y, rs)
-    >>> while not qs.is_finished():
+    >>> qs =Quicksort(list(items), lambda x,y: 1 if x<y else -1, rs)
+    >>> while not qs.is_finished() :
     ...     qs.step()
     >>> ground_truth = np.sort(items)
     >>> all(ground_truth == qs.get_result())
