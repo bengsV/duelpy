@@ -40,10 +40,39 @@ class SortingAlgorithm:
 
 
 class MergeSort(SortingAlgorithm):
-    """MergeSort algorithm."""
+    """MergeSort algorithm.
+
+    Parameters
+    ----------
+    items
+        The list of indices to compare.
+    compare_fn
+        A function comparing two indices, the returned value should be ``1`` if the first one should precede the second one and ``-1``. Optionally, if no order can be determined (yet), ``0`` can be returned to defer the decision.
+    random_state
+        Used for randomization of the pivot selection.
+
+    Attributes
+    ----------
+    current_node
+        The node currently undergoing the partitioning step. The algorithm creates a node for each recursive division of the elements, forming a rooted tree.
+
+    Examples
+    --------
+    >>> rs = np.random.RandomState(2)
+    >>> items = rs.uniform(size=10)
+    >>> ms = MergeSort(items,lambda x,y: x<y, rs)
+    >>> while not ms.is_finished():
+    ...     ms.step()
+    >>> ground_truth = np.sort(items)
+    >>> all(ground_truth == ms.get_result())
+    True
+    """
 
     class Node:
-        """Helper class."""
+        """Helper class.
+
+        This class is only to be used internally, representing nodes in the constructed tree.
+        """
 
         def __init__(self, result: List[int]):
             # notice the implicit link here, result is not copied!
@@ -106,10 +135,10 @@ class MergeSort(SortingAlgorithm):
                 comparison_result = 0
                 while comparison_result == 0:
                     comparison_result = self.compare_fn(arm_left, arm_right)
-                if comparison_result == 1:
+                if comparison_result == 1:  # arm_left -> arm_right
                     self.current_node.result.append(arm_left)
                     self.index_left += 1
-                else:
+                else:  # arm_right -> arm_left
                     self.current_node.result.append(arm_right)
                     self.index_right += 1
             else:
@@ -141,10 +170,41 @@ class MergeSort(SortingAlgorithm):
 
 
 class Quicksort(SortingAlgorithm):
-    """Quicksort algorithm."""
+    """Quicksort algorithm.
+
+    Some algorithms depend on Quicksort to rank arms, in order to support a step function, Quicksort is implemented with the ability to advance single sorting steps.
+
+    Parameters
+    ----------
+    items
+        The list of indices to compare.
+    compare_fn
+        A function comparing two indices, the returned value should be ``1`` if the first one should precede the second one and ``-1``. Optionally, if no order can be determined (yet), ``0`` can be returned to defer the decision.
+    random_state
+        Used for randomization of the pivot selection.
+
+    Attributes
+    ----------
+    current_node
+        The node currently undergoing the partitioning step. The algorithm creates a node for each recursive division of the elements, forming a rooted tree.
+
+    Examples
+    --------
+    >>> rs = np.random.RandomState(2)
+    >>> items = rs.uniform(size=10)
+    >>> qs = Quicksort(items,lambda x,y: x<y, rs)
+    >>> while not qs.is_finished():
+    ...     qs.step()
+    >>> ground_truth = np.sort(items)
+    >>> all(ground_truth == qs.get_result())
+    True
+    """
 
     class Node:
-        """Helper class."""
+        """Helper class.
+
+        This class is only to be used internally, representing nodes in the constructed tree.
+        """
 
         def __init__(
             self,
@@ -176,7 +236,7 @@ class Quicksort(SortingAlgorithm):
     ):
         super().__init__(items, compare_fn, random_state)
         self.current_node = Quicksort.Node(items.copy(), self.random_state)
-        self.result: Optional[List[int]] = None
+        self._result: Optional[List[int]] = None
         self._is_finished = False
 
     @staticmethod
@@ -206,10 +266,10 @@ class Quicksort(SortingAlgorithm):
             while len(current_list) > 0:
                 for item in current_list:
                     comparison_result = self.compare_fn(self.current_node.pivot, item)
-                    if comparison_result == 1:
+                    if comparison_result == 1:  # pivot -> item
                         list_right.append(item)
                         current_list.remove(item)
-                    elif comparison_result == -1:
+                    elif comparison_result == -1:  # item -> pivot
                         list_left.append(item)
                         current_list.remove(item)
             if len(list_left) > 0:
@@ -236,7 +296,7 @@ class Quicksort(SortingAlgorithm):
             self.step()  # this branch does not count as a step
         else:
             # Quicksort terminates, root reached
-            self.result = self._merge_children(self.current_node)
+            self._result = self._merge_children(self.current_node)
             self._is_finished = True
 
     def is_finished(self) -> bool:
@@ -245,7 +305,7 @@ class Quicksort(SortingAlgorithm):
 
     def get_result(self) -> Optional[List[int]]:
         """Get sorted list."""
-        return self.result
+        return self._result
 
     def _gather_intermediate_result(self, node: "Quicksort.Node") -> List[List[int]]:
         """Get the partial intermediate result associated with a node."""
