@@ -45,9 +45,9 @@ class WinnerStaysWeakRegret(Algorithm):
 
     >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
-    ...     [0.5, 0.1, 0.1],
-    ...     [0.9, 0.5, 0.3],
-    ...     [0.9, 0.7, 0.5],
+    ...     [0.5, 0.4, 0.4],
+    ...     [0.6, 0.5, 0.3],
+    ...     [0.6, 0.7, 0.5],
     ... ])
 
     >>> random_state = np.random.RandomState(3)
@@ -57,7 +57,7 @@ class WinnerStaysWeakRegret(Algorithm):
     ...    ws_wr.step()
     >>> regret_history, cumulative_regret = feedback_mechanism.calculate_weak_regret(2)
     >>> np.round(cumulative_regret, 2)
-    0.0
+    0.6
     """
 
     def __init__(
