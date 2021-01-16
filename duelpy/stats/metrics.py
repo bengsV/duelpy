@@ -14,6 +14,7 @@ __all__ = [
     "StrongRegret",
     "WeakRegret",
     "TotalWallClock",
+    "Cumulative",
 ]
 
 
@@ -189,3 +190,37 @@ class TotalWallClock:
     def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
         """Note the relative wall clock time at which a duel occurred."""
         return time.time() - self.start_time
+
+
+class Cumulative(Metric):
+    """Wraps a metric to make it cumulative.
+
+    Metrics like the average regret are often reported in accumulated form.
+    This wrapper can be used to convert any metric to a cumulative metric.
+
+    Parameters
+    ----------
+    metric
+        The metric to be wrapped.
+
+    Examples
+    --------
+    >>> preference_matrix = np.array([
+    ...     [0.5, 0.9],
+    ...     [0.1, 0.5],
+    ... ])
+    >>> metric = Cumulative(AverageRegret(preference_matrix))
+    >>> metric(1, 1)
+    0.4
+    >>> metric(1, 1)
+    0.8
+    """
+
+    def __init__(self, metric: Metric):
+        self.metric = metric
+        self.accumulator = 0.0
+
+    def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
+        """Compute the new metric value and add it to the accumulator."""
+        self.accumulator += self.metric(arm_i_index, arm_j_index)
+        return self.accumulator
