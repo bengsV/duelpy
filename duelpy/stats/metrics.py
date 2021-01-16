@@ -13,6 +13,7 @@ __all__ = [
     "AverageRegret",
     "StrongRegret",
     "WeakRegret",
+    "AverageCopelandRegret",
     "TotalWallClock",
     "Cumulative",
 ]
@@ -178,6 +179,39 @@ class WeakRegret(Regret):
 
     def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
         super().__init__(preference_matrix, aggregation_function=min)
+
+
+class AverageCopelandRegret:
+    """Calculate Copeland regret with respect to normalized Copeland score.
+
+    The average Copeland regret of a single comparison is the difference between the average normalized Copeland score of
+    the pulled arms and the maximum normalized Copeland score. It can only be 0 if a Copeland winner is compared against
+    another Copeland winner. Copeland score is normalized by the number of Arms(i.e number_of_arms-1). Finally, This function
+    calculates the normalized cumulative Copeland regret accumulated over all time steps.
+
+    Returns
+    -------
+    regret_history
+        A list containing the Copeland regret per round.
+    cumulative_regret
+        The cumulative average regret.
+    """
+
+    def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
+        # Accept simple numpy arrays for convenience.
+        if isinstance(preference_matrix, np.ndarray):
+            preference_matrix = PreferenceMatrix(preference_matrix)
+        self.normalized_copeland_scores = (
+            preference_matrix.get_normalized_copeland_scores()
+        )
+        self.max_normalized_copeland_score = np.amax(self.normalized_copeland_scores)
+
+    def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
+        """Compute the Copeland regret of a duel."""
+        return self.max_normalized_copeland_score - 0.5 * (
+            self.normalized_copeland_scores[arm_i_index]
+            + self.normalized_copeland_scores[arm_j_index]
+        )
 
 
 class TotalWallClock:
