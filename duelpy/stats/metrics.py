@@ -17,6 +17,7 @@ __all__ = [
     "AverageCopelandRegret",
     "TotalWallClock",
     "Cumulative",
+    "ExponentialMovingAverage",
 ]
 
 
@@ -286,3 +287,54 @@ class BestArmRate(Metric):
         if arm_j_index == self.best_arm:
             best_arm_rate += 0.5
         return best_arm_rate
+
+
+class ExponentialMovingAverage(Metric):
+    r"""Wraps a metric to compute the exponential moving average.
+
+    The exponential moving average is updated as follows:
+
+    .. math::
+      a' = \alpha v + (1 - \alpha) a
+
+    where :math:`a` is the previous value of the average, :math:`\alpha` is a
+    parameter that determines how much weight recent values have and :math:`v`
+    is the new sample value.
+
+    This can be used for some very basic smoothing if the metric will be
+    plotted.
+
+    Parameters
+    ----------
+    metric
+        The metric to be wrapped.
+    alpha
+        The weight that is put on a new sample.
+    initial_value
+        The value to initialize the moving average with.
+
+    Examples
+    --------
+    >>> metric = ExponentialMovingAverage(BestArmRate(best_arm=1), alpha=0.5, initial_value=0.0)
+    >>> metric(1, 1)
+    0.5
+    >>> metric(1, 1)
+    0.75
+    >>> metric(1, 1)
+    0.875
+    >>> metric(0, 0)
+    0.4375
+    """
+
+    def __init__(self, metric: Metric, alpha: float, initial_value: float = 0.0):
+        self.metric = metric
+        self.moving_average = initial_value
+        self.alpha = alpha
+
+    def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
+        """Compute the new metric value and update the moving average."""
+        new_value = self.metric(arm_i_index, arm_j_index)
+        self.moving_average = (self.alpha * new_value) + (
+            1 - self.alpha
+        ) * self.moving_average
+        return self.moving_average
