@@ -1,8 +1,6 @@
 """Gather feedback from a ground-truth preference matrix."""
 
-from typing import List
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 import numpy as np
@@ -45,7 +43,7 @@ class MatrixFeedback(FeedbackMechanism):
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()
         )
-        self.history: List[Tuple[int, int]] = []
+        self.num_duels = 0
 
     def duel(self, arm_i_index: int, arm_j_index: int) -> bool:
         """Perform a duel between two arms based on a given probability matrix.
@@ -62,7 +60,7 @@ class MatrixFeedback(FeedbackMechanism):
         bool
             True if arm_i_index wins.
         """
-        self.history.append((arm_i_index, arm_j_index))
+        self.num_duels += 1
         probability_i_wins = self.preference_matrix[arm_i_index][arm_j_index]
         i_wins = self.random_state.uniform() <= probability_i_wins
         return i_wins
@@ -75,8 +73,8 @@ class MatrixFeedback(FeedbackMechanism):
         int
             The number of duels.
         """
-        return len(self.history)
+        return self.num_duels
 
-    def reset_history(self) -> None:
-        """Delete the regret history."""
-        self.history.clear()
+    def reset_duel_counter(self) -> None:
+        """Reset the duel counter."""
+        self.num_duels = 0
