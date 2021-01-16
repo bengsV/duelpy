@@ -138,27 +138,6 @@ class PreferenceMatrix:
         """
         return self.get_copeland_scores() / (self.get_num_arms() - 1)
 
-    def calculate_average_copeland_regret_arms(self, arm_i: int, arm_j: int) -> float:
-        """Calculate Copeland regret with respect to normalized Copeland score.
-
-        Parameters
-        ----------
-        arm_i
-            The arm with respect to which the regret is calculated
-        arm_j
-            The challenger arm
-
-        Returns
-        -------
-        float
-            A average Copeland regret.
-        """
-        normalized_copeland_scores = self.get_normalized_copeland_scores()
-        max_normalized_copeland_score = np.amax(normalized_copeland_scores)
-        return max_normalized_copeland_score - 0.5 * (
-            normalized_copeland_scores[arm_i] + normalized_copeland_scores[arm_j]
-        )
-
     def get_epsilon_condorcet_winners(self, epsilon: float) -> Set[int]:
         """Find all epsilon-Condorcet winners."""
         candidates = list(range(self.get_num_arms()))

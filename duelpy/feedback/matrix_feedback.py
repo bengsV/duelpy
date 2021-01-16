@@ -80,29 +80,3 @@ class MatrixFeedback(FeedbackMechanism):
     def reset_history(self) -> None:
         """Delete the regret history."""
         self.history.clear()
-
-    def calculate_average_copeland_regret(self) -> Tuple[List[float], float]:
-        """Calculate copeland regret with respect to normalized copeland score.
-
-        The average Copeland regret of a single comparison is the difference between the average normalized Copeland score of
-        the pulled arms and the maximum normalized Copeland score. It can only be 0 if a Copeland winner is compared against
-        another Copeland winner. Copeland score is normalized by the number of Arms(i.e number_of_arms-1). Finally, This function
-        calculates the normalized cumulative Copeland regret accumulated over all time steps.
-
-        Returns
-        -------
-        regret_history
-            A list containing the Copeland regret per round.
-        cumulative_regret
-            The cumulative average regret.
-        """
-        regret_history = []
-        cumulative_regret = 0.0
-
-        for arm_i, arm_j in self.history:
-            regret = self.preference_matrix.calculate_average_copeland_regret_arms(
-                arm_i, arm_j
-            )
-            regret_history.append(regret)
-            cumulative_regret += regret
-        return regret_history, cumulative_regret
