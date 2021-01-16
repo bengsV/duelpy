@@ -1,6 +1,6 @@
 """Common metrics for algorithm performance."""
 
-
+import time
 from typing import Callable
 from typing import Union
 
@@ -13,6 +13,7 @@ __all__ = [
     "AverageRegret",
     "StrongRegret",
     "WeakRegret",
+    "TotalWallClock",
 ]
 
 
@@ -176,3 +177,15 @@ class WeakRegret(Regret):
 
     def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
         super().__init__(preference_matrix, aggregation_function=min)
+
+
+class TotalWallClock:
+    """The wall clock time that has elapsed since initialization."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.start_time = time.time()
+
+    def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
+        """Note the relative wall clock time at which a duel occurred."""
+        return time.time() - self.start_time
