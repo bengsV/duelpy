@@ -26,7 +26,9 @@ from duelpy.algorithms import algorithm_list
 from duelpy.experiments.environments import environment_list
 from duelpy.feedback import MatrixFeedback
 from duelpy.stats.metrics import AverageRegret
+from duelpy.stats.metrics import BestArmRate
 from duelpy.stats.metrics import Cumulative
+from duelpy.stats.metrics import ExponentialMovingAverage
 from duelpy.stats.metrics import TotalWallClock
 from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
 
@@ -60,6 +62,10 @@ def run_single_algorithm(
         "wall_clock": TotalWallClock(),
         "cum_average_regret": Cumulative(
             AverageRegret(feedback_mechanism.preference_matrix)
+        ),
+        "best_arm_rate (EMA)": ExponentialMovingAverage(
+            BestArmRate(feedback_mechanism.preference_matrix.get_condorcet_winner()),
+            alpha=0.01,
         ),
     }
     wrapped_feedback = MetricKeepingFeedbackMechanism(
@@ -156,7 +162,7 @@ def plot_results(data: pd.DataFrame) -> None:
         wall_clock.
     """
     sns.set()
-    _fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    _fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3)
     sns.lineplot(
         data=data,
         x="time_step",
@@ -170,12 +176,22 @@ def plot_results(data: pd.DataFrame) -> None:
     sns.lineplot(
         data=data,
         x="time_step",
-        y="wall_clock",
+        y="best_arm_rate",
         hue="algorithm",
         style="algorithm",
         ci=None,
         linewidth=2,
         ax=ax2,
+    )
+    sns.lineplot(
+        data=data,
+        x="time_step",
+        y="wall_clock",
+        hue="algorithm",
+        style="algorithm",
+        ci=None,
+        linewidth=2,
+        ax=ax3,
     )
     plt.show()
 
