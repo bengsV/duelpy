@@ -1,6 +1,10 @@
 """Decorators to alter the behavior of feedback mechanisms."""
 
+from typing import Dict
+from typing import List
+
 from duelpy.feedback import FeedbackMechanism
+from duelpy.stats.metrics import Metric
 from duelpy.util.exceptions import AlgorithmFinishedException
 
 
@@ -58,6 +62,75 @@ class FeedbackMechanismDecorator(FeedbackMechanism):
     def get_num_arms(self) -> int:
         """Get the number of arms."""
         return self.feedback_mechanism.get_num_arms()
+
+
+class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
+    """A feedback mechanism that updates a set of metrics on every duel.
+
+    This can be used if you want to keep track on some aspects of an algorithms
+    performance during its execution.
+
+    Examples
+    --------
+    Define a very simple preference-based multi-armed bandit problem through a
+    preference matrix:
+
+    >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.preference_matrix import PreferenceMatrix
+    >>> import numpy as np
+    >>> random_state = np.random.RandomState(42)
+    >>> preference_matrix = PreferenceMatrix(np.array([
+    ...     [0.5, 0.8],
+    ...     [0.2, 0.5],
+    ... ]))
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
+
+    Now let's run an algorithm on this problem and keep track of the cumulative
+    regret:
+
+    >>> from duelpy.algorithms import Savage
+    >>> from duelpy.stats.metrics import AverageRegret, Cumulative
+    >>> metric_keeping_feedback = MetricKeepingFeedbackMechanism(
+    ...     feedback_mechanism,
+    ...     metrics={"average_regret": Cumulative(AverageRegret(preference_matrix))},
+    ... )
+    >>> algorithm = Savage(metric_keeping_feedback)
+    >>> algorithm.run()
+    >>> metric_keeping_feedback.results
+    {'average_regret': [0.150..., 0.300...]}
+    """
+
+    def __init__(
+        self, feedback_mechanism: FeedbackMechanism, metrics: Dict[str, Metric]
+    ):
+        super().__init__(feedback_mechanism)
+        self.metrics = metrics
+        self.results: Dict[str, List[float]] = {key: [] for key in metrics.keys()}
+
+    def duel(self, arm_i_index: int, arm_j_index: int) -> bool:
+        """Perform a duel between two arms.
+
+        Parameters
+        ----------
+        arm_i_index
+            The index of challenger arm.
+        arm_j_index
+            The index of arm to compare against.
+
+        Raises
+        ------
+        AlgorithmFinishedException
+            If the budget would be exceeded by this duel.
+
+        Returns
+        -------
+        bool
+            True if arm_i wins.
+        """
+        result = super().duel(arm_i_index, arm_j_index)
+        for (name, metric) in self.metrics.items():
+            self.results[name].append(metric(arm_i_index, arm_j_index))
+        return result
 
 
 class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
