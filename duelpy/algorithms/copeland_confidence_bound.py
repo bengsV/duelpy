@@ -96,6 +96,8 @@ class CopelandConfidenceBound(SingleCopelandProducer):
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import AverageCopelandRegret
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
@@ -103,14 +105,16 @@ class CopelandConfidenceBound(SingleCopelandProducer):
     ... ])
     >>> arms = list(range(len(preference_matrix)))
     >>> random_state = np.random.RandomState(20)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix, arms, random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, arms, random_state=random_state),
+    ...     metrics={"copeland_regret": AverageCopelandRegret(preference_matrix)}
+    ... )
     >>> ccb = CopelandConfidenceBound(feedback_mechanism=feedback_mechanism, exploratory_constant=0.6, time_horizon=100, random_state=random_state)
     >>> ccb.run()
 
     The best arm in this case is the last arm (index 2)
 
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_average_copeland_regret()
-    >>> np.round(cumul_regret, 2)
+    >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     47.25
     >>> ccb.get_copeland_winner()
     2

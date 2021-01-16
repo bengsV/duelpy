@@ -61,19 +61,23 @@ class DoubleThompsonSampling(SingleCopelandProducer):
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import AverageCopelandRegret
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5]
     ... ])
     >>> random_state = np.random.RandomState(20)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"copeland_regret": AverageCopelandRegret(preference_matrix)}
+    ... )
     >>> test_object = DoubleThompsonSampling(feedback_mechanism, random_state=random_state, time_horizon=100)
     >>> test_object.run()
     >>> test_object.get_copeland_winner()
     2
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_average_copeland_regret()
-    >>> np.round(cumul_regret, 2)
+    >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     17.5
     """
 
@@ -261,19 +265,23 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import AverageCopelandRegret
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5]
     ... ])
     >>> random_state = np.random.RandomState(20)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"copeland_regret": AverageCopelandRegret(preference_matrix)}
+    ... )
     >>> test_object = DoubleThompsonSamplingPlus(feedback_mechanism, exploratory_constant=0.51, random_state=random_state, time_horizon=100)
     >>> test_object.run()
     >>> test_object.get_copeland_winner()
     2
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_average_copeland_regret()
-    >>> np.round(cumul_regret, 2)
+    >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     52.5
     """
 
