@@ -9,6 +9,7 @@ import numpy as np
 from duelpy.stats.preference_matrix import PreferenceMatrix
 
 __all__ = [
+    "BestArmRate",
     "Metric",
     "AverageRegret",
     "StrongRegret",
@@ -258,3 +259,30 @@ class Cumulative(Metric):
         """Compute the new metric value and add it to the accumulator."""
         self.accumulator += self.metric(arm_i_index, arm_j_index)
         return self.accumulator
+
+
+class BestArmRate(Metric):
+    """The rate of pulling the best arm.
+
+    Parameters
+    ----------
+    best_arm
+        The index of the best arm.
+
+    Examples
+    --------
+    >>> BestArmRate(best_arm=1)(1, 2)
+    0.5
+    """
+
+    def __init__(self, best_arm: int) -> None:
+        self.best_arm = best_arm
+
+    def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
+        """Compute the best arm rate for a duel."""
+        best_arm_rate = 0.0
+        if arm_i_index == self.best_arm:
+            best_arm_rate += 0.5
+        if arm_j_index == self.best_arm:
+            best_arm_rate += 0.5
+        return best_arm_rate
