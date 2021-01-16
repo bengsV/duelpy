@@ -44,6 +44,8 @@ class WinnerStaysWeakRegret(Algorithm):
     matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import WeakRegret
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.4, 0.4],
     ...     [0.6, 0.5, 0.3],
@@ -51,12 +53,14 @@ class WinnerStaysWeakRegret(Algorithm):
     ... ])
 
     >>> random_state = np.random.RandomState(3)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"weak_regret": WeakRegret(preference_matrix)}
+    ... )
     >>> ws_wr = WinnerStaysWeakRegret(feedback_mechanism, random_state=random_state)
     >>> for t in range(100):
     ...    ws_wr.step()
-    >>> regret_history, cumulative_regret = feedback_mechanism.calculate_weak_regret(2)
-    >>> np.round(cumulative_regret, 2)
+    >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
     0.6
     """
 
@@ -172,18 +176,22 @@ class WinnerStaysStrongRegret(Algorithm):
     matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import StrongRegret
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
     ... ])
     >>> random_state = np.random.RandomState(1)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"strong_regret": StrongRegret(preference_matrix)}
+    ... )
     >>> ws_wr = WinnerStaysStrongRegret(feedback_mechanism, random_state=random_state)
     >>> for t in range(100):
     ...     ws_wr.step()
-    >>> regret_history, cumulative_regret = feedback_mechanism.calculate_strong_regret(2)
-    >>> np.round(cumulative_regret, 2)
+    >>> np.round(np.sum(feedback_mechanism.results["strong_regret"]), 2)
     1.8
     """
 

@@ -66,20 +66,26 @@ class BeatTheMeanBandit(CondorcetProducer):
     matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
-    >>> preference_matrix = np.array([
+    >>> from duelpy.stats.metrics import AverageRegret
+    >>> from duelpy.stats.preference_matrix import PreferenceMatrix
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
+    >>> preference_matrix = PreferenceMatrix(np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5],
-    ... ])
+    ... ]))
     >>> random_state = np.random.RandomState(43)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"average_regret": AverageRegret(preference_matrix)}
+    ... )
     >>> time_horizon = 10000  # time horizon greater than or equal to number of arms.
     >>> btm = BeatTheMeanBandit(feedback_mechanism=feedback_mechanism, time_horizon=time_horizon, random_state=random_state, gamma=1.0)
     >>> btm.run()
     >>> best_arm = btm.get_condorcet_winner()
     >>> best_arm
     2
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_average_regret(best_arm=best_arm)
+    >>> cumul_regret = np.sum(feedback_mechanism.results["average_regret"])
     >>> np.round(cumul_regret, 2)
     903.1
     """
