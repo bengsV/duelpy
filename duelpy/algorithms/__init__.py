@@ -1,5 +1,4 @@
 """Various algorithms to solve Preference-Based Multi-Armed Bandit Problems."""
-
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBanditPAC
@@ -18,6 +17,8 @@ from duelpy.algorithms.relative_confidence_sampling import RelativeConfidenceSam
 from duelpy.algorithms.relative_ucb import RelativeUCB
 from duelpy.algorithms.savage import Savage
 from duelpy.algorithms.sequential_elimination import SequentialElimination
+from duelpy.algorithms.single_elimination_tournament import SingleEliminationTop1Select
+from duelpy.algorithms.single_elimination_tournament import SingleEliminationTopKSorting
 from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
 from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
 
@@ -46,6 +47,8 @@ algorithm_list = [
     MallowsMPR,
     Multisort,
     SequentialElimination,
+    SingleEliminationTopKSorting,
+    SingleEliminationTop1Select,
     DoubleThompsonSampling,
     DoubleThompsonSamplingPlus,
     PlackettLucePACItem,
