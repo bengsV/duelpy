@@ -58,6 +58,19 @@ class CopelandRankingProducer(Algorithm):
         raise NotImplementedError
 
 
+class PartialRankingProducer(Algorithm):
+    """An Algorithm that computes or estimates the partial ranking over the arms."""
+
+    def get_partial_ranking(self) -> Optional[Collection[int]]:
+        """Return the computed partial ranking if it is ready.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times. If this is a PAC algorithm, the result
+        might be approximate.
+        """
+        raise NotImplementedError
+
+
 class AllApproximateCondorcetProducer(Algorithm):
     """An Algorithm that approximates the Condorcet winner."""
 
