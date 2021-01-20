@@ -40,14 +40,14 @@ class SortingAlgorithm:
 
 
 class MergeSort(SortingAlgorithm):
-    """MergeSort algorithm.
+    """Implement the Mergesort algorithm.
 
     Parameters
     ----------
     items
         The list of indices to compare.
     compare_fn
-        A function comparing two indices, the returned value should be ``1`` if the first one should precede the second one and ``-1``. Optionally, if no order can be determined (yet), ``0`` can be returned to defer the decision.
+        A function comparing two indices, the returned value should be ``1`` if the first one should precede the second one and ``-1`` otherwise. Optionally, if no order can be determined (yet), ``0`` can be returned to defer the decision.
     random_state
         Used for randomization of the pivot selection.
 
@@ -170,7 +170,7 @@ class MergeSort(SortingAlgorithm):
 
 
 class Quicksort(SortingAlgorithm):
-    """Quicksort algorithm.
+    """Implement the Quicksort algorithm.
 
     Some algorithms depend on Quicksort to rank arms, in order to support a step function, Quicksort is implemented with the ability to advance single sorting steps.
 
