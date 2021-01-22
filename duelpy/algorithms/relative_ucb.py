@@ -59,13 +59,18 @@ class RelativeUCB(Algorithm):
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import WeakRegret
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
     ...     [0.9, 0.7, 0.5]
     ... ])
     >>> random_state = np.random.RandomState(43)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"weak_regret": WeakRegret(preference_matrix)}
+    ... )
     >>> test_object = RelativeUCB(
     ...     feedback_mechanism=feedback_mechanism,
     ...     time_horizon=100,
@@ -75,8 +80,7 @@ class RelativeUCB(Algorithm):
     >>> test_object.run()
     >>> test_object.get_champion()
     2
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_weak_regret(2)
-    >>> np.round(cumul_regret,2)
+    >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
     5.6
     """
 

@@ -9,7 +9,6 @@ Algorithm performance.
 import argparse
 import inspect
 import time
-from typing import Any
 from typing import Dict
 from typing import Generator
 from typing import List
@@ -26,6 +25,12 @@ from duelpy.algorithms import Algorithm
 from duelpy.algorithms import algorithm_list
 from duelpy.experiments.environments import environment_list
 from duelpy.feedback import MatrixFeedback
+from duelpy.stats.metrics import AverageRegret
+from duelpy.stats.metrics import BestArmRate
+from duelpy.stats.metrics import Cumulative
+from duelpy.stats.metrics import ExponentialMovingAverage
+from duelpy.stats.metrics import TotalWallClock
+from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
 
 
 def run_single_algorithm(
@@ -37,19 +42,6 @@ def run_single_algorithm(
     run_id: int,
 ) -> pd.DataFrame:
     """Execute one algorithm for one problem setting and return the results."""
-    # This function has to juggle with a lot of data and put it into a shape
-    # that is convenient for plotting. In the future it might be a good idea to
-    # move this into a stats module or into the FeedbackMechanism itself, but
-    # for now we need all those locals.
-    # pylint: disable=too-many-locals
-    data: Dict[str, Any] = {
-        "algorithm": [],
-        "run_id": [],
-        "time_step": [],
-        "wall_clock": [],
-        "cum_average_regret": [],
-    }
-
     environment_parameters = {
         "num_arms": num_arms,
         "random_state": task_random_state,
@@ -66,35 +58,31 @@ def run_single_algorithm(
     # actually expects. We have to take care that all our environments adhere
     # to this constructor convention.
     feedback_mechanism = environment_class(**environment_parameters)
+    metrics = {
+        "wall_clock": TotalWallClock(),
+        "cum_average_regret": Cumulative(
+            AverageRegret(feedback_mechanism.preference_matrix)
+        ),
+        "best_arm_rate (EMA)": ExponentialMovingAverage(
+            BestArmRate(feedback_mechanism.preference_matrix.get_condorcet_winner()),
+            alpha=0.01,
+        ),
+    }
+    wrapped_feedback = MetricKeepingFeedbackMechanism(
+        feedback_mechanism, metrics=metrics
+    )
     # Filter accepted parameters.
     parameters["random_state"] = task_random_state
     parameters_to_pass = dict()
     for parameter in parameters.keys():
         if parameter in inspect.getfullargspec(algorithm_class.__init__)[0]:
             parameters_to_pass[parameter] = parameters[parameter]
-    algorithm = algorithm_class(feedback_mechanism, **parameters_to_pass)
-    best = feedback_mechanism.preference_matrix.get_condorcet_winner()
-    assert best is not None
-    start_time = time.time()
-    elapsed = dict()
-    while not algorithm.is_finished():
-        algorithm.step()
-        elapsed[feedback_mechanism.get_num_duels()] = time.time() - start_time
-    (regret_history, _) = feedback_mechanism.calculate_average_regret(best_arm=best)
-    cumulative_regret = 0.0
-    data["algorithm"].append(algorithm_class.__name__)
-    data["run_id"].append(run_id)
-    data["time_step"].append(0)
-    data["cum_average_regret"].append(0)
-    data["wall_clock"].append(0)
-    for (time_step, regret_value) in enumerate(regret_history, start=1):
-        cumulative_regret += regret_value
-        data["algorithm"].append(algorithm_class.__name__)
-        data["run_id"].append(run_id)
-        data["time_step"].append(time_step)
-        data["cum_average_regret"].append(cumulative_regret)
-        data["wall_clock"].append(elapsed[time_step] if time_step in elapsed else None)
-    return pd.DataFrame(data)
+    algorithm_class(wrapped_feedback, **parameters_to_pass).run()
+    data_frame = pd.DataFrame(wrapped_feedback.results)
+    data_frame["algorithm"] = algorithm_class.__name__
+    data_frame["run_id"] = run_id
+    data_frame["time_step"] = range(1, len(data_frame) + 1)
+    return data_frame
 
 
 # This function will be replaced in order to make the experiments more
@@ -174,7 +162,7 @@ def plot_results(data: pd.DataFrame) -> None:
         wall_clock.
     """
     sns.set()
-    _fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2)
+    _fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3)
     sns.lineplot(
         data=data,
         x="time_step",
@@ -188,12 +176,22 @@ def plot_results(data: pd.DataFrame) -> None:
     sns.lineplot(
         data=data,
         x="time_step",
-        y="wall_clock",
+        y="best_arm_rate",
         hue="algorithm",
         style="algorithm",
         ci=None,
         linewidth=2,
         ax=ax2,
+    )
+    sns.lineplot(
+        data=data,
+        x="time_step",
+        y="wall_clock",
+        hue="algorithm",
+        style="algorithm",
+        ci=None,
+        linewidth=2,
+        ax=ax3,
     )
     plt.show()
 

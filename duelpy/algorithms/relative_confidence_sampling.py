@@ -69,6 +69,9 @@ class RelativeConfidenceSampling(CondorcetProducer):
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
+    >>> from duelpy.stats.metrics import WeakRegret
+    >>> from duelpy.stats.preference_matrix import PreferenceMatrix
+    >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
     ...     [0.9, 0.5, 0.3],
@@ -76,14 +79,16 @@ class RelativeConfidenceSampling(CondorcetProducer):
     ... ])
     >>> arms = list(range(len(preference_matrix)))
     >>> random_state = np.random.RandomState(20)
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix, arms, random_state)
+    >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
+    ...     MatrixFeedback(preference_matrix, random_state=random_state),
+    ...     metrics={"weak_regret": WeakRegret(preference_matrix)}
+    ... )
     >>> rcs = RelativeConfidenceSampling(feedback_mechanism=feedback_mechanism, time_horizon=100, exploratory_constant=0.6, random_state=random_state)
     >>> rcs.run()
 
     The best arm in this case is the last arm (index 2)
 
-    >>> regret_history, cumul_regret = feedback_mechanism.calculate_weak_regret(best_arm=2)
-    >>> np.round(cumul_regret, 2)
+    >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
     0.8
     >>> rcs.get_condorcet_winner()
     2
