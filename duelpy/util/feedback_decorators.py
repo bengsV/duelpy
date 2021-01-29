@@ -70,6 +70,20 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
     This can be used if you want to keep track on some aspects of an algorithms
     performance during its execution.
 
+    Parameters
+    ----------
+    feedback_mechanism
+        The FeedbackMechanism object to delegate to.
+    metrics
+        A dictionary of metrics to apply, keyed by their name.
+
+    Attributes
+    ----------
+    feedback_mechanism
+    metrics
+    results
+        A dictionary of lists, keyed by the names of the metrics.
+
     Examples
     --------
     Define a very simple preference-based multi-armed bandit problem through a
