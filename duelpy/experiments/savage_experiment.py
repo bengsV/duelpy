@@ -176,7 +176,7 @@ def plot_results(data: pd.DataFrame) -> None:
     sns.lineplot(
         data=data,
         x="time_step",
-        y="best_arm_rate",
+        y="best_arm_rate (EMA)",
         hue="algorithm",
         style="algorithm",
         ci=None,
