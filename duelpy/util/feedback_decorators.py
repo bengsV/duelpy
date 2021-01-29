@@ -76,11 +76,14 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
         The FeedbackMechanism object to delegate to.
     metrics
         A dictionary of metrics to apply, keyed by their name.
+    sample_interval
+        The number of time steps per sample.
 
     Attributes
     ----------
     feedback_mechanism
     metrics
+    sample_interval
     results
         A dictionary of lists, keyed by the names of the metrics.
 
@@ -115,11 +118,18 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
     """
 
     def __init__(
-        self, feedback_mechanism: FeedbackMechanism, metrics: Dict[str, Metric]
+        self,
+        feedback_mechanism: FeedbackMechanism,
+        metrics: Dict[str, Metric],
+        sample_interval: int = 1,
     ):
         super().__init__(feedback_mechanism)
         self.metrics = metrics
+        self.sample_interval = sample_interval
         self.results: Dict[str, List[float]] = {key: [] for key in metrics.keys()}
+        # Always add an implicit "time step metric". Can be seen as a key or
+        # index for the other metrics.
+        self.results["time_step"] = []
 
     def duel(self, arm_i_index: int, arm_j_index: int) -> bool:
         """Perform a duel between two arms.
@@ -143,7 +153,12 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
         """
         result = super().duel(arm_i_index, arm_j_index)
         for (name, metric) in self.metrics.items():
-            self.results[name].append(metric(arm_i_index, arm_j_index))
+            # Always call the metric, in case it keeps some internal state.
+            metric_value = metric(arm_i_index, arm_j_index)
+            if self.get_num_duels() % self.sample_interval == 0:
+                self.results[name].append(metric_value)
+        if self.get_num_duels() % self.sample_interval == 0:
+            self.results["time_step"].append(self.get_num_duels())
         return result
 
 
