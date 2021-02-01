@@ -39,6 +39,7 @@ def run_single_algorithm(
     algorithm_class: Type[Algorithm],
     environment_class: Type[MatrixFeedback],
     parameters: Dict,
+    sample_interval: int,
     run_id: int,
 ) -> pd.DataFrame:
     """Execute one algorithm for one problem setting and return the results."""
@@ -69,7 +70,7 @@ def run_single_algorithm(
         ),
     }
     wrapped_feedback = MetricKeepingFeedbackMechanism(
-        feedback_mechanism, metrics=metrics
+        feedback_mechanism, metrics=metrics, sample_interval=sample_interval
     )
     # Filter accepted parameters.
     parameters["random_state"] = task_random_state
@@ -81,7 +82,6 @@ def run_single_algorithm(
     data_frame = pd.DataFrame(wrapped_feedback.results)
     data_frame["algorithm"] = algorithm_class.__name__
     data_frame["run_id"] = run_id
-    data_frame["time_step"] = range(1, len(data_frame) + 1)
     return data_frame
 
 
@@ -92,6 +92,7 @@ def run_experiment(
     algorithms: List[Type[Algorithm]],
     environment_class: Type[MatrixFeedback],
     time_horizon: int,
+    sample_interval: int,
     num_arms: int,
     runs: int,
     n_jobs: int,
@@ -142,6 +143,7 @@ def run_experiment(
                     algorithm_class,
                     environment_class,
                     parameters,
+                    sample_interval,
                     run_id,
                 )
 
@@ -245,6 +247,13 @@ def _main() -> None:
         help="For how many time steps to run each algorithm. (default: 1e4)",
     )
     parser.add_argument(
+        "--sample-interval",
+        dest="sample_interval",
+        default=1,
+        type=int,
+        help="The number of time steps per sample.",
+    )
+    parser.add_argument(
         "--random-seed",
         dest="base_random_seed",
         default=42,
@@ -277,12 +286,14 @@ def _main() -> None:
         environment_class=environment,
         n_jobs=1 if args.profile else args.n_jobs,
         time_horizon=args.time_horizon,
+        sample_interval=args.sample_interval,
         num_arms=args.num_arms,
         runs=args.runs,
         base_random_seed=args.base_random_seed,
     )
     if args.profile:
-        final_results = results[results["time_step"] == args.time_horizon]
+        last_sample = (args.time_horizon // args.sample_interval) * args.sample_interval
+        final_results = results[results["time_step"] == last_sample]
         averaged_times = (
             final_results[["algorithm", "wall_clock"]].groupby(["algorithm"]).mean()
         )
