@@ -9,7 +9,7 @@ from duelpy.feedback import MatrixFeedback
 from duelpy.stats.preference_matrix import PreferenceMatrix
 
 
-class Mallows(MatrixFeedback):
+class MallowsModel(MatrixFeedback):
     r"""A feedback-mechanism based on the Mallows model.
 
     The probability of a ranking depends on a spread parameter :math:`\phi \in (0,1]` and the Kendall distance to the ground truth ranking. For :math:`\phi=1`, a uniform distribution over all permutations results, lower values will have higher probabilities for rankings close to the ground truth.
