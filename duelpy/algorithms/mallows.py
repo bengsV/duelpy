@@ -143,12 +143,9 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
         else:
             return None
 
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return len(self._current_arms) == 0
+        return len(self._current_arms) == 0
 
 
 class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
@@ -301,12 +298,9 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
         else:
             self.exploit()
 
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the ranking has been found."""
-        if self.time_horizon is not None:
-            return self.time_horizon <= self.feedback_mechanism.get_num_duels()
-        else:
-            return self._ranking is not None
+        return self._ranking is not None
 
     def get_ranking(self) -> Optional[List[int]]:
         """Get the computed ranking.

@@ -163,18 +163,6 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
         """
         return self.comparison_history.size_working_set <= 1
 
-    def is_finished(self) -> bool:
-        """Determine whether the termination conditions are met.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
-
     def remove_from_working_set(self, worst_arm: int) -> None:
         """Remove the worst arm from the working set and update the comparison statistics.
 

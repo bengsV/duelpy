@@ -102,19 +102,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         """
         return self._anchor_arm is not None
 
-    def is_finished(self) -> bool:
-        """Determine whether algorithm has completed execution.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self.exploration_finished()
-
     def step(self) -> None:
         """Take a step in the algorithm.
 

@@ -153,8 +153,8 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
             self.exploit()
         self.time_step += 1
 
-    def is_finished(self) -> bool:
-        """Determine if the algorithm execution is finished.
+    def exploration_finished(self) -> bool:
+        """Determine if the exploration is finished.
 
         The execution is finished when the time horizon is reached or when no time horizon was given and the Condorcet winner has been found".
 
@@ -163,10 +163,7 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         bool
             Whether the algorithm is finished.
         """
-        return (self.time_horizon is None and len(self.tournament_arms) == 1) or (
-            self.time_horizon is not None
-            and self.time_horizon <= self.feedback_mechanism.get_num_duels()
-        )
+        return len(self.tournament_arms) == 1
 
     def get_condorcet_winner(self) -> Optional[int]:
         """Get the estimated Condorcet winner if it is ready.

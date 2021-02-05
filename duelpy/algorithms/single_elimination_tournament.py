@@ -200,18 +200,6 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
         """
         return self.exploration_steps > int(np.ceil(np.log(len(self.arms))))
 
-    def is_finished(self) -> bool:
-        """Determine if the algorithm is finished.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
-
     def get_condorcet_winner(self) -> Optional[int]:
         """Return the estimated PAC-Condorcet winner.
 
@@ -515,18 +503,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         computing a PAC Copeland winner.
         """
         return len(self.top_k_arms) == self.k_top_ranked
-
-    def is_finished(self) -> bool:
-        """Determine if the algorithm is finished.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
 
     def get_partial_ranking(self) -> Optional[List[int]]:
         """Return the copeland winner given by the algorithm.

@@ -223,12 +223,9 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
         else:
             self.explore()
 
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self._condorcet_winners is not None
+        return self._condorcet_winners is not None
 
     def get_approximate_condorcet_winners(self) -> Optional[List[int]]:
         """Get the arm with the highest probability of being the first in a ranking of the arms.
@@ -483,9 +480,6 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
         """
         return self._ranking
 
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self._ranking is not None
+        return self._ranking is not None

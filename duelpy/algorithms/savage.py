@@ -236,34 +236,10 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
         this function returns ``True``, the algorithm will have finished
         computing a PAC Copeland winner.
         """
-        return len(self._relevant_arm_combinations) == 0
-
-    def is_finished(self) -> bool:
-        """Determine whether enough data for a PAC prediction is available.
-
-        Once this function returns ``True``, you can query the
-        probably-approximately-correct result with the
-        ``get_copeland_winner`` function.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
         # in the reference paper.
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
-
-    def run(self) -> None:
-        """Run the algorithm until it can make a prediction.
-
-        The prediction can then be queried with the ``get_copeland_winner`` function.
-        """
-        while not self.is_finished():
-            self.step()
+        return len(self._relevant_arm_combinations) == 0
 
     def get_copeland_winner(self) -> Optional[int]:
         r"""Find a Copeland winner with the SAVAGE algorithm.
