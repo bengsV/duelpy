@@ -112,15 +112,7 @@ class OptMax(SingleCopelandProducer):
         if self.time_horizon is not None:
             return self.feedback_mechanism.get_num_duels() >= self.time_horizon
         else:
-            return False
-
-    def run(self) -> None:
-        """Run the algorithm until completion.
-
-        Completion is determined through the combination of exploration_finished and is_finished methods.
-        """
-        while not self.is_finished() and not self.exploration_finished():
-            self.step()
+            return self.exploration_finished()
 
     def step(self) -> None:
         """Take a step in the algorithm.
