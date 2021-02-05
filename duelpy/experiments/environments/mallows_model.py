@@ -45,7 +45,7 @@ class MallowsModel(MatrixFeedback):
                     "All indices from 0 to num_arms-1 must occur exactly once in the ground truth ranking."
                 )
         else:
-            ground_truth_ranking = list(self.random_state.permutation(num_arms))
+            ground_truth_ranking = list(random_state.permutation(num_arms))
         self._ground_truth_ranking = ground_truth_ranking
         arm_rank = np.argsort(
             ground_truth_ranking
@@ -59,11 +59,17 @@ class MallowsModel(MatrixFeedback):
         self.spread = spread
 
         def h_function(k: int) -> float:
-            """See h in the reference."""
+            """Compute the h function.
+
+            As defined in Theorem 2 of :cite:`busa2014preference`.
+            """
             return k / (1 - np.pow(spread, k))
 
         def g_function(rank_1: int, rank_2: int) -> float:
-            """See g in the reference."""
+            """Compute the g function.
+
+            As defined in Theorem 2 of :cite:`busa2014preference`.
+            """
             difference = rank_2 - rank_1
             return h_function(difference + 1) - h_function(difference)
 
@@ -80,7 +86,7 @@ class MallowsModel(MatrixFeedback):
         super().__init__(preference_matrix=preference_matrix, random_state=random_state)
 
     def get_best_arms(self) -> List[int]:
-        """Get a list of all best arms. This can (and usually is) only be the Condorcet winner. But if multiple arms have the same maximal skill value, they are returned as Copeland winners.
+        """Get a list of all best arms. This is only the Condorcet winner.
 
         Returns
         -------
