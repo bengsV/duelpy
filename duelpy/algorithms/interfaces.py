@@ -6,6 +6,43 @@ from typing import Optional
 from duelpy.algorithms.algorithm import Algorithm
 
 
+class PacAlgorithm(Algorithm):
+    """A PAC algorithm with optional exploitation."""
+
+    def exploration_finished(self) -> bool:
+        """Determine whether the exploration phase is finished.
+
+        Returns
+        -------
+        bool
+            True if the exploration phase is finished.
+        """
+        raise NotImplementedError()
+
+    def is_finished(self) -> bool:
+        """Determine if the algorithm is finished.
+
+        If a time horizon is given ("regret minimizing mode"), this function
+        returns true if and only if the time horizon has been reached. The time
+        horizon serves as both an upper and a lower bound, the
+        ``exploration_finished`` condition is ignored.
+
+        If no time horizon is given ("PAC mode") this function delegates to
+        ``exploration_finished``.
+
+        Returns
+        -------
+        bool
+            True if the algorithm is finished and should be stopped.
+        """
+        if self.time_horizon is not None:
+            # "Regret-minimizing mode"
+            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
+        else:
+            # "PAC mode"
+            return self.exploration_finished()
+
+
 class CondorcetProducer(Algorithm):
     """An Algorithm that computes or estimates a Condorcet winner."""
 
