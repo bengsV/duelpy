@@ -108,7 +108,7 @@ class AllCopelandProducer(Algorithm):
 class CopelandRankingProducer(Algorithm):
     """An Algorithm that computes or estimates the Copeland ranking over the arms."""
 
-    def get_ranking(self) -> Optional[Collection[int]]:
+    def get_ranking(self) -> Optional[List[int]]:
         """Return the computed Copeland ranking if it is ready.
 
         This will only return a result when ``step`` has been called a
@@ -121,7 +121,7 @@ class CopelandRankingProducer(Algorithm):
 class PartialRankingProducer(Algorithm):
     """An Algorithm that computes or estimates the partial ranking over the arms."""
 
-    def get_partial_ranking(self) -> Optional[Collection[int]]:
+    def get_partial_ranking(self) -> Optional[List[int]]:
         """Return the computed partial ranking if it is ready.
 
         This will only return a result when ``step`` has been called a
