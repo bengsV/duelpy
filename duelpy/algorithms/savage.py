@@ -6,13 +6,14 @@ from typing import Tuple
 
 import numpy as np
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
-class Savage(SingleCopelandProducer):
+class Savage(SingleCopelandProducer, PacAlgorithm):
     r"""Determine the PAC-best arm with the SAVAGE algorithm.
 
     This algorithm makes no assumptions about the environment.

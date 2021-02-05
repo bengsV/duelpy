@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import PartialRankingProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.preference_estimate import PreferenceEstimate
@@ -46,7 +47,7 @@ def _compute_binary_comparisons(
     )
 
 
-class SingleEliminationTop1Select(CondorcetProducer):
+class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
     r"""The Top-1 Selection part of Single-Elimination Tournament.
 
     The goal of this algorithm is to find the top (Rank = 1) arm while minimizing the exact sample complexity.
@@ -224,7 +225,7 @@ class SingleEliminationTop1Select(CondorcetProducer):
         return self.condorcet_winner
 
 
-class SingleEliminationTopKSorting(PartialRankingProducer):
+class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
     r"""Implements the top-k sorting algorithm in the Single-Elimination Tournament.
 
     The goal of this algorithm is to find the top-k arms while minimizing the exact sample complexity.

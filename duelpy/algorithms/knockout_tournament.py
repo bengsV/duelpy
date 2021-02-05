@@ -6,13 +6,14 @@ from typing import Optional
 import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.exceptions import AlgorithmFinishedException
 
 
-class KnockoutTournament(CondorcetProducer):
+class KnockoutTournament(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the knockout tournament algorithm.
 
     The goal of this algorithm is to find the :math:`\epsilon`-Condorcet winner while minimizing the number of comparisons.

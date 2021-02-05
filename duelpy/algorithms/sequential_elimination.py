@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -13,7 +14,7 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
-class SequentialElimination(SingleCopelandProducer):
+class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the Sequential Elimination algorithm.
 
     The goal of this algorithm is to find an epsilon-maximum arm.

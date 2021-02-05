@@ -6,6 +6,7 @@ import numpy as np
 
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import ConfidenceRadius
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -13,7 +14,7 @@ from duelpy.util.utility_functions import argmax_set
 from duelpy.util.utility_functions import argmin_set
 
 
-class BeatTheMeanBandit(CondorcetProducer):
+class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
     r"""Implements the 'Beat the Mean Bandit' algorithm.
 
     The goal of this algorithm is to find the Condorcet winner.

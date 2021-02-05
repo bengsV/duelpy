@@ -7,6 +7,7 @@ import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.algorithms.interfaces import CopelandRankingProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -16,7 +17,7 @@ from duelpy.util.sorting import SortingAlgorithm
 from duelpy.util.utility_functions import pop_random
 
 
-class MallowsMPI(CondorcetProducer):
+class MallowsMPI(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the Mallows Most Preferred Item algorithm.
 
     This algorithm finds the Condorcet winner with a given error probability.
@@ -150,7 +151,7 @@ class MallowsMPI(CondorcetProducer):
             return len(self._current_arms) == 0
 
 
-class MallowsMPR(CopelandRankingProducer):
+class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
     r"""Implementation of Mallows Most Probable Ranking Algorithm.
 
     This algorithm computes a Copeland ranking with a given error probability.

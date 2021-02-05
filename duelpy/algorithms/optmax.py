@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 from numpy.random import RandomState
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
@@ -14,7 +15,7 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
-class OptMax(SingleCopelandProducer):
+class OptMax(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the OptMax algorithm.
 
     The goal of this algorithm is to find a :math:`\epsilon`-maximum arm among the given arms.

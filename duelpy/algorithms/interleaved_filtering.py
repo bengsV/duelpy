@@ -6,12 +6,13 @@ from typing import Optional
 import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.stats.preference_estimate import PreferenceEstimate
 
 
-class InterleavedFiltering(CondorcetProducer):
+class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
     r"""Implements the Interleaved Filtering algorithm.
 
     This algorithm finds the Condorcet winner.

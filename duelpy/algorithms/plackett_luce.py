@@ -7,6 +7,7 @@ import numpy as np
 
 from duelpy.algorithms.interfaces import AllApproximateCondorcetProducer
 from duelpy.algorithms.interfaces import CopelandRankingProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -51,7 +52,7 @@ def determine_better_arm(
         return -1
 
 
-class PlackettLucePACItem(AllApproximateCondorcetProducer):
+class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
     r"""Implementation of the Plackett-Luce PAC-Item algorithm.
 
     This algorithm finds for a given confidence all arms that are :math:`\epsilon`-close to the Condorcet winner.
@@ -240,7 +241,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer):
         return self._condorcet_winners
 
 
-class PlackettLuceAMPR(CopelandRankingProducer):
+class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
     """Implementation of the Plackett-Luce Approximate Most Probable Ranking algorithm, which computes a ranking over the arms.
 
     This algorithm assumes the arms are sampled from the Plackett-Luce distribution. This distribution assigns utilities to arms, from which win probabilities can be inferred. For more information, see :cite:`szorenyi2015online`.
