@@ -138,7 +138,8 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         """
         # randomly select a competing arm and after the duel remove that element from arms list.
         random_competing_arm = utility.pop_random(
-            self._remaining_arms.copy(), random_state=np.random.RandomState()
+            self._remaining_arms.copy(),
+            random_state=self._random_state,
         )[0]
 
         try:
