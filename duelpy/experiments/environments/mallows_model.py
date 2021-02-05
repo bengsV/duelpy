@@ -12,7 +12,7 @@ from duelpy.stats.preference_matrix import PreferenceMatrix
 class MallowsModel(MatrixFeedback):
     r"""A feedback-mechanism based on the Mallows model.
 
-    The probability of a ranking depends on a spread parameter :math:`\phi \in (0,1]` and the Kendall distance to the ground truth ranking. For :math:`\phi=1`, a uniform distribution over all permutations results, lower values will have higher probabilities for rankings close to the ground truth.
+    The probability of a ranking depends on a spread parameter :math:`\phi \in (0,1]` and the Kendall distance to the ground truth ranking. For :math:`\phi=1`, a uniform distribution over all permutations results. Lower values will have higher probabilities for rankings close to the ground truth.
     For an overview of the probabilities for rankings and the resulting marginal probabilities for arm duels, see :cite:`busa2014preference`.
 
     Parameters
@@ -20,21 +20,20 @@ class MallowsModel(MatrixFeedback):
     num_arms
         The size of the preference matrix to generate.
     random_state
-        The numpy random state that will be used for sampling and the ground truth or spread, if they are not given.
+        The numpy random state that will be used for sampling and to generate the ground truth ranking if it is not given.
+    spread
+        Determines the spread of the resulting probability distribution from the ground truth.
     ground_truth_ranking
         Optional, an ordering of ``num_arms`` indices from 0 to ``num_arms-1`. The arm indices are assumed to be ordered from best to worst.
-    spread
-        Optional, determines the spread of the resulting probability distribution from the ground truth.
     """
 
     def __init__(
         self,
         num_arms: int,
         random_state: np.random.RandomState,
+        spread: float,
         ground_truth_ranking: Optional[List[int]] = None,
-        spread: float = 0.5,
     ):
-
         if ground_truth_ranking is not None:
             if len(ground_truth_ranking) != num_arms:
                 raise ValueError(
@@ -96,19 +95,17 @@ class MallowsModel(MatrixFeedback):
         return [self._best_arm]
 
     def get_arbitrary_ranking(self) -> List[int]:
-        """Get any correct ranking of the arms.
+        """Get the ground truth ranking of the arms.
 
         Returns
         -------
         List[int]
-            Any correct ranking of the arms, must not be the only correct one.
+            Ground truth ranking of the arms, must not be the only correct one.
         """
         return self._ground_truth_ranking
 
     def test_ranking(self, ranking: List[int]) -> bool:
-        r"""Check whether a ranking is admissible.
-
-        Generating all correct rankings might take too long (possibly :math:`\mathit{num\_arms}!` many), so we simply allow checking of given rankings.
+        r"""Check whether a ranking is equal to the ground truth ranking.
 
         Parameters
         ----------
