@@ -449,11 +449,6 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
 
         self._update_arm_bounds()
 
-    def exploit(self) -> None:
-        """Exploit the found ranking by pulling the top-ranked arm twice."""
-        assert self._ranking is not None
-        self.feedback_mechanism.duel(self._ranking[0], self._ranking[0])
-
     def step(self) -> None:
         """Execute one step of the algorithm."""
         if self._ranking is None:

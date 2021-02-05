@@ -136,11 +136,6 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
             worst_arm = self.comparison_history.get_worst_arm()
             self.remove_from_working_set(worst_arm)
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        best_arm = self.get_condorcet_winner()
-        self.feedback_mechanism.duel(arm_i_index=best_arm, arm_j_index=best_arm)
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 

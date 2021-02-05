@@ -136,12 +136,6 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         self.tournament_arms = winning_arms
         self.time_step += 1
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_condorcet_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def exploration_finished(self) -> bool:
         """Determine if the exploration is finished.
 

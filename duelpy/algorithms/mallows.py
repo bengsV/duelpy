@@ -116,10 +116,6 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
         ):
             self._best_arm = rival_arm
 
-    def exploit(self) -> None:
-        """Exploit the found best arm by pulling it twice."""
-        self.feedback_mechanism.duel(self._best_arm, self._best_arm)
-
     def get_condorcet_winner(self) -> Optional[int]:
         """Get the arm with the highest probability of being the first in a ranking of the arms.
 
@@ -275,11 +271,6 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
             pass
         if self._sorting_algorithm.is_finished():
             self._ranking = self._sorting_algorithm.get_result()
-
-    def exploit(self) -> None:
-        """Exploit the found ranking by pulling the top-ranked arm twice."""
-        assert self._ranking is not None
-        self.feedback_mechanism.duel(self._ranking[0], self._ranking[0])
 
     def exploration_finished(self) -> bool:
         """Determine whether the ranking has been found."""

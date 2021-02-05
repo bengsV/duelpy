@@ -179,12 +179,6 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
         self.condorcet_winner = self.arms[0]
         self.exploration_steps = self.exploration_steps + 1
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_condorcet_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 

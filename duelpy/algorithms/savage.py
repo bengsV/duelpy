@@ -212,12 +212,6 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
         # spreads the computation cost more evenly among the time steps.
         self._relevant_arm_combinations.difference_update(arms_to_remove)
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_copeland_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 

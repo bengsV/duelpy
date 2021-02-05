@@ -130,12 +130,6 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
             if self._anchor_arm in self._remaining_arms:
                 self._remaining_arms.remove(self._anchor_arm)
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_copeland_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def explore(self) -> None:
         """Compare the current anchor arm against a randomly selected arm.
 

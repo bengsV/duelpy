@@ -102,12 +102,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         """
         return self._anchor_arm is not None
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_copeland_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def explore(self) -> None:
         """Run one step of exploration.
 

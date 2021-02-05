@@ -189,13 +189,6 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
             self.arms_without_candidate.remove(self.candidate_arm)
         return updated_arms_without_candidate
 
-    def exploit(self) -> None:
-        """Execute one round of exploitation.
-
-        This simply compares the estimated Condorcet winner against itself, thereby making the best possible choice based on the available information.
-        """
-        self.feedback_mechanism.duel(self.candidate_arm, self.candidate_arm)
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
