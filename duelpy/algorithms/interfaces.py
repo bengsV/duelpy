@@ -1,6 +1,7 @@
 """Standardized interfaces for different kinds of Algorithms."""
 
 from typing import Collection
+from typing import List
 from typing import Optional
 
 from duelpy.algorithms.algorithm import Algorithm
@@ -78,6 +79,12 @@ class CondorcetProducer(Algorithm):
         """
         raise NotImplementedError
 
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winner = self.get_condorcet_winner()
+        assert winner is not None
+        self.feedback_mechanism.duel(winner, winner)
+
 
 class SingleCopelandProducer(Algorithm):
     """An Algorithm that computes or estimates one of the Copeland winners."""
@@ -90,6 +97,12 @@ class SingleCopelandProducer(Algorithm):
         might be approximate.
         """
         raise NotImplementedError
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winner = self.get_copeland_winner()
+        assert winner is not None
+        self.feedback_mechanism.duel(winner, winner)
 
 
 class AllCopelandProducer(Algorithm):
@@ -104,6 +117,16 @@ class AllCopelandProducer(Algorithm):
         """
         raise NotImplementedError
 
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winners = self.get_copeland_winners()
+        assert winners is not None and len(winners) > 0
+        # Pick any winner. The variance in the cumulative regret would be
+        # smaller if we picked one at random, but we do not have access to a
+        # random state here.
+        winner = list(winners)[0]
+        self.feedback_mechanism.duel(winner, winner)
+
 
 class CopelandRankingProducer(Algorithm):
     """An Algorithm that computes or estimates the Copeland ranking over the arms."""
@@ -116,6 +139,12 @@ class CopelandRankingProducer(Algorithm):
         might be approximate.
         """
         raise NotImplementedError
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        ranking = self.get_ranking()
+        assert ranking is not None
+        self.feedback_mechanism.duel(ranking[0], ranking[0])
 
 
 class PartialRankingProducer(Algorithm):
@@ -130,6 +159,12 @@ class PartialRankingProducer(Algorithm):
         """
         raise NotImplementedError
 
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        ranking = self.get_partial_ranking()
+        assert ranking is not None
+        self.feedback_mechanism.duel(ranking[0], ranking[0])
+
 
 class AllApproximateCondorcetProducer(Algorithm):
     """An Algorithm that approximates the Condorcet winner."""
@@ -141,3 +176,13 @@ class AllApproximateCondorcetProducer(Algorithm):
         sufficient amount of times.
         """
         raise NotImplementedError
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winners = self.get_approximate_condorcet_winners()
+        assert winners is not None and len(winners) > 0
+        # Pick any winner. The variance in the cumulative regret would be
+        # smaller if we picked one at random, but we do not have access to a
+        # random state here.
+        winner = list(winners)[0]
+        self.feedback_mechanism.duel(winner, winner)
