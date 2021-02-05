@@ -1,16 +1,17 @@
 """Find the Condorcet winner in a PB-MAB problem with Interleaved Filtering."""
 
 from typing import List
+from typing import Optional
 
 import numpy as np
 
-from duelpy.algorithms.algorithm import Algorithm
+from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.stats.preference_estimate import PreferenceEstimate
 
 
-class InterleavedFiltering(Algorithm):
+class InterleavedFiltering(CondorcetProducer):
     r"""Implements the Interleaved Filtering algorithm.
 
     This algorithm finds the Condorcet winner.
@@ -108,7 +109,7 @@ class InterleavedFiltering(Algorithm):
             ),
         )
 
-    def get_condorcet_winner(self) -> int:
+    def get_condorcet_winner(self) -> Optional[int]:
         """Return the estimated Condorcet winner, assuming the algorithm has already run.
 
         Returns
@@ -116,7 +117,7 @@ class InterleavedFiltering(Algorithm):
         candidate_arm
            The condorcet winner in the set of arms given to the algorithm.
         """
-        return self.candidate_arm
+        return self.candidate_arm if self.exploration_finished() else None
 
     def explore(self) -> None:
         r"""Execute one round of exploration."""
