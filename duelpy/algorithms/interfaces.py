@@ -9,6 +9,29 @@ from duelpy.algorithms.algorithm import Algorithm
 class PacAlgorithm(Algorithm):
     """A PAC algorithm with optional exploitation."""
 
+    def explore(self) -> None:
+        """Do one step of exploration."""
+        raise NotImplementedError()
+
+    def exploit(self) -> None:
+        """Do one step of exploitation."""
+        raise NotImplementedError()
+
+    def step(self) -> None:
+        """Run one step of the algorithm.
+
+        This corresponds to a logical step of the algorithm and may perform
+        multiple comparisons. What exactly a "logical step" is depends on the
+        algorithm.
+
+        This will delegate to either the ``explore`` or ``exploit`` function,
+        depending on whether or not the exploration is finished.
+        """
+        if not self.exploration_finished():
+            self.explore()
+        else:
+            self.exploit()
+
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
