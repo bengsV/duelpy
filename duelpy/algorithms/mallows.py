@@ -120,16 +120,6 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
         """Exploit the found best arm by pulling it twice."""
         self.feedback_mechanism.duel(self._best_arm, self._best_arm)
 
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if self.is_finished():
-            return
-
-        if len(self._current_arms) == 0:
-            self.exploit()
-        else:
-            self.explore()
-
     def get_condorcet_winner(self) -> Optional[int]:
         """Get the arm with the highest probability of being the first in a ranking of the arms.
 
@@ -290,13 +280,6 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
         """Exploit the found ranking by pulling the top-ranked arm twice."""
         assert self._ranking is not None
         self.feedback_mechanism.duel(self._ranking[0], self._ranking[0])
-
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if self._ranking is None:
-            self.explore()
-        else:
-            self.exploit()
 
     def exploration_finished(self) -> bool:
         """Determine whether the ranking has been found."""

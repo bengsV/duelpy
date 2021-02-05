@@ -102,24 +102,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         """
         return self._anchor_arm is not None
 
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Every step will check if the algorithm will explore or exploit.
-
-        Raises
-        ------
-        AlgorithmFinishedException
-            When number of duels reach time_horizon.
-        """
-        if not self.exploration_finished():
-            try:
-                self.explore()
-            except AlgorithmFinishedException:
-                pass
-        else:
-            self.exploit()
-
     def exploit(self) -> None:
         """Run one step of exploitation."""
         winner = self.get_copeland_winner()
@@ -131,16 +113,19 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
 
         Exploration is divided into 3 parts. For more details, refer to Algorithm 4 of :cite:`falahatgar2018limits`.
         """
-        if self._failure_probability <= 1 / np.power(
-            len(self.feedback_mechanism.get_arms()), 1 / 3
-        ):
-            self._anchor_arm = self.pick_anchor_for_low_range()
-        elif self._failure_probability <= 1 / np.log(
-            len(self.feedback_mechanism.get_arms())
-        ):
-            self._anchor_arm = self.pick_anchor_for_medium_range()
-        else:
-            self._anchor_arm = self.pick_anchor_for_high_range()
+        try:
+            if self._failure_probability <= 1 / np.power(
+                len(self.feedback_mechanism.get_arms()), 1 / 3
+            ):
+                self._anchor_arm = self.pick_anchor_for_low_range()
+            elif self._failure_probability <= 1 / np.log(
+                len(self.feedback_mechanism.get_arms())
+            ):
+                self._anchor_arm = self.pick_anchor_for_medium_range()
+            else:
+                self._anchor_arm = self.pick_anchor_for_high_range()
+        except AlgorithmFinishedException:
+            return
 
     def get_copeland_winner(self) -> Optional[int]:
         """Return the arm chosen by the algorithm as Copeland winner.
@@ -204,7 +189,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             anchor_arm=picked_anchor,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
         return seq_elim.get_copeland_winner()
 
@@ -279,7 +264,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             anchor_arm=selected_anchor_element,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
         return seq_elim.get_copeland_winner()
 
@@ -390,7 +375,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
                 anchor_arm=current_stage_anchor_arm,
                 time_horizon=_time_horizon,
             )
-            while not seq_elim.exploration_finished():
+            while not seq_elim.exploration_finished() and not seq_elim.is_finished():
                 seq_elim.explore()
             selected_copeland_arm = seq_elim.get_copeland_winner()
 
@@ -557,7 +542,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             arms_subset=pruned_arms,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
 
         candidate_anchor_arm = seq_elim.get_copeland_winner()
@@ -576,10 +561,12 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             arms_subset=arms,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
 
         _copeland_winner = seq_elim.get_copeland_winner()
+        if _copeland_winner is None:
+            raise AlgorithmFinishedException
         assert _copeland_winner is not None
         copeland_winner: int = _copeland_winner
         return copeland_winner

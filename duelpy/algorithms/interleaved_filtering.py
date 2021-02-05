@@ -204,10 +204,3 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
         computing a PAC Copeland winner.
         """
         return len(self.arms_without_candidate) == 0
-
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()

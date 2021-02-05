@@ -214,15 +214,6 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
             self.random_state.choice(self._condorcet_winners),
         )
 
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if self.is_finished():
-            return
-        if self._condorcet_winners is not None:
-            self.exploit()
-        else:
-            self.explore()
-
     def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
         return self._condorcet_winners is not None

@@ -134,24 +134,13 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
             return
 
         self.tournament_arms = winning_arms
+        self.time_step += 1
 
     def exploit(self) -> None:
         """Run one step of exploitation."""
         winner = self.get_condorcet_winner()
         assert winner is not None
         self.feedback_mechanism.duel(winner, winner)
-
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-        """
-        if len(self.tournament_arms) > 1:
-            self.explore()
-        else:
-            self.exploit()
-        self.time_step += 1
 
     def exploration_finished(self) -> bool:
         """Determine if the exploration is finished.

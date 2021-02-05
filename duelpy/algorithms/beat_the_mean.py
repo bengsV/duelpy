@@ -141,18 +141,6 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
         best_arm = self.get_condorcet_winner()
         self.feedback_mechanism.duel(arm_i_index=best_arm, arm_j_index=best_arm)
 
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        This includes choosing arms, comparing them and updating the estimates.
-        """
-        # When making the Condorcet assumption, the algorithm terminates only when one active arm remains,
-        # or when time horizon is reached.
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 

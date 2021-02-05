@@ -130,25 +130,6 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
             if self._anchor_arm in self._remaining_arms:
                 self._remaining_arms.remove(self._anchor_arm)
 
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-
-        Raises
-        ------
-        AlgorithmFinishedException
-            Number of duels has reached time_horizon.
-        """
-        if not self.exploration_finished():
-            try:
-                self.explore()
-            except AlgorithmFinishedException:
-                pass
-        else:
-            self.exploit()
-
     def exploit(self) -> None:
         """Run one step of exploitation."""
         winner = self.get_copeland_winner()
@@ -166,9 +147,12 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
             self._remaining_arms.copy(), random_state=np.random.RandomState()
         )[0]
 
-        comparison_result = self._is_competing_arm_better(
-            competing_arm=random_competing_arm,
-        )
+        try:
+            comparison_result = self._is_competing_arm_better(
+                competing_arm=random_competing_arm,
+            )
+        except AlgorithmFinishedException:
+            return
         self._remaining_arms.remove(random_competing_arm)
         if comparison_result:
             # competing arm beats the anchor arm.

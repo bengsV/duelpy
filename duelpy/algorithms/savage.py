@@ -218,17 +218,6 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
         assert winner is not None
         self.feedback_mechanism.duel(winner, winner)
 
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-        """
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
