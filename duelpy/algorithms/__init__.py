@@ -1,4 +1,5 @@
 """Various algorithms to solve Preference-Based Multi-Armed Bandit Problems."""
+
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.approximate_probability import ApproximateProbability
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
@@ -6,6 +7,7 @@ from duelpy.algorithms.beat_the_mean import BeatTheMeanBanditPAC
 from duelpy.algorithms.binary_search_ranking import BinarySearchRanking
 from duelpy.algorithms.borda_ranking import BordaRanking
 from duelpy.algorithms.copeland_confidence_bound import CopelandConfidenceBound
+from duelpy.algorithms.cw_rmed import CwRmed
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSampling
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSamplingPlus
 from duelpy.algorithms.exploreverify import VerificationBasedCondorcet
@@ -71,6 +73,7 @@ regret_minimizing_algorithms = [
     VerificationBasedCondorcet,
     BinarySearchRanking,
     BordaRanking,
+    CwRmed,
 ]
 other_algorithms = [ApproximateProbability]
 # This is not really needed, but otherwise zimports doesn't understand the

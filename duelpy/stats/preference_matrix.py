@@ -1,6 +1,7 @@
 """A preference matrix with associated utility functions."""
 
 from typing import Any
+from typing import List
 from typing import Optional
 from typing import Set
 
@@ -171,6 +172,56 @@ class PreferenceMatrix:
             The indices of the Borda winners.
         """
         return set(argmax_set(self.get_borda_scores()))
+
+    def get_winners_against(self, arm: int) -> List[int]:
+        """Get the list of arms which beat the provided arm.
+
+        The list contains all the other arms which beat the provided
+        arm such that P[arm, opponent] < 0.5 where ``arm`` is the
+        given arm and opponent can be any other arm from the
+        preference matrix P.
+
+        Parameters
+        ----------
+        arm
+            The arm against which the winners will be listed.
+
+        Returns
+        -------
+        list
+            The list of all winners against the given arm.
+        """
+        winners = list()
+        for opponent in range(self.get_num_arms()):
+            if self.preferences[arm, opponent] < 0.5:
+                winners.append(opponent)
+
+        return winners
+
+    def get_losers_against(self, arm: int) -> List[int]:
+        """Get the list of arms which are beaten by the provided arm.
+
+        The list contains all the other arms which are beaten by the
+        provided arm such that P[arm, opponent] > 0.5 where ``arm``
+        is the given arm and opponent can be any other arm from the
+        preference matrix P.
+
+        Parameters
+        ----------
+        arm
+            The arm against which the losers will be listed.
+
+        Returns
+        -------
+        list
+            The list of all losers against the given arm.
+        """
+        losers = list()
+        for opponent in range(self.get_num_arms()):
+            if self.preferences[arm, opponent] > 0.5:
+                losers.append(opponent)
+
+        return losers
 
     def __repr__(self) -> str:
         """Compute a string representation of the preference matrix."""
