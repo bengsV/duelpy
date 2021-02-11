@@ -150,6 +150,16 @@ class PreferenceMatrix:
                     break
         return set(candidates)
 
+    def get_borda_scores(self) -> np.array:
+        """Calculate the Borda score, also called sum of expectations.
+
+        Returns
+        -------
+        np.array
+            A 1-D array with the Borda scores.
+        """
+        return (np.sum(self.preferences, axis=1) - 0.5) / (self.get_num_arms() - 1)
+
     def __repr__(self) -> str:
         """Compute a string representation of the preference matrix."""
         return repr(self.preferences)
