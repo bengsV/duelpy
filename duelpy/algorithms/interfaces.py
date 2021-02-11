@@ -200,3 +200,23 @@ class PreferenceMatrixProducer(Algorithm):
         might be approximate.
         """
         raise NotImplementedError
+class TopKArmsProducer(Algorithm):
+    """An algorithm that computes the best k arms. The definition of best is up for the specific algorithm."""
+
+    def get_top_k(self) -> Optional[Collection[int]]:
+        """Return the top k arms.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times.
+        """
+        raise NotImplementedError
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winners = self.get_top_k()
+        assert winners is not None and len(winners) > 0
+        # Pick any winner. The variance in the cumulative regret would be
+        # smaller if we picked one at random, but we do not have access to a
+        # random state here.
+        winner = list(winners)[0]
+        self.feedback_mechanism.duel(winner, winner)
