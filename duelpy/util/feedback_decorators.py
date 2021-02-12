@@ -241,6 +241,9 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     ----------
     feedback_mechanism
         The ``FeedbackMechanism`` object to delegate to.
+    max_duels
+        The number of duels that are allowed to be conducted through this
+        decorator. May be ``None``, in which case no budget is applied.
     """
 
     def __init__(
