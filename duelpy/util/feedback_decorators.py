@@ -2,6 +2,7 @@
 
 from typing import Dict
 from typing import List
+from typing import Optional
 
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.metrics import Metric
@@ -242,10 +243,23 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
         The ``FeedbackMechanism`` object to delegate to.
     """
 
-    def __init__(self, feedback_mechanism: FeedbackMechanism, max_duels: int) -> None:
+    def __init__(
+        self, feedback_mechanism: FeedbackMechanism, max_duels: Optional[int]
+    ) -> None:
         super().__init__(feedback_mechanism)
         self.max_duels = max_duels
         self.duels_conducted = 0
+
+
+    def duels_exhausted(self) -> bool:
+        """Determine if the duel budget has been reached.
+
+        Returns
+        -------
+        True if the number of duels that have been conducted through this
+        decorator has reached the given budget.
+        """
+        return self.max_duels is not None and self.duels_conducted >= self.max_duels
 
     def duel(self, arm_i_index: int, arm_j_index: int) -> bool:
         """Perform a duel between two arms.
@@ -267,7 +281,7 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
         bool
             True if ``arm_i`` wins.
         """
-        if self.duels_conducted >= self.max_duels:
+        if self.duels_exhausted():
             raise AlgorithmFinishedException()
         result = super().duel(arm_i_index, arm_j_index)
         self.duels_conducted += 1
