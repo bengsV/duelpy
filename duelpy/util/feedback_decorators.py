@@ -201,11 +201,11 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     Now let's say we only have one more duel to spare. We can use the wrapper
     for that:
 
-    >>> from duelpy.util.exceptions import AlgorithmFinishedException
-    >>> pac_algorithm = Savage(BudgetedFeedbackMechanism(feedback_mechanism, max_duels=1))
+    >>> budgeted_feedback = BudgetedFeedbackMechanism(feedback_mechanism, max_duels=1)
+    >>> pac_algorithm = Savage(budgeted_feedback)
     >>> try:
     ...     pac_algorithm.run()
-    ... except AlgorithmFinishedException:
+    ... except budgeted_feedback.exception_class:
     ...     # The algorithm was not able to find a Copeland winner with the limited duel budget.
     ...     pass
     >>> feedback_mechanism.get_num_duels()  # Just one additional duel
@@ -216,10 +216,11 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     But if the algorithm is able to complete within the budget, the behavior is
     unchanged:
 
-    >>> pac_algorithm = Savage(BudgetedFeedbackMechanism(feedback_mechanism, max_duels=100))
+    >>> budgeted_feedback = BudgetedFeedbackMechanism(feedback_mechanism, max_duels=100)
+    >>> pac_algorithm = Savage(budgeted_feedback)
     >>> try:
     ...     pac_algorithm.run()
-    ... except AlgorithmFinishedException:
+    ... except budgeted_feedback.exception_class:
     ...     # This should not happen, the budget is sufficiently large
     ...     assert False
     >>> feedback_mechanism.get_num_duels()
@@ -253,14 +254,24 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
         self.max_duels = max_duels
         self.duels_conducted = 0
 
+        # This makes it possible to only catch the AlgorithmFinishedExceptions
+        # thrown by this object. This can be useful when multiple wrappers are
+        # nested (e.g. one algorithm uses another, both use
+        # BudgetedFeedbackMechanism) and the exception should be caught by the
+        # algorithm that set the limit.
+        class TimeBudgetExceededException(AlgorithmFinishedException):
+            """Raised if the duel budget would be exceeded by the current duel."""
+
+        self.exception_class = TimeBudgetExceededException
 
     def duels_exhausted(self) -> bool:
         """Determine if the duel budget has been reached.
 
         Returns
         -------
-        True if the number of duels that have been conducted through this
-        decorator has reached the given budget.
+        bool
+            True if the number of duels that have been conducted through this
+            decorator has reached the given budget.
         """
         return self.max_duels is not None and self.duels_conducted >= self.max_duels
 
@@ -276,8 +287,11 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
 
         Raises
         ------
-        AlgorithmFinishedException
-            If the budget would be exceeded by this duel.
+        TimeBudgetExceededException
+            If the budget would be exceeded by this duel. The exception class
+            is local to the object. Different instances raise different
+            exceptions. The exception class of an instance can be accessed
+            through the ``exception_class`` attribute.
 
         Returns
         -------
@@ -285,7 +299,7 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
             True if ``arm_i`` wins.
         """
         if self.duels_exhausted():
-            raise AlgorithmFinishedException()
+            raise self.exception_class()
         result = super().duel(arm_i_index, arm_j_index)
         self.duels_conducted += 1
         return result
