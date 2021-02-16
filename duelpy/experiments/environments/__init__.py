@@ -1,6 +1,7 @@
 """Various dueling bandit environments for use in experiments."""
 
 from duelpy.experiments.environments.hard_condorcet_matrix import HardCondorcetMatrix
+from duelpy.experiments.environments.mallows_model import MallowsModel
 from duelpy.experiments.environments.plackett_luce_model import PlackettLuceModel
 
 # Pylint insists that environment_list is a constant and should be named in
@@ -10,6 +11,6 @@ from duelpy.experiments.environments.plackett_luce_model import PlackettLuceMode
 
 # Make the environment classes available for easy enumeration in experiments
 # and tests.
-environment_list = [HardCondorcetMatrix, PlackettLuceModel]
+environment_list = [HardCondorcetMatrix, PlackettLuceModel, MallowsModel]
 
 __all__ = [environment.__name__ for environment in environment_list]
