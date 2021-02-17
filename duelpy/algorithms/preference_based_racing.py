@@ -483,7 +483,7 @@ class RandomWalkPBR(PreferenceBasedRacing):
             mean_matrix / column_sum
         )  # normalize over columns to get transposed transition matrix
         # there is an error in the paper, this confidence should be correct
-        confidence_matrix = self.preference_estimate._get_radius_matrix()
+        confidence_matrix = self.preference_estimate.get_radius_matrix()
         confidences = num_arms * 3 * np.max(confidence_matrix, axis=0) / column_sum
 
         # eigenvector v of transition matrix with (maximum) eigenvalue 1

@@ -287,7 +287,7 @@ class PreferenceEstimate:
             + self.wins[second_arm_index][first_arm_index]
         )
 
-    def _get_radius_matrix(self) -> np.array:
+    def get_radius_matrix(self) -> np.array:
         """Seed the confidence radius cache and return it.
 
         Returns
@@ -332,7 +332,7 @@ class PreferenceEstimate:
         """
         return PreferenceMatrix(
             np.clip(
-                self._cached_mean_estimate + self._get_radius_matrix(), a_min=0, a_max=1
+                self._cached_mean_estimate + self.get_radius_matrix(), a_min=0, a_max=1
             )
         )
 
@@ -346,7 +346,7 @@ class PreferenceEstimate:
         """
         return PreferenceMatrix(
             np.clip(
-                self._cached_mean_estimate - self._get_radius_matrix(), a_min=0, a_max=1
+                self._cached_mean_estimate - self.get_radius_matrix(), a_min=0, a_max=1
             )
         )
 
