@@ -468,11 +468,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         else:
             raise Exception("Invalid value for K")
 
-    def exploit(self) -> None:
-        """Exploit the found ranking by pulling the top-ranked arm twice."""
-        assert self.top_k_arms is not None
-        self.feedback_mechanism.duel(self.top_k_arms[0], self.top_k_arms[0])
-
     def step(self) -> None:
         """Execute one step of the algorithm."""
         if not self.exploration_finished():
