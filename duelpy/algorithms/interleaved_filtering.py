@@ -1,16 +1,18 @@
 """Find the Condorcet winner in a PB-MAB problem with Interleaved Filtering."""
 
 from typing import List
+from typing import Optional
 
 import numpy as np
 
-from duelpy.algorithms.algorithm import Algorithm
+from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.stats.preference_estimate import PreferenceEstimate
 
 
-class InterleavedFiltering(Algorithm):
+class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
     r"""Implements the Interleaved Filtering algorithm.
 
     This algorithm finds the Condorcet winner.
@@ -108,7 +110,7 @@ class InterleavedFiltering(Algorithm):
             ),
         )
 
-    def get_condorcet_winner(self) -> int:
+    def get_condorcet_winner(self) -> Optional[int]:
         """Return the estimated Condorcet winner, assuming the algorithm has already run.
 
         Returns
@@ -116,7 +118,7 @@ class InterleavedFiltering(Algorithm):
         candidate_arm
            The condorcet winner in the set of arms given to the algorithm.
         """
-        return self.candidate_arm
+        return self.candidate_arm if self.exploration_finished() else None
 
     def explore(self) -> None:
         r"""Execute one round of exploration."""
@@ -187,13 +189,6 @@ class InterleavedFiltering(Algorithm):
             self.arms_without_candidate.remove(self.candidate_arm)
         return updated_arms_without_candidate
 
-    def exploit(self) -> None:
-        """Execute one round of exploitation.
-
-        This simply compares the estimated Condorcet winner against itself, thereby making the best possible choice based on the available information.
-        """
-        self.feedback_mechanism.duel(self.candidate_arm, self.candidate_arm)
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
@@ -202,10 +197,3 @@ class InterleavedFiltering(Algorithm):
         computing a PAC Copeland winner.
         """
         return len(self.arms_without_candidate) == 0
-
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()

@@ -6,6 +6,7 @@ import numpy as np
 
 from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import ConfidenceRadius
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -13,7 +14,7 @@ from duelpy.util.utility_functions import argmax_set
 from duelpy.util.utility_functions import argmin_set
 
 
-class BeatTheMeanBandit(CondorcetProducer):
+class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
     r"""Implements the 'Beat the Mean Bandit' algorithm.
 
     The goal of this algorithm is to find the Condorcet winner.
@@ -135,23 +136,6 @@ class BeatTheMeanBandit(CondorcetProducer):
             worst_arm = self.comparison_history.get_worst_arm()
             self.remove_from_working_set(worst_arm)
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        best_arm = self.get_condorcet_winner()
-        self.feedback_mechanism.duel(arm_i_index=best_arm, arm_j_index=best_arm)
-
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        This includes choosing arms, comparing them and updating the estimates.
-        """
-        # When making the Condorcet assumption, the algorithm terminates only when one active arm remains,
-        # or when time horizon is reached.
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
@@ -161,18 +145,6 @@ class BeatTheMeanBandit(CondorcetProducer):
             Whether exploration is finished.
         """
         return self.comparison_history.size_working_set <= 1
-
-    def is_finished(self) -> bool:
-        """Determine whether the termination conditions are met.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
 
     def remove_from_working_set(self, worst_arm: int) -> None:
         """Remove the worst arm from the working set and update the comparison statistics.

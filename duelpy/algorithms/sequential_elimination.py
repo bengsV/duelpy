@@ -5,6 +5,7 @@ from typing import Optional
 
 import numpy as np
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -13,7 +14,7 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
-class SequentialElimination(SingleCopelandProducer):
+class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the Sequential Elimination algorithm.
 
     The goal of this algorithm is to find an epsilon-maximum arm.
@@ -129,44 +130,6 @@ class SequentialElimination(SingleCopelandProducer):
             if self._anchor_arm in self._remaining_arms:
                 self._remaining_arms.remove(self._anchor_arm)
 
-    def is_finished(self) -> bool:
-        """Determine whether algorithm has completed execution.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self.exploration_finished()
-
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-
-        Raises
-        ------
-        AlgorithmFinishedException
-            Number of duels has reached time_horizon.
-        """
-        if not self.exploration_finished():
-            try:
-                self.explore()
-            except AlgorithmFinishedException:
-                pass
-        else:
-            self.exploit()
-
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_copeland_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def explore(self) -> None:
         """Compare the current anchor arm against a randomly selected arm.
 
@@ -175,12 +138,16 @@ class SequentialElimination(SingleCopelandProducer):
         """
         # randomly select a competing arm and after the duel remove that element from arms list.
         random_competing_arm = utility.pop_random(
-            self._remaining_arms.copy(), random_state=np.random.RandomState()
+            self._remaining_arms.copy(),
+            random_state=self._random_state,
         )[0]
 
-        comparison_result = self._is_competing_arm_better(
-            competing_arm=random_competing_arm,
-        )
+        try:
+            comparison_result = self._is_competing_arm_better(
+                competing_arm=random_competing_arm,
+            )
+        except AlgorithmFinishedException:
+            return
         self._remaining_arms.remove(random_competing_arm)
         if comparison_result:
             # competing arm beats the anchor arm.

@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 from numpy.random import RandomState
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
@@ -14,7 +15,7 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
-class OptMax(SingleCopelandProducer):
+class OptMax(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the OptMax algorithm.
 
     The goal of this algorithm is to find a :math:`\epsilon`-maximum arm among the given arms.
@@ -101,66 +102,24 @@ class OptMax(SingleCopelandProducer):
         """
         return self._anchor_arm is not None
 
-    def is_finished(self) -> bool:
-        """Determine whether algorithm has completed execution.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return False
-
-    def run(self) -> None:
-        """Run the algorithm until completion.
-
-        Completion is determined through the combination of exploration_finished and is_finished methods.
-        """
-        while not self.is_finished() and not self.exploration_finished():
-            self.step()
-
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Every step will check if the algorithm will explore or exploit.
-
-        Raises
-        ------
-        AlgorithmFinishedException
-            When number of duels reach time_horizon.
-        """
-        if not self.exploration_finished():
-            try:
-                self.explore()
-            except AlgorithmFinishedException:
-                pass
-        else:
-            self.exploit()
-
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_copeland_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
     def explore(self) -> None:
         """Run one step of exploration.
 
         Exploration is divided into 3 parts. For more details, refer to Algorithm 4 of :cite:`falahatgar2018limits`.
         """
-        if self._failure_probability <= 1 / np.power(
-            len(self.feedback_mechanism.get_arms()), 1 / 3
-        ):
-            self._anchor_arm = self.pick_anchor_for_low_range()
-        elif self._failure_probability <= 1 / np.log(
-            len(self.feedback_mechanism.get_arms())
-        ):
-            self._anchor_arm = self.pick_anchor_for_medium_range()
-        else:
-            self._anchor_arm = self.pick_anchor_for_high_range()
+        try:
+            if self._failure_probability <= 1 / np.power(
+                len(self.feedback_mechanism.get_arms()), 1 / 3
+            ):
+                self._anchor_arm = self.pick_anchor_for_low_range()
+            elif self._failure_probability <= 1 / np.log(
+                len(self.feedback_mechanism.get_arms())
+            ):
+                self._anchor_arm = self.pick_anchor_for_medium_range()
+            else:
+                self._anchor_arm = self.pick_anchor_for_high_range()
+        except AlgorithmFinishedException:
+            return
 
     def get_copeland_winner(self) -> Optional[int]:
         """Return the arm chosen by the algorithm as Copeland winner.
@@ -224,7 +183,7 @@ class OptMax(SingleCopelandProducer):
             anchor_arm=picked_anchor,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
         return seq_elim.get_copeland_winner()
 
@@ -299,7 +258,7 @@ class OptMax(SingleCopelandProducer):
             anchor_arm=selected_anchor_element,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
         return seq_elim.get_copeland_winner()
 
@@ -410,7 +369,7 @@ class OptMax(SingleCopelandProducer):
                 anchor_arm=current_stage_anchor_arm,
                 time_horizon=_time_horizon,
             )
-            while not seq_elim.exploration_finished():
+            while not seq_elim.exploration_finished() and not seq_elim.is_finished():
                 seq_elim.explore()
             selected_copeland_arm = seq_elim.get_copeland_winner()
 
@@ -577,7 +536,7 @@ class OptMax(SingleCopelandProducer):
             arms_subset=pruned_arms,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
 
         candidate_anchor_arm = seq_elim.get_copeland_winner()
@@ -596,10 +555,12 @@ class OptMax(SingleCopelandProducer):
             arms_subset=arms,
             time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished():
+        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
             seq_elim.explore()
 
         _copeland_winner = seq_elim.get_copeland_winner()
+        if _copeland_winner is None:
+            raise AlgorithmFinishedException
         assert _copeland_winner is not None
         copeland_winner: int = _copeland_winner
         return copeland_winner

@@ -6,13 +6,14 @@ from typing import Tuple
 
 import numpy as np
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 
 
-class Savage(SingleCopelandProducer):
+class Savage(SingleCopelandProducer, PacAlgorithm):
     r"""Determine the PAC-best arm with the SAVAGE algorithm.
 
     This algorithm makes no assumptions about the environment.
@@ -211,23 +212,6 @@ class Savage(SingleCopelandProducer):
         # spreads the computation cost more evenly among the time steps.
         self._relevant_arm_combinations.difference_update(arms_to_remove)
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_copeland_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
-    def step(self) -> None:
-        """Take a step in the algorithm.
-
-        Includes determining the next sample, asking for feedback once and
-        updating the environment candidates based on this new data.
-        """
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
@@ -235,34 +219,10 @@ class Savage(SingleCopelandProducer):
         this function returns ``True``, the algorithm will have finished
         computing a PAC Copeland winner.
         """
-        return len(self._relevant_arm_combinations) == 0
-
-    def is_finished(self) -> bool:
-        """Determine whether enough data for a PAC prediction is available.
-
-        Once this function returns ``True``, you can query the
-        probably-approximately-correct result with the
-        ``get_copeland_winner`` function.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
         # in the reference paper.
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
-
-    def run(self) -> None:
-        """Run the algorithm until it can make a prediction.
-
-        The prediction can then be queried with the ``get_copeland_winner`` function.
-        """
-        while not self.is_finished():
-            self.step()
+        return len(self._relevant_arm_combinations) == 0
 
     def get_copeland_winner(self) -> Optional[int]:
         r"""Find a Copeland winner with the SAVAGE algorithm.

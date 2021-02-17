@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import PartialRankingProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.preference_estimate import PreferenceEstimate
@@ -46,7 +47,7 @@ def _compute_binary_comparisons(
     )
 
 
-class SingleEliminationTop1Select(CondorcetProducer):
+class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
     r"""The Top-1 Selection part of Single-Elimination Tournament.
 
     The goal of this algorithm is to find the top (Rank = 1) arm while minimizing the exact sample complexity.
@@ -178,19 +179,6 @@ class SingleEliminationTop1Select(CondorcetProducer):
         self.condorcet_winner = self.arms[0]
         self.exploration_steps = self.exploration_steps + 1
 
-    def exploit(self) -> None:
-        """Run one step of exploitation."""
-        winner = self.get_condorcet_winner()
-        assert winner is not None
-        self.feedback_mechanism.duel(winner, winner)
-
-    def step(self) -> None:
-        """Run one step of the algorithm."""
-        if not self.exploration_finished():
-            self.explore()
-        else:
-            self.exploit()
-
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
@@ -198,18 +186,6 @@ class SingleEliminationTop1Select(CondorcetProducer):
         computing a PAC Condorcet winner.
         """
         return self.exploration_steps > int(np.ceil(np.log(len(self.arms))))
-
-    def is_finished(self) -> bool:
-        """Determine if the algorithm is finished.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
 
     def get_condorcet_winner(self) -> Optional[int]:
         """Return the estimated PAC-Condorcet winner.
@@ -224,7 +200,7 @@ class SingleEliminationTop1Select(CondorcetProducer):
         return self.condorcet_winner
 
 
-class SingleEliminationTopKSorting(PartialRankingProducer):
+class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
     r"""Implements the top-k sorting algorithm in the Single-Elimination Tournament.
 
     The goal of this algorithm is to find the top-k arms while minimizing the exact sample complexity.
@@ -514,18 +490,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer):
         computing a PAC Copeland winner.
         """
         return len(self.top_k_arms) == self.k_top_ranked
-
-    def is_finished(self) -> bool:
-        """Determine if the algorithm is finished.
-
-        Returns
-        -------
-        bool
-            Whether the algorithm is finished.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        return self.exploration_finished()
 
     def get_partial_ranking(self) -> Optional[List[int]]:
         """Return the copeland winner given by the algorithm.

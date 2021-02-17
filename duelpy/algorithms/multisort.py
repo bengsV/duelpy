@@ -1,5 +1,4 @@
 """An implementation of the Multisort algorithm."""
-from typing import Collection
 from typing import List
 from typing import Optional
 
@@ -115,12 +114,12 @@ class Multisort(CopelandRankingProducer):
         """Execute one step of the algorithm."""
         self.explore()
 
-    def get_ranking(self) -> Optional[Collection[int]]:
+    def get_ranking(self) -> Optional[List[int]]:
         """Get the Copeland aggregation ranking.
 
         Returns
         -------
-        Optional[Collection[int]]
+        Optional[List[int]]
             The ranking, None if it has not been calculated yet.
         """
         # return a sorted list in decreasing order of aggregated Copeland scores

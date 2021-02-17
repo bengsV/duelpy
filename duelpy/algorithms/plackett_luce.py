@@ -7,6 +7,7 @@ import numpy as np
 
 from duelpy.algorithms.interfaces import AllApproximateCondorcetProducer
 from duelpy.algorithms.interfaces import CopelandRankingProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -51,7 +52,7 @@ def determine_better_arm(
         return -1
 
 
-class PlackettLucePACItem(AllApproximateCondorcetProducer):
+class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
     r"""Implementation of the Plackett-Luce PAC-Item algorithm.
 
     This algorithm finds for a given confidence all arms that are :math:`\epsilon`-close to the Condorcet winner.
@@ -213,21 +214,9 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer):
             self.random_state.choice(self._condorcet_winners),
         )
 
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if self.is_finished():
-            return
-        if self._condorcet_winners is not None:
-            self.exploit()
-        else:
-            self.explore()
-
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self._condorcet_winners is not None
+        return self._condorcet_winners is not None
 
     def get_approximate_condorcet_winners(self) -> Optional[List[int]]:
         """Get the arm with the highest probability of being the first in a ranking of the arms.
@@ -240,7 +229,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer):
         return self._condorcet_winners
 
 
-class PlackettLuceAMPR(CopelandRankingProducer):
+class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
     """Implementation of the Plackett-Luce Approximate Most Probable Ranking algorithm, which computes a ranking over the arms.
 
     This algorithm assumes the arms are sampled from the Plackett-Luce distribution. This distribution assigns utilities to arms, from which win probabilities can be inferred. For more information, see :cite:`szorenyi2015online`.
@@ -460,11 +449,6 @@ class PlackettLuceAMPR(CopelandRankingProducer):
 
         self._update_arm_bounds()
 
-    def exploit(self) -> None:
-        """Exploit the found ranking by pulling the top-ranked arm twice."""
-        assert self._ranking is not None
-        self.feedback_mechanism.duel(self._ranking[0], self._ranking[0])
-
     def step(self) -> None:
         """Execute one step of the algorithm."""
         if self._ranking is None:
@@ -482,9 +466,6 @@ class PlackettLuceAMPR(CopelandRankingProducer):
         """
         return self._ranking
 
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self._ranking is not None
+        return self._ranking is not None

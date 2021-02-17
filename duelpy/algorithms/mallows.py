@@ -7,6 +7,7 @@ import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.algorithms.interfaces import CopelandRankingProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
@@ -16,7 +17,7 @@ from duelpy.util.sorting import SortingAlgorithm
 from duelpy.util.utility_functions import pop_random
 
 
-class MallowsMPI(CondorcetProducer):
+class MallowsMPI(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the Mallows Most Preferred Item algorithm.
 
     This algorithm finds the Condorcet winner with a given error probability.
@@ -115,20 +116,6 @@ class MallowsMPI(CondorcetProducer):
         ):
             self._best_arm = rival_arm
 
-    def exploit(self) -> None:
-        """Exploit the found best arm by pulling it twice."""
-        self.feedback_mechanism.duel(self._best_arm, self._best_arm)
-
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if self.is_finished():
-            return
-
-        if len(self._current_arms) == 0:
-            self.exploit()
-        else:
-            self.explore()
-
     def get_condorcet_winner(self) -> Optional[int]:
         """Get the arm with the highest probability of being the first in a ranking of the arms.
 
@@ -142,15 +129,12 @@ class MallowsMPI(CondorcetProducer):
         else:
             return None
 
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the best arm has been found."""
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return len(self._current_arms) == 0
+        return len(self._current_arms) == 0
 
 
-class MallowsMPR(CopelandRankingProducer):
+class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
     r"""Implementation of Mallows Most Probable Ranking Algorithm.
 
     This algorithm computes a Copeland ranking with a given error probability.
@@ -288,24 +272,9 @@ class MallowsMPR(CopelandRankingProducer):
         if self._sorting_algorithm.is_finished():
             self._ranking = self._sorting_algorithm.get_result()
 
-    def exploit(self) -> None:
-        """Exploit the found ranking by pulling the top-ranked arm twice."""
-        assert self._ranking is not None
-        self.feedback_mechanism.duel(self._ranking[0], self._ranking[0])
-
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if self._ranking is None:
-            self.explore()
-        else:
-            self.exploit()
-
-    def is_finished(self) -> bool:
+    def exploration_finished(self) -> bool:
         """Determine whether the ranking has been found."""
-        if self.time_horizon is not None:
-            return self.time_horizon <= self.feedback_mechanism.get_num_duels()
-        else:
-            return self._ranking is not None
+        return self._ranking is not None
 
     def get_ranking(self) -> Optional[List[int]]:
         """Get the computed ranking.
