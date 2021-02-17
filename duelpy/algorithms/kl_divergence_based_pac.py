@@ -5,6 +5,7 @@ from typing import Optional
 import numpy as np
 from scipy.special import rel_entr
 
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
@@ -13,7 +14,7 @@ from duelpy.util.utility_functions import newton_raphson
 from duelpy.util.utility_functions import pop_random
 
 
-class KLDivergenceBasedPAC(SingleCopelandProducer):
+class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the KL-divergence based PAC algorithm.
 
     The goal of the algorithm is to find a Copeland winner in a
@@ -169,22 +170,6 @@ class KLDivergenceBasedPAC(SingleCopelandProducer):
         """
         return self.copeland_winner if self.exploration_finished() else None
 
-    def is_finished(self) -> bool:
-        """Determine if the algorithm is finished.
-
-        Check whether the algorithm should stop executing.
-
-        Returns
-        -------
-        bool
-            ``True`` if the algorithm termination criteria has been met,
-            ``False`` otherwise.
-        """
-        if self.time_horizon is not None:
-            return self.feedback_mechanism.get_num_duels() >= self.time_horizon
-        else:
-            return self.exploration_finished()
-
     def exploration_finished(self) -> bool:
         """Determine whether exploration is finished.
 
@@ -209,17 +194,6 @@ class KLDivergenceBasedPAC(SingleCopelandProducer):
 
         return False
 
-    def step(self) -> None:
-        """Run one round of the algorithm.
-
-        A Copeland winner is determined using KL-based approximate best
-        arm identification algorithm. It is further exploited if required.
-        """
-        if self.exploration_finished():
-            self.exploit()
-        else:
-            self.explore()
-
     def explore(self) -> None:
         """Explore the given set of arms to obtain a Copeland winner."""
         self._determine_rewards_for_copeland_winner_candidates()
@@ -230,20 +204,6 @@ class KLDivergenceBasedPAC(SingleCopelandProducer):
         self.copeland_winner = self.copeland_winner_candidates[
             np.argmax(self.left_boundary_for_candidates)
         ]
-
-    def exploit(self) -> None:
-        """Exploit using the obtained Copeland winner.
-
-        Exploitation phase takes place using the obtained Copeland winner.
-        Duels are conducted until `time_horizon` is reached. Both the
-        participating arms are the same Copeland winner.
-        """
-        assert self.copeland_winner is not None
-        self.preference_estimate.enter_sample(
-            self.copeland_winner,
-            self.copeland_winner,
-            self.feedback_mechanism.duel(self.copeland_winner, self.copeland_winner),
-        )
 
     def _determine_rewards_for_copeland_winner_candidates(self) -> None:
         """Determine rewards (0 or 1) for Copeland winner candidates."""
