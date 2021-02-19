@@ -29,6 +29,7 @@ from duelpy.stats.metrics import AverageRegret
 from duelpy.stats.metrics import BestArmRate
 from duelpy.stats.metrics import Cumulative
 from duelpy.stats.metrics import ExponentialMovingAverage
+from duelpy.stats.metrics import Metric
 from duelpy.stats.metrics import TotalWallClock
 from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
 
@@ -59,7 +60,7 @@ def run_single_algorithm(
     # actually expects. We have to take care that all our environments adhere
     # to this constructor convention.
     feedback_mechanism = environment_class(**environment_parameters)
-    metrics = {
+    metrics: Dict[str, Metric] = {
         "wall_clock": TotalWallClock(),
         "cum_average_regret": Cumulative(
             AverageRegret(feedback_mechanism.preference_matrix)
@@ -71,7 +72,7 @@ def run_single_algorithm(
     }
     wrapped_feedback = MetricKeepingFeedbackMechanism(
         feedback_mechanism, metrics=metrics, sample_interval=sample_interval
-    )
+    )  # type: ignore
     # Filter accepted parameters.
     parameters["random_state"] = task_random_state
     parameters_to_pass = dict()
