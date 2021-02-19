@@ -216,7 +216,7 @@ class AverageCopelandRegret:
         )
 
 
-class TotalWallClock:
+class TotalWallClock(Metric):
     """The wall clock time that has elapsed since initialization."""
 
     def __init__(self) -> None:
