@@ -12,15 +12,15 @@ from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 class RelativeConfidenceSampling(CondorcetProducer):
     r"""Implementation of the Relative Confidence Sampling algorithm.
 
-    The goal of this algorithm is to find a Condorcet winner while incurring minimal regret.
+    The goal of this algorithm is to find a :term:`Condorcet winner` while incurring minimal regret.
 
-    It is assumed that a Condorcet winner exists.
+    It is assumed that a :term:`Condorcet winner` exists.
 
     No regret or sample complexity bounds were established in the source paper :cite:`zoghi2014ranker`.
 
     The algorithm proceeds by conducting duels among the candidate arms and eliminating the sub-optimal
     arms based on the results of the prior duels. After conducting sufficient rounds, the
-    algorithm would always choose the Condorcet winner to conduct a duel with itself. This
+    algorithm would always choose the :term:`Condorcet winner` to conduct a duel with itself. This
     would result in no more regret and thus the goal would be achieved.
 
     Relative Confidence Sampling works continuously in the following 3 steps:
@@ -28,8 +28,8 @@ class RelativeConfidenceSampling(CondorcetProducer):
     1. A simulated tournament is conducted among all the arms to obtain a champion.
     The tournament is based on sampling from a beta distribution. The beta distribution
     is parameterized on the results of the prior duels among the competing arms.
-    The Condorcet winner of this simulated tournament is selected as the current champion.
-    If no Condorcet winner exists, the arm that has been selected as the champion the least
+    The :term:`Condorcet winner` of this simulated tournament is selected as the current champion.
+    If no :term:`Condorcet winner` exists, the arm that has been selected as the champion the least
     number of times is the new champion.
 
     2. A challenger which has the highest chance of winning against the current champion
@@ -42,19 +42,19 @@ class RelativeConfidenceSampling(CondorcetProducer):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
     time_horizon
         How many comparisons the algorithm should do. This does not impact the
-        decision of the algorithm, only for how many steps ``run`` executes.
+        decision of the algorithm, only for how many times ``step`` executes.
         May be ``None`` to indicate a unknown or infinite time horizon.
     exploratory_constant
         A parameter which is used in calculating the upper confidence bounds. The confidence
         radius grows proportional to the square root of this value. A higher upper confidence
         bound results in more exploration.
-        Corresponds to :math:`\alpha` in :cite:`zoghi2014ranker`. The value of ``exploratory_constant`` must be greater than 0.5.
-        Default value is 0.501 which has been used in the experiments related to RCS in :cite:`zoghi2014ranker`.
+        Corresponds to :math:`\alpha` in :cite:`zoghi2014ranker`. The value of ``exploratory_constant`` must be greater than :math:`0.5`.
+        Default value is ``0.501`` which has been used in the experiments related to RCS in :cite:`zoghi2014ranker`.
 
     Attributes
     ----------
