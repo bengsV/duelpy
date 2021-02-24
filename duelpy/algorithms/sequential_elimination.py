@@ -17,44 +17,44 @@ import duelpy.util.utility_functions as utility
 class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the Sequential Elimination algorithm.
 
-    The goal of this algorithm is to find an epsilon-maximum arm.
+    The goal of this algorithm is to find an :math:`\epsilon`-maximum arm.
 
-    The algorithm computes a probably-approximately-correct estimation of the Copeland winner.
-    An arm is epsilon maximum (where :math:`\epsilon = \epsilon_u-\epsilon_l`), if it is preferable to other arms with
+    The algorithm computes a :term:`PAC` estimation of the :term:`Copeland winner`.
+    An arm is :math:`\epsilon`-maximum (where :math:`\epsilon = \epsilon_u-\epsilon_l`), if it is preferable to other arms with
     probability at least :math:`0.5-\epsilon`.
 
     If the anchor arm provided to the algorithm is a good anchor element, then there are only m elements
     for which element a is not :math:`\epsilon_l` preferable. This means, all other elements will be eliminated but
-    among these m elements, there can be at most m changes of anchor element. Thus, there can be at most m rounds and
-    hence we can bound total comparison rounds by :math:`\mathcal{O}(\lvert S \rvert + m^2)`.
+    among these :math:`m` elements, there can be at most :math:`m` changes of anchor element. Thus, there can be at most m rounds and
+    hence we can bound total comparison rounds by :math:`\mathcal{O}(N + m^2)`. :math:`N` is the number of arms.
 
-    Thus this PAC algorithm reduces the comparisons to at most m elements which are not :math:`\epsilon_l` preferable and
+    Thus this :term:`PAC` algorithm reduces the comparisons to at most m elements which are not :math:`\epsilon_l` preferable and
     the remaining n-m elements are :math:`\epsilon_l` perferable and hence are removed with comparison complexity of
-    :math:`\mathcal{O}(\lvert S \rvert)`.
+    :math:`\mathcal{O}(N)`.
 
      Refer to the paper :cite:`falahatgar2017maxing`.
 
     Parameters
     ----------
     feedback_mechanism
-        Object used for gathering the feedback of drawing arms.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
-        The number of steps that the algorithm is supposed to be run. Specify None for an infinite time horizon.
+        The number of steps that the algorithm is supposed to be run. Specify ``None`` for an infinite time horizon.
     failure_probability
         Determines the number of iterations that both arms are compared against. Corresponds to :math:`\delta` in
-        :cite:`falahatgar2017maxing`. Default value is given in section 6 is 0.1.
+        :cite:`falahatgar2017maxing`. Default value is ``0.1``, as given in section 6.
     epsilon_lower
-        Default value is 0.0. Refer to section 3.1.1 in :cite:`falahatgar2017maxing`.
+        Default value is ``0.0``. Refer to section 3.1.1 in :cite:`falahatgar2017maxing`.
     epsilon_upper
-        Corresponds to :math:`\epsilon` with default value is 0.5, as given in section 3.1.1 in
+        Corresponds to :math:`\epsilon` with default value is ``0.5``, as given in section 3.1.1 in
         :cite:`falahatgar2017maxing`.
     arms_subset
         Represents the list of arms which is sent by other algorithms and is the subset from list of arms
-        fetched from feedback_mechanism.
+        fetched from ``feedback_mechanism``.
     anchor_arm
         If none is provided, it is selected randomly from the list of arms provided to the algorithm.
-        Otherwise, it represents the anchor arm extracted from feedback_mechanism.get_arms().
-        A good anchor element is an arm for which every other arm r (being :math:`\epsilon_l` preferable) is deemed bad
+        Otherwise, it represents the anchor arm extracted from ``feedback_mechanism.get_arms()``.
+        A good anchor element is an arm for which every other arm (being :math:`\epsilon_l` preferable) is deemed worse
         and gets eliminated.
 
     Attributes
@@ -156,14 +156,14 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
 
-        If no time horizon is provided, this coincides with is_finished. Once
+        If no time horizon is provided, this coincides with ``is_finished``. Once
         this function returns ``True``, the algorithm will have finished
-        computing a PAC Copeland winner.
+        computing a :term`PAC` :term:`Copeland winner`.
         """
         return len(self._remaining_arms) == 0
 
     def get_copeland_winner(self) -> Optional[int]:
-        """Return the copeland winner arm selected by the algorithm.
+        """Return the Copeland winner arm selected by the algorithm.
 
         Returns
         -------
