@@ -14,26 +14,26 @@ from duelpy.util.utility_functions import argmax_set
 class MergeRUCB(CondorcetProducer):
     r"""Implementation of the Merge Relative Upper Confidence Bound algorithm.
 
-    The goal of the algorithm is to find the Condorcet winner while incurring minimum regret with minimum comparison
+    The goal of the algorithm is to find the :term:`Condorcet winner` while incurring minimum regret with minimum comparisons
     between the arms.
 
-    It is assumed that the Condorcet winner exists.
+    It is assumed that the :term:`Condorcet winner` exists.
 
-    The regret is bounded by :math:`O(K \log T)` where :math:`K` is the number of arms and :math:`T` is the time horizon.
+    The regret is bounded by :math:`\mathcal{O}\left(N \log T\right)` where :math:`N` is the number of arms and :math:`T` is the time horizon.
 
-    The algorithm described in the paper:cite:`Zoghi2015bMergeRUCB`. Dueling bandit algorithms have to learn
+    The algorithm described in the paper :cite:`zoghi2015mergerucb`. Dueling bandit algorithms have to learn
     something about the preference relation by pairwise comparison. Thus, they often have a worst-case sample
     complexity that scales with the square of the arms. MergeRUCB avoids this with a divide-and-conquer strategy: It
     divides the set of arms (batch) into multiple sub-sets (small batches), "solves" these smaller problems,
     and then merges the results. The batch of arms is divided into multiple small batches based on the partition
-    size (P), which was decided to be greater than or equal to 4. Then these small batches are dueled, and the weak-arms are
+    size (:math:`P`), which was decided to be greater than or equal to 4. Then these small batches are dueled, and the weak-arms are
     dropped from the small batches. After pruning of arms from the small-batch, all the batches are sorted and merged
-    so that the new set of small batches lie in the range either :math:`P/2` or :math:`3P/2`.
+    so that the new set of small batches lie in the range either :math:`\frac{P}{2}` or :math:`\frac{3P}{2}`.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     exploratory_constant
         The confidence radius grows proportional to the square root of this value.
     partition_size
@@ -55,6 +55,7 @@ class MergeRUCB(CondorcetProducer):
     --------
     Define a preference-based multi-armed bandit problem through a preference
     matrix:
+
     >>> from duelpy.feedback import MatrixFeedback
     >>> from duelpy.stats.metrics import WeakRegret
     >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
