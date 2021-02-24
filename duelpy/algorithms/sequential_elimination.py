@@ -32,7 +32,7 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
     the remaining n-m elements are :math:`\epsilon_l` perferable and hence are removed with comparison complexity of
     :math:`\mathcal{O}(\lvert S \rvert)`.
 
-     Refer to the paper :cite:`falahatgar2018assumptions`.
+     Refer to the paper :cite:`falahatgar2017maxing`.
 
     Parameters
     ----------
@@ -42,12 +42,12 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         The number of steps that the algorithm is supposed to be run. Specify None for an infinite time horizon.
     failure_probability
         Determines the number of iterations that both arms are compared against. Corresponds to :math:`\delta` in
-        :cite:`falahatgar2018assumptions`. Default value is given in section 6 is 0.1.
+        :cite:`falahatgar2017maxing`. Default value is given in section 6 is 0.1.
     epsilon_lower
-        Default value is 0.0. Refer to section 3.1.1 in :cite:`falahatgar2018assumptions`.
+        Default value is 0.0. Refer to section 3.1.1 in :cite:`falahatgar2017maxing`.
     epsilon_upper
         Corresponds to :math:`\epsilon` with default value is 0.5, as given in section 3.1.1 in
-        :cite:`falahatgar2018assumptions`.
+        :cite:`falahatgar2017maxing`.
     arms_subset
         Represents the list of arms which is sent by other algorithms and is the subset from list of arms
         fetched from feedback_mechanism.
@@ -134,7 +134,7 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         """Compare the current anchor arm against a randomly selected arm.
 
         The anchor arm is updated with the arm beating the current anchor arm and the new anchor arm is compared against
-        the remaining arms step by step. Refer to section 3.1.1 in paper :cite:`falahatgar2018assumptions`.
+        the remaining arms step by step. Refer to section 3.1.1 in paper :cite:`falahatgar2017maxing`.
         """
         # randomly select a competing arm and after the duel remove that element from arms list.
         random_competing_arm = utility.pop_random(
@@ -187,12 +187,12 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
 
         The confidence radius (:math:`\hat{c}`) is calculated such that with proof >= :math:`1-\delta`,
         :math:`\lvert \hat{p}_{i,j} - p_{i,j} \rvert < \hat{c}` after any number of comparisons. Here :math:`1-\delta`
-        as mentioned in the paper :cite:`falahatgar2017assumption`, is called confidence value but we have referred it
+        as mentioned in the paper :cite:`falahatgar2017maxing`, is called confidence value but we have referred it
         as the failure probability.
 
         The method returns True if :math:`\hat{p}_{i,j}`  :\ge math:`(\epsilon_u + \epsilon_l)/2` otherwise False is
         returned.
-        For more details, please refer to appendix section Algorithm 9 in :cite:`falahatgar2018assumptions`.
+        For more details, please refer to appendix section Algorithm 9 in :cite:`falahatgar2017maxing`.
 
         Parameters
         ----------
@@ -213,16 +213,16 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         """
         epsilon = (
             self._epsilon_upper - self._epsilon_lower
-        )  # refer to :math:`\epsilon` in paper :cite:`falahatgar2018assumptions`.
+        )  # refer to :math:`\epsilon` in paper :cite:`falahatgar2017maxing`.
         epsilon_mean = (self._epsilon_upper + self._epsilon_lower) / 2
         confidence_radius = 0.5
         current_iteration_count = (
-            0  # refer to variable 't' in paper :cite:`falahatgar2018assumptions`
+            0  # refer to variable 't' in paper :cite:`falahatgar2017maxing`
         )
         calibrated_preference_estimate = 0.0
 
         # number of rounds is selected in such a way that compare method selects the winner with :math:`1-\delta`
-        # confidence. See Algorithm 4 of paper :cite:`falahatgar2018assumptions`.
+        # confidence. See Algorithm 4 of paper :cite:`falahatgar2017maxing`.
         rounds_for_iteration = int(
             2 * np.log(2 / self.failure_probability) / (np.power(epsilon, 2))
         )
@@ -235,7 +235,7 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         )
 
         # compare two arms multiple times to get an estimate of their winnings. Refer to Algorithm 4 of paper
-        # :cite:`falahatgar2018assumptions`.
+        # :cite:`falahatgar2017maxing`.
         while (
             current_iteration_count < rounds_for_iteration
             and np.absolute(calibrated_preference_estimate - epsilon_mean)
@@ -263,5 +263,5 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
                     competing_arm, self._anchor_arm
                 )
             )
-        # refer to algorithm of COMPARE of Algorithm 4 in paper :cite:`falahatgar2018assumptions`.
+        # refer to algorithm of COMPARE of Algorithm 4 in paper :cite:`falahatgar2017maxing`.
         return calibrated_preference_estimate >= epsilon_mean

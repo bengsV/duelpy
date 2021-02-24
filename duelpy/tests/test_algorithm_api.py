@@ -27,6 +27,6 @@ def test_time_horizon_kept(algorithm_class: Type[Algorithm], time_horizon: int) 
     }
     if "random_state" in inspect.getfullargspec(algorithm_class.__init__)[0]:
         parameters["random_state"] = random_state
-    algorithm = algorithm_class(**parameters)
+    algorithm = algorithm_class(**parameters)  # type: ignore
     algorithm.run()
     assert feedback_mechanism.get_num_duels() == time_horizon

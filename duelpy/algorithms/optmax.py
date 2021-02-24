@@ -190,7 +190,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
     def pick_anchor_for_medium_range(self) -> Optional[int]:
         r"""Optimal for medium range of failure probability (:math:`\delta < 1/log(\lvert S \rvert)`).
 
-        From a random subset of size as mentioned in Algorithm 11 of :cite:`falahatgar2018limits, a pruned subset is
+        From a random subset of size as mentioned in Algorithm 11 of :cite:`falahatgar2018limits` , a pruned subset is
         formed. Performing sequential elimination on this small sized subset, will yield the copeland winner in
         :math:`\mathcal{O}({\lvert S \rvert}/{\epsilon}^2 * log(1/\delta))` complexity.
 
@@ -393,7 +393,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
 
         The confidence radius (:math:`\hat{c}`) is calculated such that with proof :math:`\ge 1-\delta`,
         :math:`\lvert \hat{p}_{i,j} - p_{i,j} \rvert < \hat{c}` after any number of comparisons. Here :math:`1-\delta`
-        as mentioned in the paper :cite:`falahatgar2017assumption`, is called confidence value but we have referred it
+        as mentioned in the paper :cite:`falahatgar2017maxing`, is called confidence value but we have referred it
         as the failure probability.
 
         The method returns True if :math:`\hat{p}_{i,j} \ge (\epsilon_u + \epsilon_l)/2` otherwise False is

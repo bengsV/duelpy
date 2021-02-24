@@ -294,13 +294,12 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         else:
             self.k_top_ranked = k_top_ranked
         self.time_horizon = time_horizon
+        self.budgeted_feedback_mechanism = feedback_mechanism
         if self.time_horizon is not None:
             self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
                 self.feedback_mechanism,
                 max_duels=self.time_horizon - self.feedback_mechanism.get_num_duels(),
             )
-        else:
-            self.budgeted_feedback_mechanism = feedback_mechanism
         self.preference_estimate = PreferenceEstimate(
             self.feedback_mechanism.get_num_arms(),
         )
@@ -409,9 +408,11 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
             return
 
         if self.top_1_selection_instance is None:
+            min_node = self.heap.get_min()
+            assert min_node is not None
             self.top_1_selection_instance = SingleEliminationTop1Select(
                 feedback_mechanism=self.budgeted_feedback_mechanism,
-                arms_subset=self.heap.get_min()[1].copy(),
+                arms_subset=min_node[1].copy(),
                 preference_estimate=self.preference_estimate,
                 time_horizon=self.time_horizon,
             )
@@ -422,24 +423,27 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
             ):
                 if not self.heap_updated:
                     top_1_arm = self.top_1_selection_instance.get_condorcet_winner()
-
+                    assert top_1_arm is not None
                     self.heap.update_min_key(top_1_arm)
                     self.heap_updated = True
                     return
                 self.heap_updated = False
-                self.top_k_arms.append(self.heap.get_min()[0])
+                min_node = self.heap.get_min()
+                assert min_node is not None
 
-                min_heap: list = self.heap.get_min()[1]
-                min_heap.remove(self.heap.get_min()[0])
-                if len(self.heap.get_min()[1]) > 0:
+                self.top_k_arms.append(min_node[0])
+
+                min_heap: list = min_node[1]
+                min_heap.remove(min_node[0])
+                if len(min_node[1]) > 0:
                     self.top_1_selection_instance = SingleEliminationTop1Select(
                         feedback_mechanism=self.budgeted_feedback_mechanism,
-                        arms_subset=self.heap.get_min()[1].copy(),
+                        arms_subset=min_node[1].copy(),
                         preference_estimate=self.preference_estimate,
                     )
 
                 else:
-                    self.heap.delete(self.heap.get_min()[0])
+                    self.heap.delete(min_node[0])
                 self.rank_index += 1
         self.top_1_selection_instance.step()
 

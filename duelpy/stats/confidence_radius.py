@@ -55,7 +55,9 @@ class TrivialConfidenceRadius(ConfidenceRadius):
 
 
 class HoeffdingConfidenceRadius(ConfidenceRadius):
-    """A confidence radius based on Hoeffding's inequality and the Union bound.
+    r"""A confidence radius based on Hoeffding's inequality and the Union bound.
+
+    :math:`\sqrt{\frac{\textit{factor}}{2 \cdot \textit{num_samples}} \log\left(\frac{\textit{prob_scaling(num_samples)}}{\textit{failure_probability}}\right)}`
 
     Parameters
     ----------
