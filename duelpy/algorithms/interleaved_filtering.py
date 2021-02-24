@@ -15,18 +15,18 @@ from duelpy.stats.preference_estimate import PreferenceEstimate
 class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
     r"""Implements the Interleaved Filtering algorithm.
 
-    This algorithm finds the Condorcet winner.
+    This algorithm finds the :term:`Condorcet winner`.
 
-    A total order over arms, strong stochastic transitivity and the stochastic triangle inequality are assumed.
+    A total order over arms, :term:`strong stochastic transitivity` and the :term:`stochastic triangle inequality` are assumed.
 
-    If the Condorcet winner is not eliminated, which happens with low probability, the expected regret is bound by :math:`O(N/\epsilon_\ast \log(T))`. :math:`\epsilon_\ast` refers to the win probability of the best arm winning against the second best arm minus 1/2.
+    If the :term:`Condorcet winner` is not eliminated, which happens with low probability, the expected regret is bound by :math:`O(N/\epsilon_\ast \log(T))`. :math:`\epsilon_\ast` refers to the win probability of the best arm winning against the second best arm minus 1/2.
 
     The algorithm is explained in :cite:`yue2012bandits`.
 
     Exploration:
 
     Interleaved Filtering follows a sequential elimination approach in the exploration phase and thereby
-    finds the best arm with probability at least  1-1/T, where T is the time horizon. At each time step, the algorithm
+    finds the best arm with probability at least  1-1/T, where T is the time horizon. In each time step, the algorithm
     selects a candidate arm and compares it with all the other arms in a one-versus-all manner.
     If the algorithm selects an arm "a" (candidate arm), then it compares all the other arms with "a". If there exists any arm, "b"
     such that upper confidence bound of "a" beating "b" is less than 1/2, then arm "a" is eliminated and arm "b" becomes

@@ -17,64 +17,62 @@ from duelpy.util.utility_functions import pop_random
 class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the KL-divergence based PAC algorithm.
 
-    The goal of the algorithm is to find a Copeland winner in a
-    PAC setting i.e. the algorithm finds an :math:`\epsilon`-Copeland
+    The goal of the algorithm is to find a :term:`Copeland winner` in a
+    :term:`PAC` setting i.e. the algorithm finds an :math:`\epsilon`-Copeland
     winner with probability at least :math:`1 - \delta`.
 
     It is assumed that there are no ties between arms, i.e. the
-    probability of any arm winning against another arm is never 1/2.
+    probability of any arm winning against another arm is never :math:`\frac{1}{2}`.
 
     The bound on the expected regret is given as
-    :math:`O( ( (1 - \mu_i)\ln(K / (\delta\Delta_i\epsilon) )/
-    (\Delta_i^\epsilon)^2 )`. :math:`K` is the number of arms,
+    :math:`\mathcal{O}\left( \ln(\frac{N}{\delta\Delta_i\epsilon} \frac{1 - \mu_i}{(\Delta_i^\epsilon)^2} \right)`. :math:`N` is the number of arms,
     :math:`\epsilon` is the error parameter and :math:`\delta` is the
     failure probability.
     :math:`\mu_i` is the expected reward of arm :math:`a_i`. Let
     :math:`a_1` be the arm which generates the maximum reward
     :math:`\mu_1`.
-    :math:`\Delta_i = \max(\mathit{cpld}(a_1)-\mathit{cpld}(a_i), 1/(K-1))`
+    :math:`\Delta_i = \max(\mathit{cpld}(a_1)-\mathit{cpld}(a_i), \frac{1}{N-1})`
     where :math:`\mathit{cpld}(a_i)` is the Copeland score of arm
     :math:`a_i`.
     :math:`\Delta_i^\epsilon = \max(\Delta_i, \epsilon(1 - \mathit{cpld}(a_1)))`
 
-    This was originally introduced as a component of the Scalable
-    Copeland Bandits algorithm described in :cite:`zoghi2015copeland`.
-    This implementation is based on "Algorithm 2" (which further uses
-    "Algorithm 4") from the same paper. This algorithm uses
-    KL-Divergence in the process of finding an approximate Copeland
-    winner. An additional condition is used to terminate the exploration
-    phase. This additional condition checks whether there is only one Copeland
-    winner candidate left. If yes, then the exploration phase is stopped.
+    This was originally introduced as a component of the :class:`ScalableCopelandBandits<duelpy.algorithms.scalable_copeland_bandits.ScalableCopelandBandits>` algorithm described in :cite:`zoghi2015copeland`.
+    This implementation is based on `Algorithm 2` (which further uses
+    `Algorithm 4`) from the same paper. This algorithm uses
+    KL-Divergence in the process of finding an approximate :term:`Copeland winner`.
+    An additional condition is used to terminate the exploration
+    phase. This additional condition checks whether there is only one :term:`Copeland winner`
+    candidate left. If yes, then the exploration phase is stopped.
     This is done to ensure that the KL divergence based algorithm begins with
-    the exploitation phase (i.e. dueling a PAC-Copeland winner against itself)
+    the exploitation phase (i.e. dueling a :term:`PAC`-:term:`Copeland winner` against itself)
     earlier in some cases. Otherwise, it might continue to duel the one remaining
     candidate against random opponents for a while, which could incur a higher
-    regret in the primary algorithm Scalable Copeland Bandits.
+    regret in the primary algorithm :class:`ScalableCopelandBandits<duelpy.algorithms.scalable_copeland_bandits.ScalableCopelandBandits>`.
 
-    The algorithm finds a Copeland winner based on the smallest and greatest
+    The algorithm finds a :term:`Copeland winner` based on the smallest and greatest
     probability distribution that has a low KL-Divergence (less than or
-    equal to the value of ``\ln(4tK / \delta) + 2 \ln \ln(t)`` in "Algorithm 4"
+    equal to the value of :math:`\ln\left(\frac{4tN}{\delta}\right) + 2 \ln \ln(t)` in `Algorithm 4`
     in the paper) to the estimated preference probabilities.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
         Number of time steps to execute for. Corresponds to
         :math:`T` in :cite:`zoghi2015copeland`. Defaults to
         ``None`` when not specified.
     epsilon
-        The optimality of the winning arm. Corresponds to :math:`epsilon`
+        The optimality of the winning arm. Corresponds to :math:`\epsilon`
         in :cite:`zoghi2015copeland`.
     failure_probability
         Upper bound on the probability of failure. Corresponds to
-        :math:`delta` in :cite:`zoghi2015copeland`.
+        :math:`\delta` in :cite:`zoghi2015copeland`.
     random_state
         A numpy random state. Defaults to an unseeded state when not
         specified.
     preference_estimate
-        A PreferenceEstimate object is needed if this algorithm is used
+        A ``PreferenceEstimate`` object is needed if this algorithm is used
         as a subroutine and the result is required to be stored in further
         rounds. The confidence radius of the given preference estimate will be
         overridden. Pass ``None`` if the algorithm should start from a new
@@ -175,7 +173,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
 
         This termination condition is based on the condition that is used in
         Algorithm 4 in :cite:`zoghi2015copeland`. In addition to that, it is
-        also checked whether there exists only one copeland winner candidate
+        also checked whether there exists only one :term:`Copeland winner` candidate
         in order to end the exploration phase and start with the exploitation
         phase as per the explore-then-exploit principle.
 
@@ -262,7 +260,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
 
         New interval boundaries are calculated for the Copeland winner candidates.
         This is done using Newton-Raphson method of finding the approximate roots
-        of a function. Refer "https://en.wikipedia.org/wiki/Newton's_method" for
+        of a function. Refer to "https://en.wikipedia.org/wiki/Newton's_method" for
         details. The ``function_to_be_solved`` for which roots need to be found
         consists of the Chernoff’s inequality stated w.r.t the KL-divergence of two
         random variables. For two Bernoulli random variables with parameters :math:`p`,
