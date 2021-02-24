@@ -20,19 +20,19 @@ from duelpy.util.utility_functions import pop_random
 class MallowsMPI(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the Mallows Most Preferred Item algorithm.
 
-    This algorithm finds the Condorcet winner with a given error probability.
+    This algorithm finds the :term:`Condorcet winner` with a given error probability.
 
-    It is assumed that the arms are sampled from a Mallows distribution, which is stricter than the total order assumption. See :cite:`busa2014preference` for details on this distribution.
+    It is assumed that the arms are sampled from a :term:`Mallows distribution`, which is stricter than the :term:`total order` assumption. See :cite:`busa2014preference` for details on this distribution.
 
-    The amount of pairwise arm comparisons can be upper bounded by :math:`O\left(\frac{N}{\rho^2}\log\frac{N}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the Mallows distribution parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
+    The amount of pairwise arm comparisons can is bound by :math:`\mathcal{O}\left(\frac{N}{\rho^2}\log\frac{N}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the :term:`Mallows distribution` parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
 
-    This algorithm is part of the :math:`\epsilon`-:math:`\delta`-PAC class of algorithms, with :math:`\epsilon = 0`. The Condorcet winner is determined as the arm ranked first with the highest probability in the Mallows
-    :math:`\phi`-model. The algorithm proceeds by selecting a random arm and comparing it against another arm until one of them can be considered worse than the other with sufficient confidence. The worse arm is discarded and the winner is compared against a new randomly chosen arm. This continues until only one arm is left, which is then returned. See :cite:`busa2014preference` for more details.
+    This algorithm is part of the (:math:`\epsilon`,:math:`\delta`)-:term:`PAC` class of algorithms, with :math:`\epsilon = 0`. The :term:`Condorcet winner` is determined as the arm ranked first with the highest probability in the :term:`Mallows distribution`.
+    The algorithm proceeds by selecting a random arm and comparing it against another arm until one of them can be considered worse than the other with sufficient confidence. The worse arm is discarded and the winner is compared against a new randomly chosen arm. This continues until only one arm is left, which is then returned. See :cite:`busa2014preference` for more details.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
@@ -137,19 +137,19 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
 class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
     r"""Implementation of Mallows Most Probable Ranking Algorithm.
 
-    This algorithm computes a Copeland ranking with a given error probability.
+    This algorithm computes a :term:`Copeland ranking` with a given error probability.
 
-    It is assumed that the arms are sampled from a Mallows distribution, which is stricter than the total order assumption. See :cite:`busa2014preference` for details on this distribution.
+    It is assumed that the arms are sampled from a :term:`Mallows distribution`, which is stricter than the :term:`total order` assumption. See :cite:`busa2014preference` for details on this distribution.
 
-    The amount of pairwise arm comparisons can be upper bounded by :math:`O\left(\frac{N \log_2(N)}{\rho^2}\log\frac{N \log_2(N)}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the Mallows distribution parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
+    The amount of pairwise arm comparisons is bound by :math:`\mathcal{O}\left(\frac{N \log_2(N)}{\rho^2}\log\frac{N \log_2(N)}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the Mallows distribution parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
 
-    This algorithm recursively builds a Copeland ranking over the arms by sorting them using either Mergesort or Quicksort.
-    Arms are compared repeatedly until sufficient confidence is obtained, this confidence is based on the Mallows :math:`\phi`-model.
+    This algorithm recursively builds a :term:`Copeland ranking` over the arms by sorting them using either :class:`Mergesort<duelpy.util.sorting.MergeSort>` or :class:`Quicksort<duelpy.util.sorting.Quicksort>`.
+    Arms are compared repeatedly until sufficient confidence is obtained, this confidence is based on the :term:`Mallows distribution`.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
@@ -157,7 +157,7 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
     failure_probability
         An upper bound on the acceptable probability to fail, called :math:`\delta` in :cite:`busa2014preference`.
     sorting_mode
-        Determines which sort algorithm should be used, 'merge' for Mergesort or 'quick' for Quicksort.
+        Determines which sort algorithm should be used, ``'merge'`` for Mergesort or ``'quick'`` for Quicksort.
 
 
     Attributes
