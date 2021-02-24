@@ -14,46 +14,46 @@ from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 class ScalableCopelandBandits(Algorithm):
     r"""An implementation of the Scalable Copeland Bandits (SCB) algorithm.
 
-    The goal of the algorithm is to minimize the Copeland regret.
+    The goal of the algorithm is to minimize the :term:`Copeland regret`.
 
     It is assumed that there are no ties between arms, i.e. the probability
-    of any arm winning against another is never 1/2.
+    of any arm winning against another is never :math:`\frac{1}{2}`.
 
     The bound on the expected regret is given as
-    :math:`O((K(L_C+\ln(K)) \ln(T))/(\Delta_\min)^2)`. :math:`K` is the
+    :math:`\mathcal{O}\left(\frac{N(L_C+\ln(N)) \ln(T)}{\Delta_\min)^2}\right)`. :math:`N` is the
     number of arms, :math:`T` is the time horizon. :math:`C` is the number
-    of Copeland winners and :math:`L_C` is the number of arms against which
-    a Copeland winner will lose in expectation. For any Copeland winner and
-    any non-Copeland winner, :math:`\Delta` is the smallest absolute distance
+    of :term:`Copeland winners<Copeland winner>` and :math:`L_C` is the number of arms against which
+    a :term:`Copeland winner` will lose in expectation. For any :term:`Copeland winner` and
+    any non-:term:`Copeland winner`, :math:`\Delta` is the smallest absolute distance
     to :math:`\frac{1}{2}` in the probability of these arms dueling against
     each other. :math:`\Delta_\min` is the smallest :math:`\Delta` value for
-    the given set of arms such that :math:`\Delta_\min \ne 0`.
+    the given set of arms such that :math:`\Delta_\min \ne 0`.  Note that the paper uses a different definition of :term:`Copeland regret`, in this library the value is half of that in the paper.
 
     The Scalable Copeland Bandits algorithm is based on :cite:`zoghi2015copeland`.
-    SCB performs well for a large number of arms (500 or more); refer to
+    SCB performs well for a large number of arms (:math:`500` or more); refer to
     :cite:`zoghi2015copeland` for more details.
     It proceeds by conducting duels which are most informative about the precedence
-    of the participating arms in terms of their Copeland scores. The confirmed
-    non-Copeland winners are eliminated based on the results of the prior duels.
-    After conducting sufficient rounds, the set of possible Copeland winners will
-    converge which will result in minimal increment in Copeland regret and thus
+    of the participating arms in terms of their :term:`Copeland scores<Copeland score>`. The confirmed
+    non-:term:`Copeland winners<Copeland winner>` are eliminated based on the results of the prior duels.
+    After conducting sufficient rounds, the set of possible :term:`Copeland winners<Copeland winner>` will
+    converge which will result in minimal increment in :term:`Copeland regret` and thus
     the goal would be achieved.
 
-    This algorithm uses a KL-Divergence based PAC algorithm as a subroutine to
-    determine a Copeland winner. The subroutine is based on "Algorithm 2" and
-    "Algorithm 4" stated in :cite:`zoghi2015copeland`. An additional termination
+    This algorithm uses a KL-Divergence based :term:`PAC` algorithm as a subroutine to
+    determine a Copeland winner. The subroutine is based on `Algorithm 2` and
+    `Algorithm 4` stated in :cite:`zoghi2015copeland`. An additional termination
     condition is used in its implementation. This additional condition stops
     the exploration phase of the subroutine when there is only one Copeland
     winner candidate left. The additional condition is introduced to ensure that
-    the KL-Divergence based PAC based algorithm starts with the exploitation phase
-    (i.e. dueling a PAC-Copeland winner against itself) earlier in some cases.
+    the KL-Divergence based :term:`PAC` based algorithm starts with the exploitation phase
+    (i.e. dueling a :term:`PAC`-Copeland winner against itself) earlier in some cases.
     Otherwise, the algorithm might continue to duel the one remaining candidate
     against random opponents, which could incur a higher regret.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
         Number of time steps to execute for.
     random_state
@@ -71,7 +71,7 @@ class ScalableCopelandBandits(Algorithm):
         is dependent on the current round, hence varies with each round.
         Corresponds to :math:`T` in :cite:`zoghi2015copeland`.
     copeland_winner
-        The estimated Copeland winner.
+        The estimated :term:`Copeland winner`.
 
     Examples
     --------
