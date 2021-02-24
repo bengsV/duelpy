@@ -16,41 +16,41 @@ from duelpy.util.utility_functions import argmax_set
 class CopelandConfidenceBound(SingleCopelandProducer):
     r"""Implement the Copeland Confidence Bound(CCB) algorithm.
 
-    The goal of the algorithm is to minimize the Copeland regret.
+    The goal of the algorithm is to minimize the :term:`Copeland regret`.
 
-    It is assumed that there are no ties between arms, i.e. the probability of any arm winning against another is never 1/2.
+    It is assumed that there are no ties between arms, i.e. the probability of any arm winning against another is never :math:`\frac{1}{2}`.
 
-    The bound on the expected regret is given as :math:`O((N^2+(C+L_C)N \ln(T))/\Delta^2)`. :math:`N` is the number of arms, :math:`T` is the time horizon. :math:`C` is the amount of Copeland winners and :math:`L_C` the amount of arms a Copeland winner will lose agains in expectation. For any Copeland winner and any non-Copeland winner, :math:`\Delta` is the smallest absolute distance to 1/2 in the probability of these arms dueling against each other.
+    The bound on the expected regret is given as :math:`\mathcal{O}\left(\frac{N^2+(C+L_C)N \ln(T)}{\Delta^2}\right)`. :math:`N` is the number of arms, :math:`T` is the time horizon. :math:`C` is the amount of :term:`Copeland winners<Copeland winner>` and :math:`L_C` the amount of arms a :term:`Copeland winner` will lose agains in expectation. For any :term:`Copeland winner` and any non-Copeland winner, :math:`\Delta` is the smallest absolute distance to :math:`\frac{1}{2}` in the probability of these arms dueling against each other. Note that the paper uses a different definition of :term:`Copeland regret`, in this library the value is half of that in the paper.
 
     The Copeland Confidence Bound algorithm is based on :cite:`zoghi2015copeland`.
-    The performance of CCB degrades at about 136 arms in experiments, for details
+    The performance of CCB degrades at about :math:`136` arms in experiments, for details
     refer to :cite:`zoghi2015copeland`.
     It proceeds by conducting duels which are most informative about the precedence of the
     participating arms in terms of their Copeland scores. The confirmed non-Copeland
     winners are eliminated based on the results of the prior duels. After conducting
-    sufficient rounds, the set of possible Copeland winners will converge which will
-    result in minimal increment in Copeland regret and thus the goal would be achieved.
+    sufficient rounds, the set of possible :term:`Copeland winners<Copeland winner>` will converge which will
+    result in minimal increment in :term:`Copeland regret` and thus the goal would be achieved.
 
     CCB runs continuously and in each time step it follows these steps:
 
-    1. Optimisic and Pessimistic estimates (namely `U` and `L` respectively) of the
+    1. Optimistic and Pessimistic estimates (namely `U` and `L` respectively) of the
     Preference matrix are calculated.
 
-    2. A Copeland winner candidate :math:`a_c` is chosen using the optimistic estimate
-    `U` such that it has a chance of being a true Copeland winner. :math:`a_c` is chosen
+    2. A :term:`Copeland winner` candidate :math:`a_c` is chosen using the optimistic estimate
+    `U` such that it has a chance of being a true :term:`Copeland winner`. :math:`a_c` is chosen
     from a set of top scorers from `U`, especially those which are present in a
     list :math:`B_t`. :math:`B_t` contains the arms which have a higher chance of
-    being a Copeland winner.
+    being a :term:`Copeland winner`.
 
     3. A suitable opponent :math:`a_d` is chosen using the pessimistic estimate `L` such
-    that it can beat the notion of :math:`a_c` being the true Copeland winner. By
+    that it can beat the notion of :math:`a_c` being the true :term:`Copeland winner`. By
     definition, `U` and `L` define a confidence interval around the original preference
     matrix. Using these confidence intervals, :math:`a_d` is chosen such that a duel
     between :math:`a_c` and :math:`a_d` provides maximum information about their
     precedence over each other in terms of their Copeland scores. The historically proven
     strong opponents to :math:`a_c` are maintained in a shortlist :math:`B_t^i`. The arms
     in this list are preferred while selecting an opponent. Such a list is maintained for
-    every participating arm. The :math:`B_t^i` lists for non-Copeland winners will contain
+    every participating arm. The :math:`B_t^i` lists for non-\ :term:`Copeland winners<Copeland winner>` will contain
     a large number of opponents and thus help in their quick elimination from the list of
     possible winners.
 
@@ -60,7 +60,7 @@ class CopelandConfidenceBound(SingleCopelandProducer):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
         Number of time steps to execute for.
     random_state
@@ -70,17 +70,17 @@ class CopelandConfidenceBound(SingleCopelandProducer):
         The confidence radius grows proportional to the square root of this value.
         A higher upper confidence bound results in more exploration.
         Corresponds to :math:`\alpha` in :cite:`zoghi2015copeland`. The value of
-        `exploratory_constant` must be greater than 0.5.
-        Default value is 0.501 which has been used in the experiments for calculating the
+        ``exploratory_constant`` must be greater than :math:`0.5`.
+        The default value is ``0.501`` which has been used in the experiments for calculating the
         confidence bounds in :cite:`zoghi2014ranker`.
 
     Attributes
     ----------
     copeland_winner_candidates
-        The arms which have a higher possibilty of becoming a Copeland winner.
+        The arms which have a higher possibilty of becoming a :term:`Copeland winner`.
         Corresponds to :math:`B_t` in :cite:`zoghi2015copeland`.
     max_allowed_losses
-        Maximum allowed losses for a Copeland winner.
+        Maximum allowed losses for a :term:`Copeland winner`.
         Corresponds to :math:`L_C` in :cite:`zoghi2015copeland`.
     respective_opponents
         A dictionary which has every arm as a key. Each value in this dictionary
