@@ -17,21 +17,21 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
 
     This algorithm finds the :term:`Condorcet winner`.
 
-    A total order over arms, :term:`strong stochastic transitivity` and the :term:`stochastic triangle inequality` are assumed.
+    A :term:`total order` over arms, :term:`strong stochastic transitivity` and the :term:`stochastic triangle inequality` are assumed.
 
-    If the :term:`Condorcet winner` is not eliminated, which happens with low probability, the expected regret is bound by :math:`O(N/\epsilon_\ast \log(T))`. :math:`\epsilon_\ast` refers to the win probability of the best arm winning against the second best arm minus 1/2.
+    If the :term:`Condorcet winner` is not eliminated, which happens with low probability, the expected regret is bound by :math:`\mathcal{O}\left(\frac{N}{\epsilon_\ast \log(T)}\right)`. :math:`\epsilon_\ast` refers to the win probability of the best arm winning against the second best arm minus :math:`\frac{1}{2}`.
 
     The algorithm is explained in :cite:`yue2012bandits`.
 
     Exploration:
 
     Interleaved Filtering follows a sequential elimination approach in the exploration phase and thereby
-    finds the best arm with probability at least  1-1/T, where T is the time horizon. In each time step, the algorithm
+    finds the best arm with a probability of at least :math:`1-\frac{1}{T}`, where :math:`T` is the time horizon. In each time step, the algorithm
     selects a candidate arm and compares it with all the other arms in a one-versus-all manner.
-    If the algorithm selects an arm "a" (candidate arm), then it compares all the other arms with "a". If there exists any arm, "b"
-    such that upper confidence bound of "a" beating "b" is less than 1/2, then arm "a" is eliminated and arm "b" becomes
+    If the algorithm selects an arm :math:`a` (candidate arm), then it compares all the other arms with :math:`a`. If there exists any arm, :math:`b`
+    such that the upper confidence bound of :math:`a` beating :math:`b` is less than :math:`\frac{1}{2}`, then arm :math:`a` is eliminated and arm :math:`b` becomes
     the candidate arm and is compared to all other active arms. It applies a pruning technique to
-    eliminate arm "b" if the lower confidence bound of "a" beating "b" is greater than 1/2,
+    eliminate arm :math:`b` if the lower confidence bound of :math:`a` beating :math:`b` is greater than :math:`\frac{1}{2}`,
     as it cannot be considered as the best arm with high probability. After the exploration, the candidate arm and the total number of comparisons are given as output.
 
     Exploitation:
@@ -42,10 +42,10 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
-        For how many time steps the algorithm should run (must be >= the number
-        of arms).
+        For how many time steps the algorithm should run, must be greater or equal to the number
+        of arms.
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
 
@@ -57,7 +57,7 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
     candidate_arm
         Randomly selected arm (corresponds to :math:`\hat{b}` in :cite:`yue2012bandits`) from the list of arms.
     arms_without_candidate
-        The remaining set of arms (corresponds to W in :cite:`yue2012bandits`) after removing the candidate arm.
+        The remaining set of arms (corresponds to :math:`W` in :cite:`yue2012bandits`) after removing the candidate arm.
     preference_estimate
         Estimation of a preference matrix based on samples.
     feedback_mechanism
