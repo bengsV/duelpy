@@ -18,28 +18,30 @@ import duelpy.util.utility_functions as utility
 class OptMax(SingleCopelandProducer, PacAlgorithm):
     r"""Implement the OptMax algorithm.
 
-    The goal of this algorithm is to find a :math:`\epsilon`-maximum arm among the given arms.
+    The goal of this algorithm is to find an :math:`\epsilon`-maximum arm among the given arms.
+
+    It assumes :term:`moderate stochastic transitivity`.
+
+    As per the theorem 8 in the paper :cite:`falahatgar2018limits`, the OptMax algorithm takes
+    :math:`\mathcal{O}\left(\frac{N}{\epsilon^2} \log\left(\frac{1}{\delta}\right)\right)` comparisons to find an
+    :math:`\epsilon`-maximum arm. :math:`N` is the number of arms.
 
     This algorithm computes the :math:`\epsilon`-maximum arm by choosing one of the methods among
-    pick_anchor_for_lower_range or pick_anchor_for_medium_range or pick_anchor_for_higher_range.
-    These methods are selected based on the failure_probability(:math:`\Delta`) which is calculated using the number of
-    arms (:math:`\lvert N \rvert`) given to the algorithm. Here :math:`\epsilon = \epsilon_u - \epsilon_l` and
-    :math:`\epsilon_u` and :math:`\epsilon_l are upper and lower bias respectively.
+    ``_pick_anchor_for_lower_range`` or ``_pick_anchor_for_medium_range`` or ``_pick_anchor_for_higher_range``.
+    These methods are selected based on the ``failure_probability`` :math:`\delta`, which is calculated using the number of
+    arms :math:`N` given to the algorithm. Here :math:`\epsilon = \epsilon_u - \epsilon_l` and
+    :math:`\epsilon_u` and :math:`\epsilon_l` are upper and lower bias respectively.
 
-    As per the theorem 8 in paper :cite:`falahatgar2018limits`, the optmax algorithm takes
-    :math:`\mathcal{O}({\lvert N \rvert}/{\epsilon}^2 \cdot log(1/\Delta))` comparisons to find an
-    :math:`\epsilon`-maximum arm.
-
-    The algorithm as presented in :cite:`falahatgar2018limits`, either finds an arm which is either a
-    :math:`2\cdot\epsilon/3`-maximum arm or uses Sequential Elimination to find an arm which is
+    The algorithm as presented in :cite:`falahatgar2018limits` either finds an arm which is either a
+    :math:`\frac{2\epsilon}{3}`-maximum arm or uses :class:`Sequential Elimination<duelpy.algorithms.sequential_elimination.SequentialElimination>` to find an arm which is
     :math:`\epsilon`-maximum against the other arms.
 
     Parameters
     ----------
     feedback_mechanism
-        Object used for gathering the feedback of drawing arms.
+        A ``FeedbackMechanism`` object describing the environment.
     failure_probability
-        Refer to :math:`\Delta` in :cite:`falahatgar2018limits`.
+        Refer to :math:`\delta` in :cite:`falahatgar2018limits`.
     time_horizon
         Sets a limit to the number of comparisons that the algorithm will make.
     epsilon_range
@@ -105,19 +107,19 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
     def explore(self) -> None:
         """Run one step of exploration.
 
-        Exploration is divided into 3 parts. For more details, refer to Algorithm 4 of :cite:`falahatgar2018limits`.
+        Exploration is divided into 3 parts. For more details, refer to `Algorithm 4` of :cite:`falahatgar2018limits`.
         """
         try:
             if self._failure_probability <= 1 / np.power(
                 len(self.feedback_mechanism.get_arms()), 1 / 3
             ):
-                self._anchor_arm = self.pick_anchor_for_low_range()
+                self._anchor_arm = self._pick_anchor_for_low_range()
             elif self._failure_probability <= 1 / np.log(
                 len(self.feedback_mechanism.get_arms())
             ):
-                self._anchor_arm = self.pick_anchor_for_medium_range()
+                self._anchor_arm = self._pick_anchor_for_medium_range()
             else:
-                self._anchor_arm = self.pick_anchor_for_high_range()
+                self._anchor_arm = self._pick_anchor_for_high_range()
         except AlgorithmFinishedException:
             return
 
@@ -133,13 +135,13 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         """
         return self._anchor_arm
 
-    def pick_anchor_for_low_range(self) -> Optional[int]:
-        r"""Optimal for lower range of failure probability  (:math:`\delta < 1/\lvert S \rvert ^{1/3}`).
+    def _pick_anchor_for_low_range(self) -> Optional[int]:
+        r"""Optimal for lower range of failure probability  (:math:`\delta < N ^{-\frac{1}{3}}`).
 
-        From a random subset of size :math:`{\lvert S \rvert}^{3/4}` where S is the size of the arms given to the
-        algorithm, this algorithm finds an :math:`\epsilon`-maximum of the set using a :math:`{\epsilon}/2`-maximum arm
+        From a random subset of size :math:`{N}^{3/4}` where :math:`N` is the number of the arms given to the
+        algorithm, this algorithm finds an :math:`\epsilon`-maximum of the set using a :math:`\frac{\epsilon}{2}`-maximum arm
         which is found by using sequential elimination algorithm.
-        For more details, refer to Algorithm 3 of :cite:`falahatgar2018limits`
+        For more details, refer to `Algorithm 3` of :cite:`falahatgar2018limits`
 
         Raises
         ------
@@ -149,7 +151,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         Returns
         -------
         int
-            Returns copeland winner.
+            Returns a Copeland winner.
         """
         size = np.power(self.feedback_mechanism.get_num_arms(), 3 / 4)
         # form a set of random elements without replacement from arms.
@@ -159,7 +161,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             random_state=self._random_state,
         )
 
-        picked_anchor = self.pick_anchor(
+        picked_anchor = self._pick_anchor(
             arms=random_set,
             epsilon_range=self._epsilon_range / 2,
             failure_probability=self._failure_probability / 3,
@@ -187,24 +189,24 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             seq_elim.explore()
         return seq_elim.get_copeland_winner()
 
-    def pick_anchor_for_medium_range(self) -> Optional[int]:
-        r"""Optimal for medium range of failure probability (:math:`\delta < 1/log(\lvert S \rvert)`).
+    def _pick_anchor_for_medium_range(self) -> Optional[int]:
+        r"""Optimal for medium range of failure probability (:math:`\delta < \frac{1}{\log(N)}`).
 
-        From a random subset of size as mentioned in Algorithm 11 of :cite:`falahatgar2018limits` , a pruned subset is
+        From a random subset of size as mentioned in `Algorithm 11` of :cite:`falahatgar2018limits` , a pruned subset is
         formed. Performing sequential elimination on this small sized subset, will yield the copeland winner in
-        :math:`\mathcal{O}({\lvert S \rvert}/{\epsilon}^2 * log(1/\delta))` complexity.
+        :math:`\mathcal{O}\left(\frac{N}{\epsilon^2} \log\left(\frac{1}{\delta}\right)\right)` complexity.
 
-        Refer to Algorithm 11 of :cite:`falahatgar2018limits` for more details.
+        Refer to `Algorithm 1` of :cite:`falahatgar2018limits` for more details.
 
         Raises
         ------
         AlgorithmFinishedException
-            When number of duels equals time_horizon
+            When number of duels equals ``time_horizon``
 
         Returns
         -------
         int
-            Copeland winner.
+            Returns a Copeland winner.
         """
         size_random_set = int(
             self.feedback_mechanism.get_num_arms()
@@ -218,7 +220,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             random_state=self._random_state,
         )
 
-        picked_anchor = self.pick_anchor(
+        picked_anchor = self._pick_anchor(
             arms=random_set,
             epsilon_range=self._epsilon_range / 3,
             failure_probability=self._failure_probability / 4,
@@ -233,7 +235,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
                 4 * len(self.feedback_mechanism.get_arms()) / self._failure_probability
             )
         )
-        pruned_list = self.prune(
+        pruned_list = self._prune(
             arms=random_set,
             selected_arm=selected_anchor_element,
             epsilon_lower=self._epsilon_range / 3,
@@ -262,16 +264,16 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             seq_elim.explore()
         return seq_elim.get_copeland_winner()
 
-    def pick_anchor_for_high_range(self) -> Optional[int]:
+    def _pick_anchor_for_high_range(self) -> Optional[int]:
         r"""Optimal for higher range of failure probability.
 
-        This algorithm is run for m number of stages (refer to Algorithm 12 of :cite:`falahatgar2018limits`). In the
+        This algorithm is run for m number of stages (refer to `Algorithm 12` of :cite:`falahatgar2018limits`). In the
         first stage, the size of pruned set is small. In every stage, this subset grows. This step reduces the epsilon and
         confidence errors. The multiple stages are needed, to ensure that final pruning will yield only those arms
         survive which can actually beat the selected anchor arm. In every stage, sequential elimination will choose an
-        anchor element which is around :math:`\epsilon/3`-maximum arm to other arms. This anchor element is used for the
+        anchor element which is around :math:`\frac{\epsilon}{3}`-maximum arm to other arms. This anchor element is used for the
         next stage.
-        Refer to Algorithm 12 in :cite:`falahatgar2018limits` for more details.
+        Refer to `Algorithm 12` in :cite:`falahatgar2018limits` for more details.
 
         Raises
         ------
@@ -281,7 +283,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         Returns
         -------
         int
-            Copeland winner.
+            Returns a Copeland winner.
         """
         set_size = np.divide(
             len(self.feedback_mechanism.get_arms()),
@@ -297,7 +299,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             random_state=self._random_state,
         )
 
-        picked_anchor = self.pick_anchor(
+        picked_anchor = self._pick_anchor(
             arms=random_set,
             epsilon_range=self._epsilon_range / 3,
             failure_probability=self._failure_probability / 4,
@@ -342,7 +344,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
                 random_state=self._random_state,
             )
             # pruned_list_current_stage refer to :math:`{Q_i}^'' on line 12.
-            pruned_list_current_stage = self.prune(
+            pruned_list_current_stage = self._prune(
                 arms=random_set_current_stage.copy(),
                 selected_arm=current_stage_anchor_arm,
                 epsilon_lower=epsilon_current_stage_lower,
@@ -398,20 +400,20 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
 
         The method returns True if :math:`\hat{p}_{i,j} \ge (\epsilon_u + \epsilon_l)/2` otherwise False is
         returned.
-        For more details, please refer to appendix section Algorithm 9 in :cite:`falahatgar2018limits`.
+        For more details, please refer to appendix section `Algorithm 9` in :cite:`falahatgar2018limits`.
 
         Parameters
         ----------
         arm1
-            Corresponds to 'i' in Algorithm 9 in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`i` in `Algorithm 9` in the paper :cite:`falahatgar2018limits`.
         arm2
-            Corresponds to 'j' in Algorithm 9 in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`j` in `Algorithm 9` in the paper :cite:`falahatgar2018limits`.
         epsilon_lower
-            Corresponds to :math:`\epsilon_l` in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`\epsilon_l` in the paper :cite:`falahatgar2018limits`.
         epsilon_upper
-            Corresponds to :math:`\epsilon_u` in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`\epsilon_u` in the paper :cite:`falahatgar2018limits`.
         failure_probability
-            Corresponds to :math:`\delta` in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`\delta` in the paper :cite:`falahatgar2018limits`.
 
         Returns
         -------
@@ -463,7 +465,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
 
         return calibrated_preference_estimate >= epsilon_mean
 
-    def pick_anchor(
+    def _pick_anchor(
         self,
         failure_probability: float,
         arms: list,
@@ -472,7 +474,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
     ) -> int:
         r"""Return the :math:`\epsilon`-maximum arm.
 
-        From the random subset of the input list, an :math:`\epsilon/2`-maximum arm is chosen by applying sequential elimination
+        From the random subset of the input list, an :math:`\frac{\epsilon}{2}`-maximum arm is chosen by applying :class:`Sequential Elimination<duelpy.algorithms.sequential_elimination.SequentialElimination>`
         on the random subset. The anchor element returned by the above sequential elimination is again provided to sequential
         elimination and this time, an :math:`\epsilon` maximum arm is found out. Refer to Lemma 5 and its proof in Section
         4.2 of paper :cite:`falahatgar2018limits`.
@@ -545,7 +547,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             _time_horizon = self.time_horizon - self.feedback_mechanism.get_num_duels()
         else:
             _time_horizon = None
-        # sequential elimination run on arms provided to pick_anchor method.
+        # sequential elimination run on arms provided to _pick_anchor method.
         seq_elim = SequentialElimination(
             feedback_mechanism=self.feedback_mechanism,
             failure_probability=failure_probability / 2,
@@ -565,7 +567,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         copeland_winner: int = _copeland_winner
         return copeland_winner
 
-    def prune(
+    def _prune(
         self,
         arms: list,
         selected_arm: int,
@@ -579,7 +581,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         remove the elements for which the calibrated preference probability estimate (:math:`\hat{p}_{i,j}`) of anchor
         element (i) against other element (j) is less than lower epsilon (:math:`\epsilon_l`), thus reducing the size of input
         list and ensuring only good elements for which :math:`\hat{p}_{i,j} \ge \epsilon_u`. The goal of prune is to return a
-        list of size as mentioned in C.8.1 in paper :cite:`falahatgar2018limits`.
+        list of size as mentioned in C.8.1 in the paper :cite:`falahatgar2018limits`.
 
         Parameters
         ----------
@@ -588,16 +590,16 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         selected_arm
             An arm which is competed against other arms.
         epsilon_upper
-            Corresponds to :math:`\epsilon_u` in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`\epsilon_u` in the paper :cite:`falahatgar2018limits`.
         epsilon_lower
-            Corresponds to :math:`\epsilon_l` in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`\epsilon_l` in the paper :cite:`falahatgar2018limits`.
         failure_probability
-            Corresponds to :math:`\delta` in paper :cite:`falahatgar2018limits`.
+            Corresponds to :math:`\delta` in the paper :cite:`falahatgar2018limits`.
 
         Returns
         -------
         list
-            Reduced list which contains elements for which :math:`\hat{p}_{i,j} \ge (\epsilon_u + \epsilon_l)/2`
+            Reduced list which contains elements for which :math:`\hat{p}_{i,j} \ge \frac{\epsilon_u + \epsilon_l}{2}`
         """
         current_round = 1
         remaining_arms = arms.copy()
