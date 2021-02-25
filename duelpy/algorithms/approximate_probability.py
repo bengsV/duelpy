@@ -20,7 +20,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
     The algorithm assumes a total order over the existing arms and that strong stochastic
     transitivity and stochastic triangle inequality hold.
 
-    The bound on the expected regret is given as :math:`O(\abs(N)\min(\abs(N),1/espislon)/\epsilon^2)`,
+    The bound on the expected regret is given as :math:`O(\abs(N)\min(\abs(N),1/\epsilon)/\epsilon^2)`,
     where :math:`N = abs(S)` is the number of arms and :math:`\epsilon` is the targeted
     estimation accuracy.
 
