@@ -10,6 +10,7 @@ For an overview of the problem and algorithms, see ~survey paper~.
    :caption: Contents:
 
    autoapi/index
+   installation
    references
 
 
