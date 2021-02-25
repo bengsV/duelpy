@@ -5,6 +5,7 @@ from typing import List
 from typing import Optional
 
 from duelpy.algorithms.algorithm import Algorithm
+from duelpy.stats.preference_matrix import PreferenceMatrix
 
 
 class PacAlgorithm(Algorithm):
@@ -186,3 +187,16 @@ class AllApproximateCondorcetProducer(Algorithm):
         # random state here.
         winner = list(winners)[0]
         self.feedback_mechanism.duel(winner, winner)
+
+
+class PreferenceMatrixProducer(Algorithm):
+    """An Algorithm that computes or estimates approximate pairwise probability over the arms."""
+
+    def get_preference_matrix(self) -> Optional[PreferenceMatrix]:
+        """Return the computed preference matrix if it is ready.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times. If this is a PAC algorithm, the result
+        might be approximate.
+        """
+        raise NotImplementedError

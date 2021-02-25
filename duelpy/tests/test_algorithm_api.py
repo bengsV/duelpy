@@ -6,11 +6,11 @@ import numpy as np
 import pytest
 
 from duelpy.algorithms import Algorithm
-from duelpy.algorithms import algorithm_list
+from duelpy.algorithms import regret_minimizing_algorithms
 from duelpy.experiments.environments import HardCondorcetMatrix
 
 
-@pytest.mark.parametrize("algorithm_class", list(algorithm_list))
+@pytest.mark.parametrize("algorithm_class", list(regret_minimizing_algorithms))
 @pytest.mark.parametrize("time_horizon", [1, 2, 5, 10, 50])
 def test_time_horizon_kept(algorithm_class: Type[Algorithm], time_horizon: int) -> None:
     """Test that all algorithm keep to the time horizon if given.

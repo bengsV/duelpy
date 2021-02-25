@@ -22,7 +22,7 @@ import pandas as pd
 import seaborn as sns
 
 from duelpy.algorithms import Algorithm
-from duelpy.algorithms import algorithm_list
+from duelpy.algorithms import regret_minimizing_algorithms
 from duelpy.experiments.environments import environment_list
 from duelpy.feedback import MatrixFeedback
 from duelpy.stats.metrics import AverageRegret
@@ -204,7 +204,7 @@ def _main() -> None:
         description="Run PB-MAB experiments and plot results."
     )
     algorithm_names_to_algorithms = {
-        algorithm.__name__: algorithm for algorithm in algorithm_list
+        algorithm.__name__: algorithm for algorithm in regret_minimizing_algorithms
     }
     environment_names_to_environments = {
         environment.__name__: environment for environment in environment_list
