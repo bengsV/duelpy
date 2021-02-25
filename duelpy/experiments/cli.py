@@ -1,9 +1,7 @@
-"""Reproduce the experiments from the SAVAGE paper.
+"""Run ad-hoc experiments on the command line.
 
-Implementation of parts of the experiments in section 5 of
-:cite:`urvoy2013generic`. Currently only one problem setting ("Hard Condorcet
-Matrices") is implemented, so this alone is not necessarily representative of
-Algorithm performance.
+Run ``python3 -m duelpy.experiments.cli --help`` from the root of the
+repository to get started.
 """
 
 import argparse
