@@ -200,6 +200,8 @@ class PreferenceMatrixProducer(Algorithm):
         might be approximate.
         """
         raise NotImplementedError
+
+
 class TopKArmsProducer(Algorithm):
     """An algorithm that computes the best k arms. The definition of best is up for the specific algorithm."""
 
