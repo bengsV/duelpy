@@ -13,20 +13,20 @@ from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 class PreferenceBasedRacing(TopKArmsProducer):
     r"""Preference based racing algorithm superclass.
 
-    This algorithm is taken from :cite:`busa2013top`, given there as Algorithm 1.
+    This algorithm is taken from :cite:`busa2013top`, given there as `Algorithm 1`.
 
     The goal of this algorithm is to find the top-k arms while minimizing the exact sample complexity.
 
     No assumptions about the arms are necessary.
 
     The algorithm keeps track of which arm pairs are active. In each round all of these are queried once, then a sampling function determines which arms are selected and how the active arm pairs are updated.
-    The algorithm terminates if no more arm pairs are active, or the queries to any arm pair exceeds the maximum comparison parameter.
+    It terminates if no more arm pairs are active, or the queries to any arm pair exceeds the maximum comparison parameter.
 
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
@@ -154,19 +154,19 @@ class PreferenceBasedRacing(TopKArmsProducer):
 class CopelandPBR(PreferenceBasedRacing):
     r"""Implementation of Copeland Ranking Preference Based Racing algorithm.
 
-    The goal of this algorithm is to find the best :math:`k` arms with respect to a Copeland ranking.
+    The goal of this algorithm is to find the best :math:`k` arms with respect to a :term:`Copeland ranking`.
 
     It makes no assumptions about the arms, except that they can be compared.
 
-    The expected number of comparisons is bounded by :math:`\sum_{i \neq j}\left\lceil \frac{1}{2 \Delta_{i,j}^2} \log \frac{2K^2 n_max}{\delta}\right\rceil`. :math:`K` is the number of arms, the sum iterates over all pairs of arms without self comparisons. :math:`\Delta_{i,j}+1/2` is the probability of arm :math:`i` winning against arm :math:`j` and :math:`\delta` is the failure probability.
+    The expected number of comparisons is bounded by :math:`\sum_{i \neq j}\left\lceil \frac{1}{2 \Delta_{i,j}^2} \log \frac{2N^2 n_max}{\delta}\right\rceil`. :math:`N` is the number of arms, the sum iterates over all pairs of arms without self comparisons. :math:`\Delta_{i,j}+1/2` is the probability of arm :math:`i` winning against arm :math:`j` and :math:`\delta` is the failure probability.
 
-    The algorithm keeps track of all pairwise probabilities and stops sampling them if the better arm can be determined with confidence. The :math:`k` arms with the highest estimated Copeland score.
+    The algorithm keeps track of all pairwise probabilities and stops sampling them if the better arm can be determined with confidence. The :math:`k` arms with the highest estimated :term:`Copeland score`.
     See :cite:`busa2013top` for more details.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
@@ -269,19 +269,19 @@ class CopelandPBR(PreferenceBasedRacing):
 class BordaPBR(PreferenceBasedRacing):
     r"""Implementation of the Borda Preference Based Racing algorithm.
 
-    The goal of this algorithm is to find the best :math:`k` arms with respect to a Borda ranking.
+    The goal of this algorithm is to find the best :math:`k` arms with respect to a :term:`Borda ranking`.
 
     It makes no assumptions about the arms, except that they can be compared.
 
     See Theorem 2 in See :cite:`busa2013top` for more details. for a bound on the pairwise comparisons.
 
-    The paper calls this algorithm sum of expectations (SE), which is the same as the Borda score.
-    The algorithm keeps track of all pairwise probabilities and stops sampling them if the better arm can be determined with confidence. The :math:`k` arms with the highest estimated Copeland score.
+    The paper calls this algorithm sum of expectations (SE), which is the same as the :term:`Borda score`.
+    The algorithm keeps track of all pairwise probabilities and stops sampling them if the better arm can be determined with confidence. The :math:`k` arms with the highest estimated :term:`Borda score`.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
@@ -409,7 +409,7 @@ class RandomWalkPBR(PreferenceBasedRacing):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
