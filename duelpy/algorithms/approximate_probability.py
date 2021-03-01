@@ -14,35 +14,32 @@ from duelpy.stats.preference_matrix import PreferenceMatrix
 class ApproximateProbability(PreferenceMatrixProducer):
     r"""Implementation of the Approximate probability algorithm.
 
-    The goal is to estimate the pairwise preference matrix between all arms using
-    approximate pairwise probability.
+    The goal is to approximate the pairwise preference matrix between all arms.
 
-    The algorithm assumes a total order over the existing arms and that strong stochastic
-    transitivity and stochastic triangle inequality hold.
+    The algorithm assumes a :term:`total order` over the existing arms and that :term:`strong stochastic
+    transitivity` and :term:`stochastic triangle inequality` hold. Additionally, a :math:`\frac{\epsilon}{8}`-approximate ranking over the arms has to be provided.
 
-    The bound on the expected regret is given as :math:`O(\abs(N)\min(\abs(N),1/\epsilon)/\epsilon^2)`,
-    where :math:`N = abs(S)` is the number of arms and :math:`\epsilon` is the targeted
+    The bound on the expected regret is given as :math:`\mathcal{O}\left(\frac{N\min\left\{N,\frac{1}{\epsilon}\right\}}{\epsilon^2}\right)`,
+    where :math:`N` is the number of arms and :math:`\epsilon` is the targeted
     estimation accuracy.
 
-    The approximate probability algorithm is based on Algorithm 5 in :cite:`falahatgar2018limits`.
-    It's an :math:`\epsilon , \delta`-PAC algorithm with :math:`\delta = \frac{1}{N^2}`
+    The approximate probability algorithm is based on `Algorithm 5` in :cite:`falahatgar2018limits`.
+    It's an (:math:`\epsilon, \delta`)-:term:`PAC` algorithm with :math:`\delta = \frac{1}{N^2}`
     where :math:`N` is the number of arms.
 
     The algorithm takes an ordered set of arms and approximates all pairwise probabilities to
-    an accuracy of epsilon. It takes the set of arms as an input and compares them.
-    This is done by conducting duels among the arms in the set. The preferred arm is
-    decided based on the allowed sub-optimality ``epsilon``. Note that at each comparison,
-    arm i is increased by one.
+    an accuracy of :term:`\epsilon`. This ranking could be the result of the :term:`BinarySearchRanking<duelpy.algorithms.binary_search_ranking.BinarySearchRanking>` algorithm.
+    Probabilities are calculated starting with the best arm against all others and then iterating down the ranking order. The result is guaranteed to be consistent with the ranking.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     epsilon
         The optimality of the winning arm. Corresponds to :math:`\epsilon` in :cite:`falahatgar2018limits`.
-        Default value is 0.05 which has been used in the experiments in :cite:`falahatgar2018limits`.
+        Default value is ``0.05``, which has been used in the experiments in :cite:`falahatgar2018limits`.
     order_arms
-        it is ordered randomly from the list of arms provided to the algorithm.
+        A :math:`\frac{\epsilon}{8}` ranking over the arms.
 
     Attributes
     ----------
@@ -97,8 +94,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
     def estimate_probabilities_against_first_arm(self) -> None:
         """Run one step of comparison.
 
-        Arms are been duel repeatly, and the winning arm is decided by using
-        estimate pairwise probabilities.
+        The first ranked and the other arms are dueled repeatedly, determining their preference probabilities.
         """
         self._estimate_pairwise_probability[0][0] = 0.5
         arm_i = self.order_arms[0]
@@ -119,8 +115,8 @@ class ApproximateProbability(PreferenceMatrixProducer):
     def estimate_pairwise_probabilities(self, rank_1: int) -> None:
         """Run second step of comparison.
 
-        It compares arm i and arm j mutiple times, and compute the estimate
-        pairwise probabilities of the winning arm.
+        It compares arm :math:`i` and arm :math:`j` multiple times and estimates the
+        pairwise probability.
         """
         self._estimate_pairwise_probability[rank_1][rank_1] = 0.5
         for rank_2 in range(rank_1 + 1, self.tournament_arms):
@@ -143,7 +139,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
     def duel_repeatedly(self, arm_i: int, arm_j: int) -> float:
         """Determine the preferred arm by repeated comparison.
 
-        It calculate the number of times arm i won agaisnt other arms in the set,
+        It calculates the number of times arm :math:`i` won against other arms in the set,
         and return the estimate pairwise probability.
         """
         compare_range = (int)(
