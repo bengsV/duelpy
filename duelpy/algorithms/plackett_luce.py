@@ -26,7 +26,7 @@ def determine_better_arm(
     Parameters
     ----------
     feedback_mechanism
-        The FeedbackMechanism object used for dueling
+        The ``FeedbackMechanism`` object used for dueling
     time_horizon
         The time horizon bound
     arm_1
@@ -55,19 +55,19 @@ def determine_better_arm(
 class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
     r"""Implementation of the Plackett-Luce PAC-Item algorithm.
 
-    This algorithm finds for a given confidence all arms that are :math:`\epsilon`-close to the Condorcet winner.
+    This algorithm finds for a given confidence all arms that are :math:`\epsilon`-close to the :term:`Condorcet winner`.
 
-    It assumes arms are distributed according to the Plackett-Luce distribution, which assigns a utility to each arm.
+    It assumes arms are distributed according to the :term:`Plackett-Luce distribution`, which assigns a utility to each arm.
     The utilities of two arms determine the probability of either arm winning against the other. For details on this distribution see :cite:`szorenyi2015online`.
 
-    The sample complexity of the algorithm is bound by :math:`O(max_{i\neq i^\ast} 1/\Delta_i^2 \log(N/(\Delta_i \delta)))`. Here, :math:`N` is the number of arms and :math:`\Delta_i=(1/2)\max\{\epsilon,p_{i^\ast,i}-1/2\}`, where :math:`p_{i^\ast,i}` is the probability of the best arm winning against arm i.
+    The sample complexity of the algorithm is bound by :math:`\mathcal{O}\left(\frac{\max_{i\neq i^\ast}}{\Delta_i^2} \log\left(\frac{N}{\Delta_i \delta}\right)\right)`. Here, :math:`N` is the number of arms and :math:`\Delta_i=\frac{\max\{\epsilon,p_{i^\ast,i}-\frac{1}{2}\}}{2}`, where :math:`p_{i^\ast,i}` is the probability of the best arm winning against arm i.
 
-    The algorithm repeatedly sorts arms with a comparison budget constrained Quicksort algorithm and eliminates inferior arms.
+    The algorithm repeatedly sorts arms with a comparison budget-constrained :class:`QuickSort<duelpy.util.sorting.QuickSort>` algorithm and eliminates inferior arms.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
@@ -75,7 +75,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
     failure_probability
         An upper bound on the acceptable probability to fail, called :math:`\delta` in :cite:`szorenyi2015online`.
     epsilon
-        Acceptable difference to optimum, also called :math:`epsilon` in :cite:`szorenyi2015online`.
+        Acceptable difference to optimum, also called :math:`\epsilon` in :cite:`szorenyi2015online`.
 
     Attributes
     ----------
@@ -230,25 +230,26 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
 
 
 class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
-    """Implementation of the Plackett-Luce Approximate Most Probable Ranking algorithm, which computes a ranking over the arms.
+    r"""Implementation of the Plackett-Luce Approximate Most Probable Ranking algorithm, which computes a ranking over the arms.
 
-    This algorithm assumes the arms are sampled from the Plackett-Luce distribution. This distribution assigns utilities to arms, from which win probabilities can be inferred. For more information, see :cite:`szorenyi2015online`.
+    This algorithm assumes the arms are sampled from the :term:`Plackett-Luce distribution`. This distribution assigns utilities to arms, from which win probabilities can be inferred. For more information, see :cite:`szorenyi2015online`.
+
     To compute a ranking, the algorithm proceeds by repeating the following steps. First, the arms are divided into connected components, that is groups, for which the confidence intervals around the estimated ranking positions overlap. Arms in the same group can not be ordered confidently. That is, the best guess is that they are of equal rank.
-    The order of arms in different groups is known, so each group can be analysed in isolation. The arms in each group are compared by executing the Budgeted Quicksort algorithm.
-    This leads to shrinking confidence intervals. Two conditions allow the algorithm to terminate. Either all groups only contain one arm, at which point the ranking is known, or, some groups exist, whose arms are `epsilon`-close to each other. In the second case, the arms are assumed to be equal, the ties are broken an arbitarily.
+    The order of arms in different groups is known, so each group can be analyzed in isolation. The arms in each group are compared by executing the Budgeted :class:`QuickSort<duelpy.util.sorting.QuickSort>` algorithm.
+    This leads to shrinking confidence intervals. Two conditions allow the algorithm to terminate. Either all groups only contain one arm, at which point the ranking is known, or, some groups exist, whose arms are :math:`\epsilon`-close to each other. In the second case, the arms are assumed to be equal, the ties are broken an arbitarily.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state
         Used for the random pivot selection in the Quicksort mode.
     failure_probability
-        An upper bound on the acceptable probability to fail, called delta in :cite:`szorenyi2015online`.
+        An upper bound on the acceptable probability to fail, called :math:`\delta` in :cite:`szorenyi2015online`.
     epsilon
-        Acceptable difference to optimum, also called epsilon in :cite:`szorenyi2015online`.
+        Acceptable difference to optimum, also called :math:`\epsilon` in :cite:`szorenyi2015online`.
 
     Attributes
     ----------

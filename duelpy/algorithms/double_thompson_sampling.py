@@ -15,37 +15,37 @@ from duelpy.util.utility_functions import argmin_set
 class DoubleThompsonSampling(SingleCopelandProducer):
     r"""Implementation of the Double Thompson Sampling algorithm.
 
-    The goal of this algorithm is to find the Copeland winner while incurring minimal average Copeland regret. If there
-    exist a Condorcet winner, the Copeland winner is also the Condorcet winner.
+    The goal of this algorithm is to find the :term:`Copeland winner` while incurring minimal average :term:`Copeland regret`. If there
+    exist a :term:`Condorcet winner`, the :term:`Copeland winner` is also the :term:`Condorcet winner`.
 
-    It is assumed that Copeland winner exist.
+    No further assumptions about the arms are needed.
 
-    It uses the average copeland regret. For the general Copeland bandit, D-TS achieves O(K^2 log T). Meanwhile, For
-    the Condorcet dueling bandit and many practical Copeland dueling bandit, D-TS achieves O(K log T + K^2 log log T)
+    It uses the average :term:`Copeland regret`. For the general Copeland winner setting, D-TS achieves :math:`\mathcal{O}(K^2 \log T)`. Meanwhile, For
+    the Condorcet setting and many practical Copeland settings, D-TS achieves :math:`\mathcal{O}(K \log T + K^2 \log \log T)`
     using a back substitution argument.
 
     The Double Thompson Sampling (D-TS) algorithm in paper :cite:`huasen2016dts`
-    includes both Condorcet dueling bandits and general Copeland dueling bandits. D-TS uses a double sampling structure
+    includes both  the Condorcet and the general Copeland setting. D-TS uses a double sampling structure
     where the first as well as the second candidates are selected according to independently drawn samples
     from the beta posterior distribution and then dueled. The double sampling structure of D-TS is better suited for
-    dueling bandits nature. Unlike RCS, launching two independent rounds of sampling provide us the opportunity to
+    dueling bandits nature. Unlike :class:`RelaviveConfidenceSampling<duelpy.algorithms.RelativeConfidenceSampling>`, launching two independent rounds of sampling provide us the opportunity to
     select the same arm in both rounds. This allows to compare the winners against themselves which significantly
     reduced regret. The confidence bounds in the algorithm are used to eliminate the
     unlikely arms which are ineligible to be winner arm and thus avoids suboptimal comparisons. While selecting the
     first candidate arm and the second candidate arm, the confidence bound is used to eliminate non-likely winners.
-    So, D-TS is more robust in practise.
+    So, D-TS is more robust in practice.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
         This states the number of comparision to be done before the algorithm terminates.
     random_state
         Used for random choices in the algorithm.
     exploratory_constant
         Optional, the confidence radius grows proportional to the square root of this value. Corresponds to `\alpha` in
-        :cite:`huasen2016dts`. The value of exploratory_constant must be greater than 0.5. Default value is 0.51
+        :cite:`huasen2016dts`. The value of ``exploratory_constant`` must be greater than :math:`0.5`. Default value is ``0.51``
 
     Attributes
     ----------
@@ -114,8 +114,8 @@ class DoubleThompsonSampling(SingleCopelandProducer):
     def _choose_first_candidate(self) -> int:
         r"""Choose a champion arm whose Copeland score is high in a sample.
 
-        Select an  :math:`arm_c` from the potential champion arms whose copeland score is high based on the
-        preference matrix computed under beta distribution. If there exist a tie between arms, :math:`arm_c`  is
+        Select an  ``arm_c`` from the potential champion arms whose copeland score is high based on the
+        preference matrix computed under beta distribution. If there exist a tie between arms, ``arm_c``  is
         selected randomly. Also, upper confidence bound is used to estimate the preference between the arms. So,
         potential champions arms are selected upon normalized copeland scores computed based upon the preference
         estimate of arms using upper confidence bound.
@@ -154,9 +154,9 @@ class DoubleThompsonSampling(SingleCopelandProducer):
     def _choose_second_candidate(self, champion: int) -> int:
         r"""Choose challenger arm which is likely to win against the champion.
 
-        Select an :math:`arm_d` from the potential challenger arms whose preference is high compared with the
-        champion arm (:math:`arm_c` ). The preference between the challenger arms with champion arm is based on. If
-        there exist ties between arms, :math:`arm_d` is selected randomly. Also, lower confidence bound is used to
+        Select an ``arm_d`` from the potential challenger arms whose preference is high compared with the
+        champion arm (``arm_c``). The preference between the challenger arms with champion arm is based on. If
+        there exist ties between arms, ``arm_d`` is selected randomly. Also, lower confidence bound is used to
         estimate the preference between the arms. So, arms whose lower preference estimate is less than 0.5 are
         selected as potential challengers.
 
@@ -225,9 +225,9 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
 
     It is assumed that the Copeland winner exists.
 
-    It uses the average Copeland regret. For the general Copeland bandit, D-TS+ achieves :math:`O(K^2 \log T)`.
-    Meanwhile, for the Condorcet dueling bandit and many practical Copeland dueling bandit, D-TS+ achieves :math:`O(K
-    log T + K^2 \log \log T)` using a back substitution argument.
+    It uses the average Copeland regret. For the general Copeland bandit, D-TS+ achieves :math:`\mathcal{O}(N^2 \log T)`.
+    Meanwhile, for the Condorcet dueling bandit and many practical Copeland dueling bandit, D-TS+ achieves :math:`\mathcal{O}(N
+    \log T + N^2 \log \log T)` using a back substitution argument. :math:`N` is the number of arms.
 
     As presented in :cite:`huasen2016dts`, the D-TS+ algorithm just changes the tie-breaking
     criterion while selecting the first candidate(i.e the selection of the first candidate). During the selection of
@@ -236,7 +236,7 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
     arms is sampled using beta distribution. Then, For all the potential arms, one vs all arm regret based on sampled
     preference is calculated using KL divergence. The arm with minimal one-vs-all regret is selected as a first
     candidate. The one vs all regret of a potential arm is defined by the summation of Copeland regret of a
-    respective potential arm with any other arm per KL-divergence (preference of potential arm over another arm, 0.5).
+    respective potential arm with any other arm per KL-divergence (preference of potential arm over another arm, :math:`0.5`).
 
     Parameters
     ----------
@@ -248,8 +248,8 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
         Used for random choices in the algorithm.
     exploratory_constant
         Optional, the confidence radius grows proportional to the square root of this value. Corresponds to
-        :math:`\alpha` in :cite:`huasen2016dts`. The value of exploratory_constant must be greater than 0.5.
-        Default value is 0.51.
+        :math:`\alpha` in :cite:`huasen2016dts`. The value of ``exploratory_constant`` must be greater than :math:`0.5`.
+        Default value is ``0.51``.
 
     Attributes
     ----------
@@ -288,7 +288,7 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
     def _choose_first_candidate(self) -> int:
         r"""Choose a champion arm whose Copeland score is high in a sample.
 
-        Select an :math:`arm_c` from the potential champion arms whose Copeland score is high based on the preference
+        Select an ``arm_c`` from the potential champion arms whose Copeland score is high based on the preference
         matrix computed under beta distribution. If there exist a tie between arms, its broken by comparing the arms
         whose one vs all regret along with KL divergent is minimum. Also, upper confidence bound is used to estimate
         the preference between the arms. So, potential champion arms are selected upon normalized Copeland scores

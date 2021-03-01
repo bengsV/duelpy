@@ -11,6 +11,7 @@ For an overview of the problem and algorithms, see ~survey paper~.
 
    autoapi/index
    installation
+   glossary
    references
 
 

@@ -15,34 +15,34 @@ from duelpy.util.utility_functions import argmax_set
 class RelativeUCB(Algorithm):
     r"""Implementation of the Relative Upper Confidence Bound algorithm.
 
-    The goal of this algorithm is to find the Condorcet winner while incurring minimal regret.
+    The goal of this algorithm is to find the :term:`Condorcet winner` while incurring minimal regret.
 
-    It is assumed that a Condorcet winner exists.
+    It is assumed that a :term:`Condorcet winner` exists.
 
     The regret bounds of this algorithm can be found in :cite:`zoghi2014dueling`.
 
     The algorithm is presented in :cite:`zoghi2014dueling`.
-    RUCB is an extension of the Upper Confidence Bound (UCB) algorithm for regular multi-armed bandits. It is motivated by learning from the relative feedback rather than real valued feedback between two arms. It works for both finite as well as for infinite time horizons. The major goals of this algorithm are to minimize cumulative regret over time for the K-armed dueling bandit problem and also return a Condorcet winner.
+    RUCB is an extension of the Upper Confidence Bound (UCB) algorithm for regular multi-armed bandits. It is motivated by learning from the relative feedback rather than real valued feedback between two arms. It works for both finite as well as for infinite time horizons. The major goals of this algorithm are to minimize cumulative regret over time for the K-armed dueling bandit problem and also return a :term:`Condorcet winner`.
 
     In each time-step RUCB executes three sub-parts sequentially:
 
-    - Initially, assume all arms as a potential champion. All arms are compared in pairwise optimistically fashion using upper confidence bound. If the upper confidence bound of an arm against any other arm is less than 0.5, then that "loser" is removed from the potential champions. This process keeps on and when we are left with only one arm in the pool then that arm is assigned as the hypothesized best arm. There is always at most one hypothesized best arm. This hypothesized best arm (B) is demoted from its status as soon as it loses to another arm and from the remaining potential champions arm, a potential champion arm (:math:`arm_c`) is chosen in two ways: if B is not present,we sample an arm uniformly randomly; if B is present, the probability of picking the arm B is set to 1/2 and the remaining arms are given equal probability for being chosen.
+    - Initially, assume all arms as a potential champion. All arms are compared in pairwise optimistically fashion using upper confidence bound. If the upper confidence bound of an arm against any other arm is less than :math:`0.5`, then that "loser" is removed from the potential champions. This process keeps on and when we are left with only one arm in the pool then that arm is assigned as the hypothesized best arm. There is always at most one hypothesized best arm. This hypothesized best arm :math:`B` is demoted from its status as soon as it loses to another arm and from the remaining potential champions arm, a potential champion arm :math:`arm_c` is chosen in two ways: if :math:`B` is not present, we sample an arm uniformly randomly. If :math:`B` is present, the probability of picking the arm :math:`B` is set to :math:`\frac{1}{2}` and the remaining arms are given equal probability for being chosen.
 
-    - Regular UCB is performed using :math:`arm_c` (potential champion) as a benchmark. Now, we select challenger arm :math:`arm_d` (distinct from :math:`arm_c`) whose upper confidence bound is maximal with reference to the potential champion (:math:`arm_c`).
+    - Regular UCB is performed using potential champion :math:`arm_c` as a benchmark. Now, we select challenger arm :math:`arm_d` (distinct from :math:`arm_c`) whose upper confidence bound is maximal with reference to the potential champion :math:`arm_c`.
 
-    - Now the potential champion and challenger arm (:math:`arm_c`, :math:`arm_d`) are compared. Based on the comparison, the winner arm is decided and the win count is updated. At last, the Condorcet winner is returned as the arm whose winning count is maximum.
+    - Now the potential champion :math:`arm_c` and challenger arm :math:`arm_d` are compared. Based on the comparison, the winner arm is decided and the win count is updated. At last, the :term:`Condorcet winner` is returned as the arm whose winning count is maximum.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
         How many comparisons the algorithm should do. This does not impact the
         decision of the algorithm, only for how many steps ``run`` executes.
         May be ``None`` to indicate a unknown or infinite time horizon.
     exploratory_constant
         Optional, The confidence radius grows proportional to the square root of this value. Corresponds to :math:`\alpha` in
-        :cite:`zoghi2014dueling`. The value of ``exploratory_constant`` must be greater than 0.5. Default value is 0.51
+        :cite:`zoghi2014dueling`. The value of ``exploratory_constant`` must be greater than :math:`0.5`. The default value is ``0.51``.
     random_state
         Optional, used for random choices in the algorithm.
 
@@ -164,7 +164,7 @@ class RelativeUCB(Algorithm):
         Returns
         -------
         int
-            Champion arm at time-step T.
+            Champion arm at time-step :math:`T`.
         """
         arms_win_count = np.zeros(self.feedback_mechanism.get_num_arms())
         # calculate number of expected wins for each arm

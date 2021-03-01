@@ -16,15 +16,15 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 class KnockoutTournament(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the knockout tournament algorithm.
 
-    The goal of this algorithm is to find the :math:`\epsilon`-Condorcet winner while minimizing the number of comparisons.
+    The goal of this algorithm is to find the :math:`\epsilon`-:term:`Condorcet winner` while minimizing the number of comparisons.
 
-    The algorithm assumes a total order over the existing arms and that strong stochastic transitivity, stochastic triangle inequality and relaxed stochastic transitivity hold.
+    The algorithm assumes a :term:`total order` over the existing arms and that :term:`strong stochastic transitivity`, :term:`stochastic triangle inequality` and :term:`relaxed stochastic transitivity` hold.
 
-    The amount of pairwise comparisons made by the algorithm is bound  by :math:`O\left(\frac{N}{\epsilon^2}\left(1+\log\frac{1}{\delta}\right)\right)`, where :math:`N` is the number of arms, :math:`\epsilon` the maximal deviation from the solution and :math:`\delta` is the error probability.
+    The amount of pairwise comparisons made by the algorithm is bound  by :math:`\mathcal{O}\left(\frac{N}{\epsilon^2}\left(1+\log\frac{1}{\delta}\right)\right)`, where :math:`N` is the number of arms, :math:`\epsilon` the maximal deviation from the solution and :math:`\delta` is the error probability.
 
-    The algorithm was originally introduced in :cite:`falahatgar2017maximum`. It is an :math:`\epsilon`-:math:`\delta`-PAC algorithm. It takes the set of arms as an input and compares them in rounds. At the end of each round, the size of the input is halved.
-    The winning arm for a round is decided based on the allowed sub-optimality ``epsilon`` and with a confidence interval based on the failure probability.
-    The algorithm runs in rounds, where in each round it randomly pairs the arms into group and the winners are proceeded into the next round. For example that we have four arms (A, B, C, D). It will first group the arms in pairs like [A, B] as the first pair and [C, D] as the second pair. After grouping them in pairs, the algorithm pulls out the winner from each pair, and the winners move to the next round.
+    The algorithm was originally introduced in :cite:`falahatgar2017maximum`. It is an :math:`\epsilon`-:math:`\delta`-:term:`PAC` algorithm. It takes the set of arms as an input and compares them in rounds. At the end of each round, the size of the input is halved.
+    The winning arm for a round is decided based on the allowed sub-optimality :math:`\epsilon` and with a confidence interval based on the failure probability.
+    The algorithm runs in rounds, where in each round it randomly pairs the arms into group and the winners are proceeded into the next round. For example that we have four arms [A, B, C, D]. It will first group the arms in pairs like [A, B] as the first pair and [C, D] as the second pair. After grouping them in pairs, the algorithm pulls out the winner from each pair, and the winners move to the next round.
 
     Parameters
     ----------
@@ -33,14 +33,14 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
     time_horizon
          The number of steps that the algorithm is supposed to be run.
     epsilon
-        The optimality of the winning arm. Corresponds to :math:`\epsilon` in :cite:`falahatgar2017maximum`. Default value is 0.05
+        The optimality of the winning arm. Corresponds to :math:`\epsilon` in :cite:`falahatgar2017maximum`. Default value is ``0.05``
         which has been used in the experiments in :cite:`falahatgar2017maximum`.
     failure_probability
-        The probability that the result is not an epsilon Condorcet winner. Corresponds to :math:`\delta` in :cite:`falahatgar2017maximum`.
-        Default value is 0.1 which has been used in the experiments in :cite:`falahatgar2017maximum`.
+        The probability that the result is not an :math:`\epsilon`-:term:`Condorcet winner`. Corresponds to :math:`\delta` in :cite:`falahatgar2017maximum`.
+        Default value is ``0.1`` which has been used in the experiments in :cite:`falahatgar2017maximum`.
     stochasticity
         The assumed stochastic transitivity parameter. Corresponds to :math:`\gamma` in :cite:`falahatgar2017maximum`. Default value is
-        0.6 which has been used in the experiments in :cite:`falahatgar2017maximum`.
+        ``0.6`` which has been used in the experiments in :cite:`falahatgar2017maximum`.
 
     Attributes
     ----------
@@ -73,7 +73,7 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
     >>> feedback_mechanism.get_num_duels()
     300
 
-    In this example the epsilon Condorcet winner is the arm with index 2.
+    In this example the :math:`epsilon`-Condorcet winner is the arm with index 2.
     """
 
     def __init__(
@@ -139,7 +139,7 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
     def exploration_finished(self) -> bool:
         """Determine if the exploration is finished.
 
-        The execution is finished when the time horizon is reached or when no time horizon was given and the Condorcet winner has been found".
+        The execution is finished when the time horizon is reached or when no time horizon was given and the :term:`Condorcet winner` has been found.
 
         Returns
         -------

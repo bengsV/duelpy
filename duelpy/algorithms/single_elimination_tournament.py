@@ -31,11 +31,11 @@ def _compute_binary_comparisons(
     Returns
     -------
     int
-        Number of times each comparison is repeated before coming to a conclusion. Corresponds to :math:`m` in :cite:`mohajer2017top-K`.
+        Number of times each comparison is repeated before coming to a conclusion. Corresponds to :math:`m` in :cite:`mohajer2017active`.
     """
-    # From the formula 16 in :cite:`mohajer2017top-K`
+    # From the formula 16 in :cite:`mohajer2017active`
     probability_scaling_factor = np.log(1 / epsilon) / np.log(np.log(len(arms)))
-    # Apply ceiling function, to the formula 16 in :cite:`mohajer2017top-K` in order to avoid the decimals as binary comparisons.
+    # Apply ceiling function, to the formula 16 in :cite:`mohajer2017active` in order to avoid the decimals as binary comparisons.
     return int(
         np.ceil(
             (1 + probability_scaling_factor)
@@ -50,32 +50,32 @@ def _compute_binary_comparisons(
 class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
     r"""The Top-1 Selection part of Single-Elimination Tournament.
 
-    The goal of this algorithm is to find the top (Rank = 1) arm while minimizing the exact sample complexity.
+    The goal of this algorithm is to find the top (Rank = 1) arm while minimizing the sample complexity.
 
-    A total order over arms, strong stochastic transitivity and the stochastic triangle inequality are assumed.
+    A :term:`total order` over arms, :term:`strong stochastic transitivity` and the :term:`stochastic triangle inequality` are assumed.
 
-    The amount of pairwise comparisons made by the algorithm is given by :math:`O(\frac{ \lvert X \rvert \log\log \lvert X \rvert}{\Delta_{1}})`, where :math:`X` is the set of available arms, and :math:`\Delta` is the preference separation.
+    The amount of pairwise comparisons made by the algorithm is bound by :math:`O\left(\frac{ N \log\log N}{\Delta_{1}}\right)`, where :math:`N` is the number of arms, and :math:`\Delta` is the preference separation.
 
-    The algorithm was originally introduced in :cite:`mohajer2017top-K`. The algorithm contain many layers. In every layer the arms are paired in a random manner.
+    The algorithm was originally introduced in :cite:`mohajer2017active`. It contains many layers. In every layer the arms are paired in a random manner.
     One arm from each pair is selected with the help of pairwise comparisons between the  two arms, while the other arm is eliminated.
-    As the duel between the arms is from a random observation, the duel is repeated "m" (in :cite:`mohajer2017top-K`) number of times,
-    thus establishing a probability distribution to the duel.The algorithm gives the top-1 arm with adequately large
-    number of binary comparisons (larger 'm' in :cite:`mohajer2017top-K`).
+    As the duel between the arms is from a random observation, the duel is repeated :math:`m` (in :cite:`mohajer2017active`) number of times,
+    thus establishing a probability distribution to the duel. The algorithm gives the top-1 arm with adequately large
+    number of binary comparisons (larger :math:`m` in :cite:`mohajer2017active`).
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     preference_separation
-        The assumed preference separation between the best arm and all other arms. Assumed to be 0.01 if neither `preference_separation` nor `duels_per_comparison` is specified. Corresponds to :math:`\Delta_{1,S}` in :cite:`mohajer2017top-K`.
+        The assumed preference separation between the best arm and all other arms. Assumed to be ``0.01`` if neither ``preference_separation`` nor ``duels_per_comparison`` is specified. Corresponds to :math:`\Delta_{1,S}` in :cite:`mohajer2017active`.
     duels_per_comparison
-        Number of times each comparison is repeated before coming to a conclusion. If this is not specified, an optimal value that guarantees the assumptions in the paper is computed from `preference_separation`. See :cite:`mohajer2017top-K` for more details. Corresponds to 'm' in :cite:`mohajer2017top-K`.
+        Number of times each comparison is repeated before coming to a conclusion. If this is not specified, an optimal value that guarantees the assumptions in the paper is computed from ``preference_separation``. See :cite:`mohajer2017active` for more details. Corresponds to :math:`m` in :cite:`mohajer2017active`.
     epsilon
         :math:`\epsilon` in :math:`(\epsilon, \delta)`-PAC algorithms, given by the user.
     arms_subset
-        The set of arms given to the algorithm by other algorithms otherwise the amrs from 'feedback_mechanism' will be taken.
+        The set of arms given to the algorithm by other algorithms otherwise the amrs from ``feedback_mechanism`` will be taken.
     preference_estimate
-        A PreferenceEstimate object is needed if this algorithm is used as a subroutine and the result is required to be stored in furtherrounds. Default value is None.
+        A ``PreferenceEstimate`` object is needed if this algorithm is used as a subroutine and the result is required to be stored in further rounds. The default value is ``None``.
 
     Attributes
     ----------
@@ -183,7 +183,7 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
         """Determine whether the exploration phase is finished.
 
         Once this function returns ``True``, the algorithm will have finished
-        computing a PAC Condorcet winner.
+        computing a :term:`PAC` :term:`Condorcet winner`.
         """
         return self.exploration_steps > int(np.ceil(np.log(len(self.arms))))
 
@@ -203,42 +203,42 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
 class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
     r"""Implements the top-k sorting algorithm in the Single-Elimination Tournament.
 
-    The goal of this algorithm is to find the top-k arms while minimizing the exact sample complexity.
+    The goal of this algorithm is to find the top-k arms while minimizing the sample complexity.
 
-    The algorithm assumes a total order over the existing arms.
+    The algorithm assumes a :term:`total order` over the arms.
 
-    The algorithm has sample complexity of :math:`O(\frac{(K+k \log k) \max \{\log k, \log \log K\}}{\Delta_{k}})` where :math:`\Delta_{k}=\min _{i \in[k]} \min _{j: j \geq i} \Delta_{i, j}^{2}` in the case of top-k rankihg
-    and :math:`\Delta_{k}=\Delta_{k, k+1}^{2}` in the case of top-k identification.
+    The algorithm has sample complexity of :math:`\mathcal{O}\left(\frac{(N+k \log k) \max \{\log k, \log \log N\}}{\Delta_{k}}\right)` where :math:`\Delta_{k}=\min _{i \in[k]} \min _{j: j \geq i} \Delta_{i, j}^{2}` in the case of top-k ranking
+    and :math:`\Delta_{k}=\Delta_{k, k+1}^{2}` in the case of top-k identification. :math:`N` is the number of arms.
 
-    The algorithm divides the dataset or the set of arms into 'K' sub-groups each of size (number of arms / K). From every sub-group a top arm is selected by using the'TopOneSelection' algorithm and short list all the winners.
-    A (max-) HEAP data-structure is build from the short list,there by getting the top arm from the obtained HEAP, which will be the root element of the HEAP.
+    The algorithm divides the dataset or the set of arms into :math:`k` sub-groups each of size :math:`\frac{N}{k}`. From every sub-group a top arm is selected by using the :class:`TopOneSelection<duelpy.algorithms.single_elimination_tournament.SingleEliminationTop1Select>` algorithm and short list all the winners.
+    A (max-) heap data structure is built from the short list,there by getting the top arm from the obtained heap, which will be the root element of the heap.
     Then the top arm is removed from the short list. In order to find the second best arm, again the home sub-group from which the previous top arm is taken, is accessed
-    and the second best arm is identified and added to the short list. This process of identifying and removing is repeated for (K - 1) times, untill all the top-K arms are identified.
-    See Algorithm 2 in :cite:`mohajer2017top-K` for more details.
+    and the second best arm is identified and added to the short list. This process of identifying and removing is repeated for :math:`k - 1` times, untill all the top-k arms are identified.
+    See Algorithm 2 in :cite:`mohajer2017active` for more details.
 
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     preference_separation
-        The assumed preference separation between the best arm and all other arms. Assumed to be 0.01 if neither `preference_separation` nor `duels_per_comparison` is specified. Corresponds to :math:`\Delta_{1,S}` in :cite:`mohajer2017top-K`.
+        The assumed preference separation between the best arm and all other arms. Assumed to be ``0.01`` if neither ``preference_separation`` nor ``duels_per_comparison`` is specified. Corresponds to :math:`\Delta_{1,S}` in :cite:`mohajer2017active`.
     duels_per_comparison
-        Number of times each comparison is repeated before coming to a conclusion. If this is not specified, an optimal value that guarantees the assumptions in the paper is computed from `preference_separation`. See :cite:`mohajer2017top-K` for more details. Corresponds to 'm in :cite:`mohajer2017top-K`.
+        Number of times each comparison is repeated before coming to a conclusion. If this is not specified, an optimal value that guarantees the assumptions in the paper is computed from ``preference_separation``. See :cite:`mohajer2017active` for more details. Corresponds to :math:`m` in :cite:`mohajer2017active`.
     k_top_ranked
-        The desired number of top arms in the given set of arms. If this is not specified it is taken as 2.
+        The desired number of top arms in the given set of arms. If this is not specified it is taken as ``2``.
     epsilon
-        :math:`\epsilon` in :math:`(\epsilon, \delta)`-PAC algorithms, given by the user.
+        :math:`\epsilon` in :math:`(\epsilon, \delta)`-:term:`PAC` algorithms, given by the user.
 
     Attributes
     ----------
     budgeted_feedback_mechanism
-        A BudgetedFeedbackMechanism object describing the environment.
+        A ``BudgetedFeedbackMechanism`` object describing the environment.
     preference_estimate
         Estimation of a preference matrix based on samples.
     top_k_arms
         List of top k arms given by the algorithm.
     sub_groups
-        Set of arms divided into 'K' sub-groups each of size (number of arms / K).
+        Set of arms divided into :math:`k` sub-groups each of size :math:`\frac{N}{k}`.
     sub_group_index
         Index of the sub group.
     top_1_selection_class
@@ -246,13 +246,13 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
     short_list
         From every sub-group a top arm is selected and a short list of all the winners is created.
     heap
-        Storing an instance of Heap class.
+        Storing an instance of ``Heap`` class.
     algorithm_stage
         The stage of the algorithm.
     rank_index
         Present rank index.
     heap_updated
-        Check wheather the heap is updated or not.
+        Check whether the heap is updated or not.
     feedback_mechanism
     duels_per_comparison
 
@@ -486,17 +486,17 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         """Determine whether the exploration phase is finished.
 
         Once this function returns ``True``, the algorithm will have finished
-        computing a PAC Copeland winner.
+        computing a :term:`PAC` :term:`Copeland winner`.
         """
         return len(self.top_k_arms) == self.k_top_ranked
 
     def get_partial_ranking(self) -> Optional[List[int]]:
-        """Return the copeland winner given by the algorithm.
+        """Return the Copeland winner given by the algorithm.
 
         Returns
         -------
         list
-           The top 'K' copeland winners in the set of arms given to the algorithm.
+           The top-k Copeland winners in the set of arms given to the algorithm.
         """
         if not self.exploration_finished():
             return None

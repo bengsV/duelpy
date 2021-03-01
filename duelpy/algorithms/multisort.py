@@ -14,21 +14,18 @@ class Multisort(CopelandRankingProducer):
     r"""Implements the Multisort algorithm.
 
     The goal of the algorithm is to find a ranking using Copeland aggregation on a set of rankings returned by the
-    Quicksort algorithm.
+    :class:`QuickSort<duelpy.util.sorting.QuickSort>` algorithm.
 
-    It is assumed that comparison outcomes are noiseless, i.e., a total order over arms in a set of :math:`n`
-    items. It is also assumed that there are no ties between arms, i.e. the probability of any arm winning against
-    another is never 1/2.
+    It is assumed that the arms are distributed according to a :term:`Bradley-Terry distribution` with parameter :math:`theta`. This parameter is assumed to be sampled via a Poisson point process with given rate :math:`\lambda`.
 
     Theorem 2 in Section 3.1 in :cite:`maystre2017just` states that all but a vanishing fraction of the items are
-    correctly ranked using :math:`O(\lambda^2 n\log^6n)` comparisons, where :math:`n` refers to the number of arms.
+    correctly ranked using :math:`\mathcal{O}\left(\lambda^2 N\log^6 N\right)` comparisons, where :math:`N` refers to the number of arms and :math:`\lambda` is the Poisson point process rate.
 
-    This algorithm recursively builds a Copeland ranking over the arms by sorting them using Quicksort with random
-    pivot element in each time step. Quicksort returns a partial ranking of the pairwise comparisons and termiates
-    after sampling :math:`O(n\log n)` comparisons with high probability. After having an aggregated Copeland
-    scores over time horizon :math:`T`, an aggregated Copeland Ranking is produced based on these scores.
-    Multisort is neither a PAC (sample-complexity minimizing) algorithm nor a regret minimizing algorithm. Instead,
-    it tries to come up with the best result possible in the given time horizon. This differs from the PAC setting,
+    This algorithm recursively builds a :term:`Copeland ranking` over the arms by sorting them using :class:`QuickSort<duelpy.util.sorting.QuickSort>` with random
+    pivot element in each time step. :class:`QuickSort<duelpy.util.sorting.QuickSort>` returns a partial ranking of the pairwise comparisons and termiates
+    after sampling :math:`\mathcal{O}(n\log n)` comparisons with high probability. After having an aggregated :term:`Copeland scores<Copeland score>` over time horizon :math:`T`, an aggregated :term:`Copeland ranking` is produced based on these scores.
+    Multisort is neither a :term:`PAC` (sample-complexity minimizing) algorithm nor a regret minimizing algorithm. Instead,
+    it tries to come up with the best result possible in the given time horizon. This differs from the :term:`PAC` setting,
     since it requires a time horizon. The probability of failure and the accuracy of the result are implicitly set by this time horizon.
     It differs from the regret-minimizing setting since it will never exploit its gathered knowledge. It will always
     "explore" and try to find a more accurate result, as long as the time horizon allows and regardless of the regret that is incurred during exploration.
@@ -38,7 +35,7 @@ class Multisort(CopelandRankingProducer):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment
+        A ``FeedbackMechanism`` object describing the environment
     time_horizon
         The maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
     random_state

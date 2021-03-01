@@ -18,7 +18,7 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
 
     This algorithm makes no assumptions about the environment.
 
-    The sample complexity is bounded by :math:`\sum_{i=1}^N O\left(\frac{\log(N/(\delta\Delta_i))}{\Delta_i^2}\right)` if the time horizon :math:`T` is finite and :math:`\sum_{i=1}^N O\left(\frac{\log(NT/\delta}{\Delta_i^2}\right)` otherwise.
+    The sample complexity is bounded by :math:`\sum_{i=1}^N \mathcal{O}\left(\frac{\log\left(\frac{N}{\delta\Delta_i}\right)}{\Delta_i^2}\right)` if the time horizon :math:`T` is finite and :math:`\sum_{i=1}^N \mathcal{O}\left(\frac{\log\left(\frac{NT}{\delta}\right)}{\Delta_i^2}\right)` otherwise.
 
     SAVAGE is a general algorithm that can infer some information about an
     environment from samples. It works by repeatedly sampling possible
@@ -30,7 +30,7 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
       previous samples too unlikely) and
     - those environment variables (preference matrix entries) that are no
       longer relevant on the current environment candidates (for example the
-      arms that cannot be the Copeland winner). See Figure 1 in :cite:`urvoy2013generic` for an
+      arms that cannot be the :term:`Copeland winner`). See Figure 1 in :cite:`urvoy2013generic` for an
       illustration. In this case :math:`\mu` is the preference matrix while
       :math:`x_1` and :math:`x_2` are two entries of the matrix (without loss
       of generality it is sufficient to estimate the upper-right triangle of
@@ -41,17 +41,17 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
     Environment parameters in the PB-MAB case are the upper triangle of the preference matrix.
     The goal goal is to design a sequence of pairwise experiments (samples of
     random variables) / duels to find the best arm (according to ranking
-    procedure). This is called "voting bandits" since we use pairwise election
-    criterion to find best bandit (such as "beating" -> Copeland, "better
-    expectation" -> Borda).
+    procedure). This is called `voting bandits` since we use a pairwise election
+    criterion to find the best bandit, meaning `beating` for :term:`Copeland<Copeland winner>`, or `better
+    expectation` for a :term:`Borda<Borda winner>`.
 
     Parameters
     ----------
     feedback_mechanism
-        The feedback mechanism that specifies the underlying problem.
+        A ``FeedbackMechanism`` object describing the environment
     failure_probability
         Upper bound on the probability of failure (the :math:`\delta` in
-        :math:`\epsilon`-:math:`\delta`-PAC).
+        (:math:`\epsilon`,:math:`\delta`)-PAC).
     time_horizon
         The number of steps that the algorithm is supposed to be run. Specify
         ``None`` for an infinite time horizon.
@@ -217,7 +217,7 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
 
         If no time horizon is provided, this coincides with is_finished. Once
         this function returns ``True``, the algorithm will have finished
-        computing a PAC Copeland winner.
+        computing a :term:`PAC` :term:`Copeland winner`.
         """
         # When making the Condorcet assumption, the termination condition could be
         # replaced by one allowing for an epsilon-approximation. See Section 4.1.2
@@ -227,9 +227,9 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
     def get_copeland_winner(self) -> Optional[int]:
         r"""Find a Copeland winner with the SAVAGE algorithm.
 
-        Note that only the correctness of any one of the Copeland winners is
+        Note that only the correctness of any one of the :term:`Copeland winners<Copeland winner>` is
         covered by the failure probability. The probability that all arms in
-        the set are actually Copeland winners is lower. We still return the
+        the set are actually :term:`Copeland winners<Copeland winner>` is lower. We still return the
         full set of arms for convenience.
 
         Returns
