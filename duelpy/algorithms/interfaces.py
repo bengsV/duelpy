@@ -189,6 +189,25 @@ class AllApproximateCondorcetProducer(Algorithm):
         self.feedback_mechanism.duel(winner, winner)
 
 
+class BordaProducer(Algorithm):
+    """An Algorithm that computes or estimates a Borda winner."""
+
+    def get_borda_winner(self) -> Optional[int]:
+        """Return the computed Borda winner if it is ready.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times. If this is a PAC algorithm, the result
+        might be approximate.
+        """
+        raise NotImplementedError
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        borda_winner = self.get_borda_winner()
+        assert borda_winner is not None
+        self.feedback_mechanism.duel(borda_winner, borda_winner)
+
+
 class PreferenceMatrixProducer(Algorithm):
     """An Algorithm that computes or estimates approximate pairwise probability over the arms."""
 
