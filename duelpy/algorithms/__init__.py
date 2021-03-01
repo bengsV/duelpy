@@ -23,6 +23,7 @@ from duelpy.algorithms.scalable_copeland_bandits import ScalableCopelandBandits
 from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.algorithms.single_elimination_tournament import SingleEliminationTop1Select
 from duelpy.algorithms.single_elimination_tournament import SingleEliminationTopKSorting
+from duelpy.algorithms.successive_elimination import SuccessiveElimination
 from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
 from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
 
@@ -56,6 +57,7 @@ regret_minimizing_algorithms = [
     SequentialElimination,
     SingleEliminationTopKSorting,
     SingleEliminationTop1Select,
+    SuccessiveElimination,
     DoubleThompsonSampling,
     DoubleThompsonSamplingPlus,
     PlackettLucePACItem,
