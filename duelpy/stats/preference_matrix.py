@@ -160,6 +160,19 @@ class PreferenceMatrix:
         """
         return (np.sum(self.preferences, axis=1) - 0.5) / (self.get_num_arms() - 1)
 
+    def get_borda_winners(self) -> Set[int]:
+        """Get the set of borda winners.
+
+        A Borda winner is an arm that has the highest Borda score. This does not need to be unique, since
+        multiple arms can have the same number of expected wins.
+
+        Returns
+        -------
+        Set[int]
+            The indices of the Borda winners.
+        """
+        return set(argmax_set(self.get_borda_scores()))
+
     def __repr__(self) -> str:
         """Compute a string representation of the preference matrix."""
         return repr(self.preferences)
