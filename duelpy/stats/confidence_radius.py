@@ -57,6 +57,7 @@ class TrivialConfidenceRadius(ConfidenceRadius):
 class HoeffdingConfidenceRadius(ConfidenceRadius):
     r"""A confidence radius based on Hoeffding's inequality and the Union bound.
 
+    The resulting radius is calculated as follows:
     :math:`\sqrt{\frac{\textit{factor}}{2 \cdot \textit{num_samples}} \log\left(\frac{\textit{prob_scaling(num_samples)}}{\textit{failure_probability}}\right)}`
 
     Parameters
@@ -65,7 +66,7 @@ class HoeffdingConfidenceRadius(ConfidenceRadius):
         The probability that the actual value does not lie within the computed
         confidence interval.
     probability_scaling_factor
-        A factor by which to scale the failure_probability, dependent on the
+        A factor by which to scale the ``failure_probability``, dependent on the
         number of samples that were already taken. This is often useful when
         multiple random variables are estimated using this confidence interval
         and we want to bound the union of their failures. In that case, it can
