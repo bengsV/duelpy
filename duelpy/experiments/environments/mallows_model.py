@@ -12,6 +12,7 @@ from duelpy.stats.preference_matrix import PreferenceMatrix
 class MallowsModel(MatrixFeedback):
     r"""A feedback-mechanism based on the Mallows model.
 
+    A preference matrix is generated from a :term:`Mallows distribution`.
     The probability of a ranking depends on a spread parameter :math:`\phi \in (0,1]` and the Kendall distance to the ground truth ranking. For :math:`\phi=1`, a uniform distribution over all permutations results. Lower values will have higher probabilities for rankings close to the ground truth.
     For an overview of the probabilities for rankings and the resulting marginal probabilities for arm duels, see :cite:`busa2014preference`.
 
@@ -24,7 +25,7 @@ class MallowsModel(MatrixFeedback):
     spread
         Determines the spread of the resulting probability distribution from the ground truth.
     ground_truth_ranking
-        Optional, an ordering of ``num_arms`` indices from 0 to ``num_arms-1`. The arm indices are assumed to be ordered from best to worst.
+        Optional, an ordering of ``num_arms`` indices from ``0`` to ``num_arms-1``. The arm indices are assumed to be ordered from best to worst.
     """
 
     def __init__(
