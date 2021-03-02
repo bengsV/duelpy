@@ -82,7 +82,7 @@ def pop_random(
 ) -> List[int]:
     """Remove randomly chosen elements from a given list and return them.
 
-    If the list contains less than or exactly `amount` elements, all elements are chosen.
+    If the list contains less than or exactly ``amount`` elements, all elements are chosen.
 
     Parameters
     ----------
@@ -91,7 +91,7 @@ def pop_random(
     random_state
         The random state to use.
     amount
-        The amount of elements to pick, defaults to 1.
+        The number of elements to pick, defaults to ``1``.
 
     Returns
     -------
@@ -119,11 +119,11 @@ def newton_raphson(
     allowed_number_of_iterations: int = 50,
     function_value_epsilon: float = 1.48e-8,
 ) -> float:
-    """Use Newton-Raphson method of finding an approximate root.
+    r"""Use Newton-Raphson method of finding an approximate root.
 
-    Find an approximate root of the provided `function` within a given
+    Find an approximate root of the provided ``function`` within a given
     number of iterations. The Newton-Raphson method starts with a given
-    `reference_point` around which a root can be expected to exist.
+    ``reference_point`` around which a root can be expected to exist.
     Refer https://en.wikipedia.org/wiki/Newton%27s_method for details.
 
     Parameters
@@ -136,9 +136,9 @@ def newton_raphson(
         A non-zero derivative of the above function.
     allowed_number_of_iterations
         Number of iterations allowed to find the root.
-        Default value is 50.
+        Default value is ``50``.
     function_value_epsilon
-        The small difference or :math:`epsilon` over the value of the given
+        The small difference or :math:`\epsilon` over the value of the given
         function for which a root could be assumed to have been found and
         returned. Default value is ``1.48e-8``. The value ``1.48e-8`` is
         taken from the parameter ``tol`` of the ``newton`` function of
@@ -148,7 +148,7 @@ def newton_raphson(
     Returns
     -------
     float
-        An approximate root or `math.inf` for corner cases.
+        An approximate root or ``math.inf`` for corner cases.
     """
     iteration = 0
     approx_root = reference_point
