@@ -18,9 +18,8 @@ class MatrixFeedback(FeedbackMechanism):
         It represents a list of arms from preference matrix. If not provided, the method will create its own list of
         arms from preference matrix.
     preference_matrix
-        A quadratic matrix where p[i, j] specifies the probability that arm i
-        wins against arm j. This implies p[j, i] = 1 - p[i, j] and p[i, i] =
-        0.5.
+        A quadratic matrix where :math:`p[i, j]` specifies the probability that arm :math:`i`
+        wins against arm :math:`j`. This implies :math:`p[j, i] = 1 - p[i, j]` and :math:`p[i, i] = 0.5`.
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
     """
@@ -58,7 +57,7 @@ class MatrixFeedback(FeedbackMechanism):
         Returns
         -------
         bool
-            True if arm_i_index wins.
+            True if ``arm_i_index`` wins.
         """
         self.num_duels += 1
         probability_i_wins = self.preference_matrix[arm_i_index][arm_j_index]
