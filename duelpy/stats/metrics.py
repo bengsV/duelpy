@@ -32,12 +32,12 @@ class Metric:
 class Regret(Metric):
     """The regret compared to the Condorcet winner.
 
-    The regret of pulling an arm is defined by the calibrated preference
+    The :term:`regret` of pulling an arm is defined by the calibrated preference
     probability of the best arm over the pulled one.
 
-    This metric computes the per-duel regret. It is common practice to report
-    the cumulative regret instead. You can combine this class with the
-    ``Cumulative`` wrapper for that purpose.
+    This metric computes the per-duel :term:`regret`. It is common practice to report
+    the cumulative :term:`regret` instead. You can combine this class with the
+    :class:`Cumulative<duelpy.stats.metrics.Cumulative>` wrapper for that purpose.
 
     Parameters
     ----------
@@ -46,7 +46,7 @@ class Regret(Metric):
     aggregation_function
         A function that aggregates the regret of the two arms that are pulled
         in a single sample. Commonly mean, max or min. Also see
-        ``AverageRegret``, ``StrongRegret`` and ``WeakRegret``.
+        :class:`AverageRegret<duelpy.stats.metrics.AverageRegret>`, :class:`StrongRegret<duelpy.stats.metrics.StrongRegret>` and :class:`WeakRegret<duelpy.stats.metrics.WeakRegret>`.
 
     Examples
     --------
@@ -88,14 +88,14 @@ class Regret(Metric):
 class AverageRegret(Regret):
     """The average regret compared to the Condorcet winner.
 
-    The regret of pulling an arm is defined by the calibrated preference
+    The :term:`regret` of pulling an arm is defined by the calibrated preference
     probability of the best arm over the pulled one. This metric takes the
-    average of the regret of the two pulled arms. Also see ``Regret``,
-    ``StrongRegret`` and ``WeakRegret``.
+    average of the :term:`regret` of the two pulled arms. Also see :class:`Regret<duelpy.stats.metrics.Regret>`,
+    :class:`StrongRegret<duelpy.stats.metrics.StrongRegret>` and :class:`WeakRegret<duelpy.stats.metrics.WeakRegret>`.
 
-    This metric computes the per-duel regret. It is common practice to report
-    the cumulative regret instead. You can combine this class with the
-    ``Cumulative`` wrapper for that purpose.
+    This metric computes the per-duel :term:`regret`. It is common practice to report
+    the cumulative :term:`regret` instead. You can combine this class with the
+    :class:`Cumulative<duelpy.stats.metrics.Cumulative>` wrapper for that purpose.
 
     Parameters
     ----------
@@ -122,14 +122,14 @@ class AverageRegret(Regret):
 class StrongRegret(Regret):
     """The strong regret compared to the Condorcet winner.
 
-    The regret of pulling an arm is defined by the calibrated preference
+    The :term:`regret` of pulling an arm is defined by the calibrated preference
     probability of the best arm over the pulled one. This metric takes the
-    maximum of the regret of the two pulled arms. Also see ``Regret``,
-    ``AverageRegret`` and ``WeakRegret``.
+    maximum of the :term:`regret` of the two pulled arms. Also see :class:`Regret<duelpy.stats.metrics.Regret>`,
+    :class:`AverageRegret<duelpy.stats.metrics.AverageRegret>` and :class:`WeakRegret<duelpy.stats.metrics.WeakRegret>`.
 
-    This metric computes the per-duel regret. It is common practice to report
-    the cumulative regret instead. You can combine this class with the
-    ``Cumulative`` wrapper for that purpose.
+    This metric computes the per-duel :term:`regret`. It is common practice to report
+    the cumulative :term:`regret` instead. You can combine this class with the
+    :class:`Cumulative<duelpy.stats.metrics.Cumulative>` wrapper for that purpose.
 
     Parameters
     ----------
@@ -154,14 +154,14 @@ class StrongRegret(Regret):
 class WeakRegret(Regret):
     """The weak regret compared to the Condorcet winner.
 
-    The regret of pulling an arm is defined by the calibrated preference
+    The :term:`regret` of pulling an arm is defined by the calibrated preference
     probability of the best arm over the pulled one. This metric takes the
-    minimum of the regret of the two pulled arms. Also see ``Regret``,
-    ``AverageRegret`` and ``StrongRegret``.
+    minimum of the :term:`regret` of the two pulled arms. Also see :class:`Regret<duelpy.stats.metrics.Regret>`,
+    :class:`AverageRegret<duelpy.stats.metrics.AverageRegret>` and :class:`StrongRegret<duelpy.stats.metrics.StrongRegret>`.
 
-    This metric computes the per-duel regret. It is common practice to report
-    the cumulative regret instead. You can combine this class with the
-    ``Cumulative`` wrapper for that purpose.
+    This metric computes the per-duel :term:`regret`. It is common practice to report
+    the cumulative :term:`regret` instead. You can combine this class with the
+    :class:`Cumulative<duelpy.stats.metrics.Cumulative>` wrapper for that purpose.
 
     Parameters
     ----------
@@ -186,10 +186,10 @@ class WeakRegret(Regret):
 class AverageCopelandRegret:
     """Calculate Copeland regret with respect to normalized Copeland score.
 
-    The average Copeland regret of a single comparison is the difference between the average normalized Copeland score of
-    the pulled arms and the maximum normalized Copeland score. It can only be 0 if a Copeland winner is compared against
-    another Copeland winner. Copeland score is normalized by the number of Arms(i.e number_of_arms-1). Finally, This function
-    calculates the normalized cumulative Copeland regret accumulated over all time steps.
+    The average :term:`Copeland regret` of a single comparison is the difference between the average normalized :term:`Copeland score` of
+    the pulled arms and the maximum normalized :term:`Copeland score`. It can only be :math:`0` if a :term:`Copeland winner` is compared against
+    another :term:`Copeland winner`. :term:`Copeland score` is normalized by the number of arms (i.e ``number_of_arms-1``). Finally, This function
+    calculates the normalized cumulative :term:`Copeland regret` accumulated over all time steps.
 
     Returns
     -------
@@ -231,7 +231,7 @@ class TotalWallClock(Metric):
 class Cumulative(Metric):
     """Wraps a metric to make it cumulative.
 
-    Metrics like the average regret are often reported in accumulated form.
+    Metrics like the :class:`average regret<duelpy.stats.metrics.AverageRegret>` are often reported in accumulated form.
     This wrapper can be used to convert any metric to a cumulative metric.
 
     Parameters
