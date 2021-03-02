@@ -68,7 +68,7 @@ doc_test_build:
   except:
   - master
 
-doc_deploy_build:
+pages:
   stage: deploy
   script:
   - pip install --upgrade sphinx
