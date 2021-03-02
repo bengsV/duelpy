@@ -10,12 +10,12 @@ from typing import Tuple
 class Heap:
     """Superclass for sorting algorithms.
 
-    This implements only insert, get_min and update_min_key, as the comparisons may be probabilistic.
+    This implements only ``insert``, ``get_min`` and ``update_min_key``, as the comparisons may be probabilistic.
 
     Parameters
     ----------
     compare_fn
-        A function comparing two given keys, returns 1 if the first key is smaller than the second, -1 otherwise and 0 if it cannot be decided yet.
+        A function comparing two given keys, returns ``1`` if the first key is smaller than the second, ``-1`` otherwise and ``0`` if it cannot be decided yet.
 
     Attributes
     ----------
@@ -24,6 +24,7 @@ class Heap:
     Examples
     --------
     A build heap example:
+
     >>> heap = Heap(lambda x,y: 1 if x<y else -1)
     >>> heap.build([3,1,5,2,4], [3,1,5,2,4])
     >>> comparisons = 0
