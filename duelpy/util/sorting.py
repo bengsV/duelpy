@@ -172,7 +172,7 @@ class MergeSort(SortingAlgorithm):
 class Quicksort(SortingAlgorithm):
     """Implement the Quicksort algorithm.
 
-    Some algorithms depend on Quicksort to rank arms, in order to support a step function, Quicksort is implemented with the ability to advance single sorting steps.
+    Some algorithms depend on Quicksort to rank arms, in order to support a ``step`` function, Quicksort is implemented with the ability to advance single sorting steps.
 
     Parameters
     ----------
