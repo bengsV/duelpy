@@ -162,6 +162,22 @@ def plot_results(data: pd.DataFrame) -> None:
         A pandas dataframe with columns time_step, cum_average_regret and
         wall_clock.
     """
+    algorithms = data["algorithm"].unique()
+
+    # Explicitly set color and dash mappings to ensure that they are consistent
+    # between the different plots. We could also rely on seaborn's
+    # deterministic behavior when generating the mappings, but I think it is
+    # better to specify it explicitly.
+    colors = sns.color_palette(n_colors=len(algorithms))
+    color_mapping = dict(zip(algorithms, colors))
+    # Dashes are used as a redundant indicator to make it easier to distinguish
+    # the lines. We use just two different kinds (solid and 5pt/3pt dashed) for
+    # that purpose.
+    dashes = ["", (5, 3)] * len(algorithms)
+    # We have `len(dashes) == 2*len(algorithm)`, but `zip` ignores the
+    # superfluous dash entries.
+    dash_mapping = dict(zip(algorithms, dashes))
+
     sns.set()
     _fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3)
     sns.lineplot(
@@ -169,7 +185,9 @@ def plot_results(data: pd.DataFrame) -> None:
         x="time_step",
         y="cum_average_regret",
         hue="algorithm",
+        palette=color_mapping,
         style="algorithm",
+        dashes=dash_mapping,
         ci=None,
         linewidth=2,
         ax=ax1,
@@ -179,7 +197,9 @@ def plot_results(data: pd.DataFrame) -> None:
         x="time_step",
         y="best_arm_rate (EMA)",
         hue="algorithm",
+        palette=color_mapping,
         style="algorithm",
+        dashes=dash_mapping,
         ci=None,
         linewidth=2,
         ax=ax2,
@@ -189,7 +209,9 @@ def plot_results(data: pd.DataFrame) -> None:
         x="time_step",
         y="wall_clock",
         hue="algorithm",
+        palette=color_mapping,
         style="algorithm",
+        dashes=dash_mapping,
         ci=None,
         linewidth=2,
         ax=ax3,
