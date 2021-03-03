@@ -203,6 +203,8 @@ def plot_results(data: pd.DataFrame) -> None:
         ci=None,
         linewidth=2,
         ax=ax2,
+        # All plots use the same styles and hues. One legend is sufficient.
+        legend=False,
     )
     sns.lineplot(
         data=data,
@@ -215,6 +217,7 @@ def plot_results(data: pd.DataFrame) -> None:
         ci=None,
         linewidth=2,
         ax=ax3,
+        legend=False,
     )
     plt.show()
 
