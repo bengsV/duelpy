@@ -158,7 +158,7 @@ class CopelandPBR(PreferenceBasedRacing):
 
     It makes no assumptions about the arms, except that they can be compared.
 
-    The expected number of comparisons is bounded by :math:`\sum_{i \neq j}\left\lceil \frac{1}{2 \Delta_{i,j}^2} \log \frac{2N^2 n_max}{\delta}\right\rceil`. :math:`N` is the number of arms, the sum iterates over all pairs of arms without self comparisons. :math:`\Delta_{i,j}+1/2` is the probability of arm :math:`i` winning against arm :math:`j` and :math:`\delta` is the failure probability.
+    The expected number of comparisons is bounded by :math:`\sum_{i \neq j}\left\lceil \frac{1}{2 \Delta_{i,j}^2} \log \frac{2N^2 n_{max}}{\delta}\right\rceil`. :math:`N` is the number of arms, the sum iterates over all pairs of arms without self comparisons. :math:`\Delta_{i,j}+1/2` is the probability of arm :math:`i` winning against arm :math:`j` and :math:`\delta` is the failure probability.
 
     The algorithm keeps track of all pairwise probabilities and stops sampling them if the better arm can be determined with confidence. The :math:`k` arms with the highest estimated :term:`Copeland score`.
     See :cite:`busa2013top` for more details.
@@ -273,7 +273,7 @@ class BordaPBR(PreferenceBasedRacing):
 
     It makes no assumptions about the arms, except that they can be compared.
 
-    See Theorem 2 in See :cite:`busa2013top` for more details. for a bound on the pairwise comparisons.
+    See `Theorem 2` in See :cite:`busa2013top` for more details and a bound on the pairwise comparisons.
 
     The paper calls this algorithm sum of expectations (SE), which is the same as the :term:`Borda score`.
     The algorithm keeps track of all pairwise probabilities and stops sampling them if the better arm can be determined with confidence. The :math:`k` arms with the highest estimated :term:`Borda score`.
@@ -401,7 +401,7 @@ class RandomWalkPBR(PreferenceBasedRacing):
 
     It makes no assumptions about the arms, except that they can be compared.
 
-    See Theorem 2 in :cite:`busa2013top` for a bound on the pairwise comparisons.
+    See :cite:`busa2013top` for more details
 
     This sampling strategy treats the arms as a markov chain. The state transitions are proportional to the probabilities of an arm losing to the respective other arms.
     The resulting stationary distribution is used for ranking the arms and finding the k best ones.
