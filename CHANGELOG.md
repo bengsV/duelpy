@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.1.0] - 2021-03-04
+
 ### Added
 
 - Algorithm implementations (see the documentation for references).
@@ -49,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A basic skeleton of the project without any functionality.
 
-[Unreleased]: https://gitlab.com/duelpy/duelpy/compare/v0.0.1...master
+[Unreleased]: https://gitlab.com/duelpy/duelpy/compare/v0.1.0...master
+[0.1.0]: https://gitlab.com/duelpy/duelpy/compare/v0.0.1...v0.1.0
 [0.0.1]: https://gitlab.com/duelpy/duelpy/-/releases/v0.0.1
 
