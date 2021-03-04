@@ -15,7 +15,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.com/duelpy/duelpy",
     packages=setuptools.find_packages(),
-    install_requires=["numpy"],
+    install_requires=[
+        "numpy",
+        "seaborn",
+        "pandas",
+        "joblib",
+        "scipy",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
