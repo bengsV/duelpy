@@ -5,9 +5,9 @@ This is a python package for solving with Preference Based Multi Armed Bandit pr
 You can compare the implemented algorithms in an experiment by running
 
 ```
-python3 duelpy.experiments.savage_experiment
+python3 -m duelpy.experiments.cli
 ```
 
-The experiments are still a work in progress, for now only a single experiment
-is implemented. The experiment compares average regret and algorithm runtime
-with a fixed time horizon. Pass the `--help` flag for more information.
+The experiments are still rather limited. The command-line interface can
+currently only run regret-based comparisons in a limited set of configurations.
+Pass the `--help` flag for more information.
