@@ -9,9 +9,9 @@ For an overview of the problem and algorithms, see :cite:`bengs2021preference`.
    :maxdepth: 4
    :caption: Contents:
 
-   autoapi/index
    installation
    examples
+   autoapi/index
    glossary
    references
 
