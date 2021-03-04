@@ -7,7 +7,7 @@ with open("README.md", "r") as readme_file:
 
 setuptools.setup(
     name="duelpy",
-    version="0.0.1",
+    version="0.1.0",
     author="The duelpy team",
     author_email="contact.us.at@gitlab.invalid",
     description="Dueling Bandit Algorithms in Python",
@@ -15,7 +15,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.com/duelpy/duelpy",
     packages=setuptools.find_packages(),
-    install_requires=["numpy"],
+    install_requires=[
+        "numpy",
+        "seaborn",
+        "pandas",
+        "joblib",
+        "scipy",
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
