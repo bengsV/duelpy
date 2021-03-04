@@ -19,9 +19,9 @@ class PreferenceEstimate:
     ...     confidence_radius=lambda num_samples: 1/(num_samples + 1)
     ... )
 
-    We use a trivial confidence radius for easy illustration. Note that the
+    We use a :class:`TrivialConfidenceRadius<duelpy.stats.confidence_radius.TrivialConfidenceRadius>` for easy illustration. Note that the
     results are not accurate, you probably want to use something like
-    HoeffdingConfidenceRadius in practice.
+    :class:`HoeffdingConfidenceRadius<duelpy.stats.confidence_radius.HoeffdingConfidenceRadius>` in practice.
 
     In the beginning, nothing is known yet.
 
@@ -49,6 +49,7 @@ class PreferenceEstimate:
 
     When entering more samples, the probability keeps adjusting. Let's make it
     one win out of four.
+
     >>> preference_estimate.enter_sample(0, 1, first_won=False)
     >>> preference_estimate.enter_sample(0, 1, first_won=True)
     >>> preference_estimate.enter_sample(0, 1, first_won=True)
@@ -115,7 +116,7 @@ class PreferenceEstimate:
         Parameters
         ----------
         confidence_radius
-            The confidence radius to be set as the new `confidence_radius`.
+            The confidence radius to be set as the new ``confidence_radius``.
         """
         self.confidence_radius = confidence_radius
         self._cached_radius = None
@@ -170,7 +171,7 @@ class PreferenceEstimate:
         Returns
         -------
         float
-            The estimated probability that `first_arm_index` wins against `second_arm_index`.
+            The estimated probability that ``first_arm_index`` wins against ``second_arm_index``.
         """
         return self._cached_mean_estimate[first_arm_index][second_arm_index]
 
@@ -190,7 +191,7 @@ class PreferenceEstimate:
         -------
         Tuple[float, float]
             The lower and upper bound of the confidence estimate for the
-            probability that `first_arm_index` wins against `second_arm_index`.
+            probability that ``first_arm_index`` wins against ``second_arm_index``.
         """
         return (
             self.get_lower_estimate(first_arm_index, second_arm_index),
@@ -225,7 +226,7 @@ class PreferenceEstimate:
         )
 
     def get_upper_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
-        """Get the upper estimate of the win probability of `first_arm_index` against `second_arm_index`.
+        """Get the upper estimate of the win probability of ``first_arm_index`` against ``second_arm_index``.
 
         Parameters
         ----------
@@ -237,7 +238,7 @@ class PreferenceEstimate:
         Returns
         -------
         float
-            The upper bound of the confidence estimate for the probability that `first_arm_index` wins against `second_arm_index`.
+            The upper bound of the confidence estimate for the probability that ``first_arm_index`` wins against ``second_arm_index``.
         """
         return min(
             self._cached_mean_estimate[first_arm_index][second_arm_index]
@@ -246,7 +247,7 @@ class PreferenceEstimate:
         )
 
     def get_lower_estimate(self, first_arm_index: int, second_arm_index: int) -> float:
-        """Get the lower estimate of the win probability of `first_arm` against `second_arm`.
+        """Get the lower estimate of the win probability of ``first_arm`` against ``second_arm``.
 
         Parameters
         ----------
@@ -258,7 +259,7 @@ class PreferenceEstimate:
         Returns
         -------
         float
-            The lower bound of the confidence estimate for the probability that `first_arm` wins against `second_arm`.
+            The lower bound of the confidence estimate for the probability that ``first_arm`` wins against ``second_arm``.
         """
         return max(
             self._cached_mean_estimate[first_arm_index][second_arm_index]
@@ -374,7 +375,7 @@ class PreferenceEstimate:
     ) -> PreferenceMatrix:
         """Sample a preference matrix based on a Beta distribution.
 
-        The outcome is a PreferenceMatrix object which is initialized from a sampled
+        The outcome is a :class:`PreferenceMatrix<duelpy.stats.preference_matrix.PreferenceMatrix>` object which is initialized from a sampled
         preference matrix. In this preference matrix, each pairwise preference is
         drawn from a beta-distribution which is parameterized on the results of prior
         duels.
@@ -387,7 +388,7 @@ class PreferenceEstimate:
         Returns
         -------
         PreferenceMatrix
-            A PreferenceMatrix object which is initialized from a preference matrix which
+            A ``PreferenceMatrix`` object which is initialized from a preference matrix which
             is sampled on a Beta distribution.
         """
         # Construct the parameters of a beta distribution to sample preference

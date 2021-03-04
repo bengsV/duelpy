@@ -16,7 +16,7 @@ class Multisort(CopelandRankingProducer):
     The goal of the algorithm is to find a ranking using Copeland aggregation on a set of rankings returned by the
     :class:`QuickSort<duelpy.util.sorting.QuickSort>` algorithm.
 
-    It is assumed that the arms are distributed according to a :term:`Bradley-Terry distribution` with parameter :math:`theta`. This parameter is assumed to be sampled via a Poisson point process with given rate :math:`\lambda`.
+    It is assumed that the arms are distributed according to a :term:`Bradley-Terry distribution` with parameter :math:`\theta`. This parameter is assumed to be sampled via a Poisson point process with given rate :math:`\lambda`.
 
     Theorem 2 in Section 3.1 in :cite:`maystre2017just` states that all but a vanishing fraction of the items are
     correctly ranked using :math:`\mathcal{O}\left(\lambda^2 N\log^6 N\right)` comparisons, where :math:`N` refers to the number of arms and :math:`\lambda` is the Poisson point process rate.

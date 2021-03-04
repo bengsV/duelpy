@@ -15,9 +15,8 @@ class PreferenceMatrix:
     Parameters
     ----------
     preferences
-        A quadratic matrix where p[i, j] specifies the probability that arm i
-        wins against arm j. This implies p[j, i] = 1 - p[i, j] and p[i, i] =
-        0.5.
+        A quadratic matrix where :math:`p[i, j]` specifies the probability that arm :math:`i`
+        wins against arm :math:`j`. This implies :math:`p[j, i] = 1 - p[i, j]` and :math:`p[i, i] = 0.5`.
     """
 
     def __init__(
@@ -31,7 +30,7 @@ class PreferenceMatrix:
         """Construct a coherent preference matrix from an upper triangle.
 
         All entries below the diagonal (including the diagonal) are ignored.
-        The diagonal is filled in with 0.5, the lower triangle is filled in to
+        The diagonal is filled in with :math:`0.5`, the lower triangle is filled in to
         match the upper triangle.
 
         >>> matrix = np.array([[-1, 0.3, 0.2],
@@ -81,7 +80,7 @@ class PreferenceMatrix:
     def get_condorcet_winner(self) -> Optional[int]:
         """Get the index of the Condorcet winner if one exists.
 
-        The Condorcet winner is the arm that is expected to beat every other
+        The :term:`Condorcet winner` is the arm that is expected to beat every other
         arm in a pairwise comparison.
 
         Returns
@@ -103,7 +102,7 @@ class PreferenceMatrix:
     def get_copeland_winners(self) -> Set[int]:
         """Get the set of Copeland winners.
 
-        A Copeland winner is an arm that has the highest number of expected
+        A :term:`Copeland winner` is an arm that has the highest number of expected
         wins against all other arms. This does not need to be unique, since
         multiple arms can have the same number of expected wins.
 
@@ -117,7 +116,7 @@ class PreferenceMatrix:
     def get_copeland_scores(self) -> np.array:
         """Calculate Copeland scores for each arm.
 
-        The Copeland score of an arm is the number of other arms that the arm is expected to win against.
+        The :term:`Copeland score` of an arm is the number of other arms that the arm is expected to win against.
 
         Returns
         -------
@@ -129,7 +128,7 @@ class PreferenceMatrix:
     def get_normalized_copeland_scores(self) -> np.array:
         """Calculate the normalized Copeland scores for each arm.
 
-        The normalized Copeland score of an arm is the fraction of other arms it is expected to win against.
+        The normalized :term:`Copeland score` of an arm is the fraction of other arms it is expected to win against.
 
         Returns
         -------
@@ -163,7 +162,7 @@ class PreferenceMatrix:
     def get_borda_winners(self) -> Set[int]:
         """Get the set of borda winners.
 
-        A Borda winner is an arm that has the highest Borda score. This does not need to be unique, since
+        A :term:`Borda winner` is an arm that has the highest :term:`Borda score`. This does not need to be unique, since
         multiple arms can have the same number of expected wins.
 
         Returns

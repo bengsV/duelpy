@@ -29,20 +29,20 @@ def _shuffle_preference_matrix(
 class HardCondorcetMatrix(MatrixFeedback):
     r"""A feedback-mechanism using a generated "hard Condorcet matrix".
 
-    These matrices have a Condorcet winner, but it is hard to find since it has
+    These matrices have a :term:`Condorcet winner`, but it is hard to find since it has
     a tight margin. All generated matrices of the same size are equivalent,
     they are just randomly shuffled.
 
-    As described in section 5.2.1 of :cite:`urvoy2013generic`:
-    :math:`\mu` defined by :math:`mu_{(i, j)} = 1/2 + j/(2K)`. We add a small
-    `epsilon` to the relative preference values to assure a Condorcet winner
-    actually exists. This is necessary since our definition of a "win" (>0.5)
+    As described in `section 5.2.1` of :cite:`urvoy2013generic`:
+    :math:`\mu` defined by :math:`\mu_{(i, j)} = 0.5 + \frac{j}{2K}`. We add a small
+    :math:`\epsilon` to the relative preference values to assure a :term:`Condorcet winner`
+    actually exists. This is necessary since our definition of a "win" (:math:`>0.5`)
     slightly diverges from the definition used in :cite:`urvoy2013generic`
-    (>=0.5).
+    (:math:`>=0.5`).
 
-    These matrices guarantee the existence of a Condorcet winner and include
-    both easy and hard decisions: :math:`mu_{(1, 2)} = 0.51` is a hard
-    decision, :math:`mu_(1, 100) = 1` is an easy one.
+    These matrices guarantee the existence of a :term:`Condorcet winner` and include
+    both easy and hard decisions: :math:`\mu_{(1, 2)} = 0.51` is a hard
+    decision, :math:`\mu_{(1, 100)} = 1` is an easy one.
 
     Parameters
     ----------

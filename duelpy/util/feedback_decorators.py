@@ -13,12 +13,12 @@ class FeedbackMechanismDecorator(FeedbackMechanism):
 
     This is intended  to be used as a base class for wrappers that want to
     "inject" some behavior or checks into an existing feedback mechanism. See
-    ``BudgetedFeedbackMechanism`` for an example.
+    :class:`BudgetedFeedbackMechanism<duelpy.util.feedback_decorator.BudgetedFeedbackMechanism>` for an example.
 
     Parameters
     ----------
     feedback_mechanism
-        The FeedbackMechanism object to delegate to.
+        The ``FeedbackMechanism`` object to delegate to.
     """
 
     def __init__(self, feedback_mechanism: FeedbackMechanism) -> None:
@@ -41,7 +41,7 @@ class FeedbackMechanismDecorator(FeedbackMechanism):
         Returns
         -------
         bool
-            True if arm_i wins.
+            True if ``arm_i`` wins.
         """
         return self.feedback_mechanism.duel(arm_i_index, arm_j_index)
 
@@ -73,7 +73,7 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
     Parameters
     ----------
     feedback_mechanism
-        The FeedbackMechanism object to delegate to.
+        The ``FeedbackMechanism`` object to delegate to.
     metrics
         A dictionary of metrics to apply, keyed by their name.
     sample_interval
@@ -149,7 +149,7 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
         Returns
         -------
         bool
-            True if arm_i wins.
+            True if ``arm_i`` wins.
         """
         result = super().duel(arm_i_index, arm_j_index)
         for (name, metric) in self.metrics.items():
@@ -190,7 +190,6 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     let's try to run it unmodified and without a time horizon:
 
     >>> from duelpy.algorithms import Savage
-
     >>> pac_algorithm = Savage(feedback_mechanism)
     >>> pac_algorithm.run()
     >>> feedback_mechanism.get_num_duels()
@@ -240,7 +239,7 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     Parameters
     ----------
     feedback_mechanism
-        The FeedbackMechanism object to delegate to.
+        The ``FeedbackMechanism`` object to delegate to.
     """
 
     def __init__(self, feedback_mechanism: FeedbackMechanism, max_duels: int) -> None:
@@ -266,7 +265,7 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
         Returns
         -------
         bool
-            True if arm_i wins.
+            True if ``arm_i`` wins.
         """
         if self.duels_conducted >= self.max_duels:
             raise AlgorithmFinishedException()

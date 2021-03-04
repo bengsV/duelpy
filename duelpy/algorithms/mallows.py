@@ -26,7 +26,7 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
 
     The amount of pairwise arm comparisons can is bound by :math:`\mathcal{O}\left(\frac{N}{\rho^2}\log\frac{N}{\delta\rho}\right)`, where :math:`N` is the number of arms, :math:`\delta` is the given error probability. The parameter :math:`\rho` is dependent on the :term:`Mallows distribution` parameter :math:`\phi` as follows: :math:`\rho=\frac{1-\phi}{1+\phi}`.
 
-    This algorithm is part of the (:math:`\epsilon`,:math:`\delta`)-:term:`PAC` class of algorithms, with :math:`\epsilon = 0`. The :term:`Condorcet winner` is determined as the arm ranked first with the highest probability in the :term:`Mallows distribution`.
+    This algorithm is part of the (:math:`\epsilon`, :math:`\delta`)-:term:`PAC` class of algorithms, with :math:`\epsilon = 0`. The :term:`Condorcet winner` is determined as the arm ranked first with the highest probability in the :term:`Mallows distribution`.
     The algorithm proceeds by selecting a random arm and comparing it against another arm until one of them can be considered worse than the other with sufficient confidence. The worse arm is discarded and the winner is compared against a new randomly chosen arm. This continues until only one arm is left, which is then returned. See :cite:`busa2014preference` for more details.
 
     Parameters

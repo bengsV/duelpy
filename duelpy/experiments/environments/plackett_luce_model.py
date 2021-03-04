@@ -13,7 +13,8 @@ from duelpy.util.utility_functions import argmax_set
 class PlackettLuceModel(MatrixFeedback):
     r"""A feedback-mechanism based on the Plackett-Luce model.
 
-    The probabilities are based on a non-negative 'skill' value for each arm. The probability of arm i winning against arm j is then based on their skills v: :math:`\frac{v_i}{v_i+v_j}`.
+    A preference matrix is generated from a :term:`Plackett-Luce distribution`.
+    The probabilities are based on a non-negative 'skill' value for each arm. The probability of arm :math:`i` winning against arm :math:`j` is then based on their skills :math:`v`: :math:`\frac{v_i}{v_i+v_j}`.
 
     Parameters
     ----------
@@ -22,7 +23,7 @@ class PlackettLuceModel(MatrixFeedback):
     random_state
         The numpy random state that will be used for sampling and generating skills, if they are not given.
     skill_vector
-        Optional, contain scalars representing the skill of each arm. Must be of length `num_arms` and only contain non-negative values.
+        Optional, contain scalars representing the skill of each arm. Must be of length ``num_arms`` and only contain non-negative values.
     """
 
     def __init__(
@@ -46,8 +47,9 @@ class PlackettLuceModel(MatrixFeedback):
         preferences = np.full((num_arms, num_arms), 0.5)
         for first_arm_idx in range(num_arms):
             for second_arm_idx in range(first_arm_idx):
-                relative_preference = skill_vector[first_arm_idx] / (
-                    skill_vector[first_arm_idx] + skill_vector[second_arm_idx]
+                relative_preference = (
+                    skill_vector[first_arm_idx] / skill_vector[first_arm_idx]
+                    + skill_vector[second_arm_idx]
                 )
                 preferences[first_arm_idx][second_arm_idx] = relative_preference
                 preferences[second_arm_idx][first_arm_idx] = 1 - relative_preference
@@ -56,7 +58,9 @@ class PlackettLuceModel(MatrixFeedback):
         super().__init__(preference_matrix=preference_matrix, random_state=random_state)
 
     def get_best_arms(self) -> List[int]:
-        """Get a list of all best arms. This can (and usually is) only be the Condorcet winner. But if multiple arms have the same maximal skill value, they are returned as Copeland winners.
+        """Get a list of all best arms.
+
+        This can (and usually is) only be the :term:`Condorcet winner`. But if multiple arms have the same maximal skill value, they are returned as :term:`Copeland winners<Copeland winner>`.
 
         Returns
         -------
