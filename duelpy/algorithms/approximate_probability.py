@@ -28,8 +28,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
     where :math:`N` is the number of arms.
 
     The algorithm takes an ordered set of arms and approximates all pairwise probabilities to
-    an accuracy of :term:`\epsilon`. This ranking could be the result of the :term:`BinarySearchRanking<duelpy.algorithms.binary_search_ranking.BinarySearchRanking>` algorithm.
-    Probabilities are calculated starting with the best arm against all others and then iterating down the ranking order. The result is guaranteed to be consistent with the ranking.
+    an accuracy of :term:`\epsilon`. Note that in this implementation a ranking is defined as ordered from best to worst, whereas in :cite:`falahatgar2018limits`, this is reversed. Probabilities are calculated starting with the worst arm against all others and then iterating down the ranking order. The result is guaranteed to be consistent with the ranking.
 
     Parameters
     ----------
@@ -39,7 +38,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
         The optimality of the winning arm. Corresponds to :math:`\epsilon` in :cite:`falahatgar2018limits`.
         Default value is ``0.05``, which has been used in the experiments in :cite:`falahatgar2018limits`.
     order_arms
-        A :math:`\frac{\epsilon}{8}` ranking over the arms.
+        A :math:`\frac{\epsilon}{8}` ranking over the arms, ordered from best to worst.
 
     Attributes
     ----------
@@ -58,17 +57,17 @@ class ApproximateProbability(PreferenceMatrixProducer):
 
     >>> from duelpy.feedback import MatrixFeedback
     >>> preference_matrix = np.array([
-    ...     [0.9, 0.7, 0.5],
-    ...     [0.9, 0.5, 0.3],
-    ...     [0.5, 0.1, 0.1]
+    ...     [0.5, 0.9, 0.9],
+    ...     [0.1, 0.5, 0.7],
+    ...     [0.1, 0.3, 0.5]
     ... ])
     >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=np.random.RandomState(100))
-    >>> test_object = ApproximateProbability(feedback_mechanism, epsilon=0.05, order_arms=[1, 0, 2])
+    >>> test_object = ApproximateProbability(feedback_mechanism, epsilon=0.05, order_arms=[0, 1, 2])
     >>> test_object.run()
     >>> test_object.get_preference_matrix()
-    array([[0.5, 0. , 0. ],
-           [0.7, 0.5, 0. ],
-           [0.7, 0.5, 0.5]])
+    array([[0.5, 0.9, 0.9],
+    ...    [0.1, 0.5, 0.7],
+    ...    [0.1, 0.3, 0.5]])
     """
 
     def __init__(
@@ -79,7 +78,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
         time_horizon: Optional[int] = None,
     ):
         self.tournament_arms = feedback_mechanism.get_num_arms()
-        self.comparison_arm = 0
+        self.comparison_arm = self.tournament_arms - 1
         super().__init__(feedback_mechanism, time_horizon)
         self.epsilon = epsilon
         self.order_arms = order_arms
@@ -91,50 +90,65 @@ class ApproximateProbability(PreferenceMatrixProducer):
             num_arms=feedback_mechanism.get_num_arms()
         )
 
-    def estimate_probabilities_against_first_arm(self) -> None:
+    def estimate_probabilities_against_worst_arm(self) -> None:
         """Run one step of comparison.
 
-        The first ranked and the other arms are dueled repeatedly, determining their preference probabilities.
+        The last ranked and the other arms are dueled repeatedly, determining their preference probabilities.
         """
-        self._estimate_pairwise_probability[0][0] = 0.5
-        arm_i = self.order_arms[0]
-        for arm_index in range(1, self.tournament_arms):
-            arm_j = self.order_arms[arm_index]
-            self._estimate_pairwise_probability[arm_index][0] = self.duel_repeatedly(
-                arm_i, arm_j
+        worst_arm = self.order_arms[-1]
+        self._estimate_pairwise_probability[worst_arm][worst_arm] = 0.5
+        for rank_index in range(self.tournament_arms - 2, -1, -1):
+            other_arm = self.order_arms[rank_index]
+            preceding_arm = self.order_arms[rank_index + 1]
+            self._estimate_pairwise_probability[worst_arm][
+                other_arm
+            ] = self.duel_repeatedly(worst_arm, other_arm)
+            self._estimate_pairwise_probability[other_arm][worst_arm] = (
+                1 - self._estimate_pairwise_probability[worst_arm][other_arm]
             )
 
             if (
-                self._estimate_pairwise_probability[arm_index][0]
-                < self._estimate_pairwise_probability[arm_index - 1][0]
+                self._estimate_pairwise_probability[other_arm][worst_arm]
+                < self._estimate_pairwise_probability[preceding_arm][worst_arm]
             ):
-                self._estimate_pairwise_probability[arm_index][
-                    0
-                ] = self._estimate_pairwise_probability[arm_index - 1][0]
+                self._estimate_pairwise_probability[other_arm][
+                    worst_arm
+                ] = self._estimate_pairwise_probability[preceding_arm][worst_arm]
+                self._estimate_pairwise_probability[worst_arm][other_arm] = (
+                    1 - self._estimate_pairwise_probability[other_arm][worst_arm]
+                )
 
-    def estimate_pairwise_probabilities(self, rank_1: int) -> None:
+    def estimate_pairwise_probabilities(self) -> None:
         """Run second step of comparison.
 
         It compares arm :math:`i` and arm :math:`j` multiple times and estimates the
         pairwise probability.
         """
-        self._estimate_pairwise_probability[rank_1][rank_1] = 0.5
-        for rank_2 in range(rank_1 + 1, self.tournament_arms):
+        fixed_arm = self.order_arms[self.comparison_arm]
+        preceding_fixed_arm = self.order_arms[self.comparison_arm + 1]
+        self._estimate_pairwise_probability[fixed_arm][fixed_arm] = 0.5
+        for rank_index in range(self.tournament_arms - 2, self.comparison_arm - 1, -1):
+            other_arm = self.order_arms[rank_index]
+            preceding_arm = self.order_arms[rank_index + 1]
             if (
-                self._estimate_pairwise_probability[rank_2 - 1][rank_1]
-                == self._estimate_pairwise_probability[rank_2][rank_1 - 1]
+                self._estimate_pairwise_probability[preceding_arm][fixed_arm]
+                == self._estimate_pairwise_probability[other_arm][preceding_fixed_arm]
             ):
 
-                self._estimate_pairwise_probability[rank_2][
-                    rank_1
-                ] = self._estimate_pairwise_probability[rank_2 - 1][rank_1]
+                self._estimate_pairwise_probability[other_arm][
+                    fixed_arm
+                ] = self._estimate_pairwise_probability[preceding_arm][other_arm]
+                self._estimate_pairwise_probability[fixed_arm][other_arm] = (
+                    1 - self._estimate_pairwise_probability[other_arm][fixed_arm]
+                )
             else:
-                arm_i = self.order_arms[rank_2]
-                arm_j = self.order_arms[rank_1]
 
-                self._estimate_pairwise_probability[rank_2][
-                    rank_1
-                ] = self.duel_repeatedly(arm_i, arm_j)
+                self._estimate_pairwise_probability[other_arm][
+                    fixed_arm
+                ] = self.duel_repeatedly(other_arm, fixed_arm)
+                self._estimate_pairwise_probability[fixed_arm][other_arm] = (
+                    1 - self._estimate_pairwise_probability[other_arm][fixed_arm]
+                )
 
     def duel_repeatedly(self, arm_i: int, arm_j: int) -> float:
         """Determine the preferred arm by repeated comparison.
@@ -145,33 +159,32 @@ class ApproximateProbability(PreferenceMatrixProducer):
         compare_range = (int)(
             (16 / self.epsilon ** 2) * np.log(self.tournament_arms ** 4)
         )
-        number_of_win_arm_j = 0
+        wins_i = 0
         for _ in range(compare_range):
-            win_j = self.feedback_mechanism.duel(arm_j, arm_i)
-            if win_j:
-                number_of_win_arm_j += 1
+            if self.feedback_mechanism.duel(arm_i, arm_j):
+                wins_i += 1
 
         # approximate_probability corresponds to \hat\tilde p and is the estimated
         # win-fraction rounded to the nearest multiple of epsilon
-        return (
-            np.round(number_of_win_arm_j / compare_range / self.epsilon) * self.epsilon
-        )
+        return np.round(wins_i / compare_range / self.epsilon) * self.epsilon
 
     def step(self) -> None:
         """Take multiple samples per step in the algorithm."""
-        if self.comparison_arm == 0:
-            self.estimate_probabilities_against_first_arm()
+        if self.is_finished():
+            return
+        if self.comparison_arm == self.tournament_arms - 1:
+            self.estimate_probabilities_against_worst_arm()
         else:
-            self.estimate_pairwise_probabilities(self.comparison_arm)
+            self.estimate_pairwise_probabilities()
 
-        self.comparison_arm += 1
+        self.comparison_arm -= 1
 
     def is_finished(self) -> bool:
         """Determine if the algorithm is finished.
 
         If the comparison arm is greater than tournament arms then it will terminate.
         """
-        return self.comparison_arm >= self.tournament_arms
+        return self.comparison_arm < 0
 
     def get_preference_matrix(self) -> Optional[PreferenceMatrix]:
         """Return the computed preference matrix if it is ready.
