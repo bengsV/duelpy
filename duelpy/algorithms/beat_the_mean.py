@@ -32,7 +32,7 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
     each iteration, an arm with the fewest recorded comparisons is selected for comparison. We then enter an exploit
     phase by repeatedly choosing ``best_arm`` until reaching :math:`T` total comparisons. The algorithm terminates only
     when one active arm remains, or when time horizon is reached. If a time horizon is given, this algorithm matches the
-    "Online" variant in :cite:`yue2011beat`.
+    online variant in :cite:`yue2011beat`.
 
     Parameters
     ----------
@@ -354,7 +354,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     epsilon
         :math:`\epsilon` in (:math:`\epsilon, \delta`) :term:`PAC` algorithms, given by the user.
     failure_probability
-        Allowed failure probability (corresponds to :math:`\delta` in Algorithm 2 in :cite:`yue2011beat`),
+        Allowed failure probability (corresponds to :math:`\delta` in *Algorithm 2* in :cite:`yue2011beat`),
         i.e. probability that the actual value lies outside of the computed confidence interval. Derived from the
         Hoeffding bound.
     time_horizon
