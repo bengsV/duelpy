@@ -175,9 +175,6 @@ class MergeRUCB(CondorcetProducer):
     def step(self) -> None:
         """Run one round of an algorithm."""
         self.time_step += 1
-        # no more stages
-        if self._num_arms_batches() == 1:
-            return
         self._update_confidence_radius()
         # number of batches present in the current stage
         num_of_batches = len(self.arm_batches)
