@@ -5,13 +5,14 @@ from typing import Optional
 import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.utility_functions import argmax_set
 
 
-class MergeRUCB(CondorcetProducer):
+class MergeRUCB(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the Merge Relative Upper Confidence Bound algorithm.
 
     The goal of the algorithm is to find the :term:`Condorcet winner` while incurring minimum regret with minimum comparisons
@@ -172,8 +173,23 @@ class MergeRUCB(CondorcetProducer):
         number_of_arms = [len(each_batch) for each_batch in self.arm_batches]
         return sum(number_of_arms)
 
-    def step(self) -> None:
-        """Run one round of an algorithm."""
+    def exploration_finished(self) -> bool:
+        """Determine whether the exploration phase is finished.
+
+        The exploration is finished once only a single batch with a single arm
+        remains. This termination behavior is not explicitly specified in
+        *Algorithm 1* of :cite:`zoghi2015mergerucb` but it is mentioned in the
+        corresponding explanation (*Section 4*).
+
+        Returns
+        -------
+        bool
+            ``True`` if the exploration phase is finished.
+        """
+        return len(self.arm_batches) == 1 and len(self.arm_batches[0]) == 1
+
+    def explore(self) -> None:
+        """Do one step of exploration."""
         self.time_step += 1
         self._update_confidence_radius()
         # number of batches present in the current stage
