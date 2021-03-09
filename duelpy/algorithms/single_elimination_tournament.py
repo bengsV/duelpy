@@ -9,7 +9,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import PartialRankingProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.preference_estimate import PreferenceEstimate
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 from duelpy.util.heap import Heap
 
@@ -473,7 +472,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         if not self.exploration_finished():
             try:
                 self.explore()
-            except AlgorithmFinishedException:
+            except self.budgeted_feedback_mechanism.exception_class:
                 pass
         else:
             self.exploit()

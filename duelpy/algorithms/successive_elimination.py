@@ -11,7 +11,6 @@ from duelpy.algorithms.interfaces import BordaProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
@@ -130,7 +129,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         )
         # Since this algorithm is a PAC algorithm, we use "BudgetedFeedbackMechanism" to avoid overflow the duels
         # w.r.t the time_horizon (if it is given).
-        self.feedback_mechanism = BudgetedFeedbackMechanism(
+        self.feedback_mechanism: BudgetedFeedbackMechanism = BudgetedFeedbackMechanism(
             feedback_mechanism=feedback_mechanism,
             max_duels=self.time_horizon,
         )
@@ -192,7 +191,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
                 )
             self._update_current_set()
             self.round += 1
-        except AlgorithmFinishedException:
+        except self.feedback_mechanism.exception_class:
             pass
 
     def _update_confidence_factor(self) -> None:
