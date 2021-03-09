@@ -75,14 +75,15 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
     >>> test_object = MergeRUCB(
     ...  feedback_mechanism=feedback_mechanism,
     ...  exploratory_constant=1.01,
-    ...  time_horizon=200,
     ...  random_state=random_state,
     ...  failure_probability=0.01)
     >>> test_object.run()
     >>> test_object.get_condorcet_winner()
     2
+    >>> feedback_mechanism.get_num_duels()
+    677
     >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
-    28.8
+    74.2
     """
 
     def __init__(
@@ -270,6 +271,4 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
         Optional[int]
             The index of a Condorcet winner, if existent, among the given arms.
         """
-        return (
-            self.preference_estimate.get_mean_estimate_matrix().get_condorcet_winner()
-        )
+        return self.arm_batches[0][0] if self.exploration_finished() else None
