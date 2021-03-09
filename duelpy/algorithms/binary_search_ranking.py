@@ -20,36 +20,7 @@ import duelpy.util.utility_functions as utility
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=too-many-statements
-
-
-class Node:
-    """Utility for implementation of Binary Search Tree.
-
-    Refer to Algorithm 9 for more details.
-    """
-
-    def __init__(self, value_1: int, value_2: int):
-        self.value1 = value_1
-        self.value2 = value_2
-        self.left: Optional[Node] = None
-        self.right: Optional[Node] = None
-        self.parent: Optional[Node] = None
-
-    def insert_child(self, value1: int, value2: int) -> Tuple:
-        """Add children to the current node and also set the current node as the parent in the child nodes."""
-        self.left = Node(value1, int(np.ceil(np.mean([value1, value2]))))
-        self.left.parent = self
-        self.right = Node(int(np.ceil(np.mean([value1, value2]))), value2)
-        self.right.parent = self
-        return self.left, self.right
-
-    def get_child(self) -> Tuple:
-        """Return the left and right children of current node."""
-        return self.left, self.right
-
-    def get_parent(self) -> Optional[Node]:
-        """Return the parent of the current node."""
-        return self.parent
+# pylint: disable=no-self-use
 
 
 class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
@@ -58,22 +29,21 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
     This algorithm finds an :math:`\epsilon`-ranking among the given arms.
 
     The algorithm does :math:`\mathcal{O}\left(\frac{n \log n}{\epsilon^2}\right)` comparisons. The algorithm assumes
-    the Rank-3 algorithm that performs :math:`\mathcal{O}\left(\frac{n}{\epsilon^2} * \log(n)^3 * \log\frac{n}{\delta}\right)`
-     comparisons to output an :math:`\epsilon`-ranking for any :math:`\delta > 0, \epsilon > 0` with probability at
-     least :math:`1-\delta`.
+    the Rank-3 algorithm that performs :math:`\mathcal{O}\left(\frac{n (\log n)^3}{\epsilon^2} \log\frac{n}{\delta}\right)`
+    comparisons to output an :math:`\epsilon`-ranking for any :math:`\delta > 0, \epsilon > 0` with probability at least
+    :math:`1-\delta`.
 
     The paper assumes Rank-3 algorithm which is also called MergeRank algorithm.
 
-    1. Binary Search Ranking algorithm first selects randomly :math:`a = \frac{n}{(\log n)^3}` arms which it calls
-    anchor arms.
-    2. These randomly selected anchor arms are ranked using Rank-3 algorithm.
-    3. Bins are added between the consecutive ranked anchor arms. As there are ``a`` ranked arms, hence there will be
-       ``a-1`` bins, each bin between two ranked anchor. As there can be arms which are lower ranked as compared to the
-       lowest ranked anchor arm or there can be arms which are higher ranked as compared to the highest ranked anchor
-       arm, hence we consider 2 extra bins around these extreme ends in the ranked anchor arms set.
-    4. The algorithm then place the remaining elements in these bins, such that some bins can have multiple elements
-       while some bins can also have zero elements.
-    5. Sort the elements in each bin using Rank-3 algorithm. In this way all the elements are sorted.
+    Following are the steps that this algorithm performs.
+
+    - Binary Search Ranking algorithm first selects randomly :math:`a = \frac{n}{(\log n)^3}` arms which it calls anchor arms.
+    - These randomly selected anchor arms are ranked using Rank-3 algorithm.
+    - Bins are added between the consecutive ranked anchor arms.
+    - As there are ``a`` ranked arms, hence there will be ``a-1`` bins, each bin between two ranked anchor.
+    - As there can be arms which are lower ranked as compared to the lowest ranked anchor arm or there can be arms which are higher ranked as compared to the highest ranked anchor arm, hence we consider 2 extra bins around these extreme ends in the ranked anchor arms set.
+    - The algorithm then place the remaining elements in these bins, such that some bins can have multiple elements while some bins can also have zero elements.
+    - Sort the elements in each bin using Rank-3 algorithm. In this way all the elements are sorted.
 
     Refer to paper :cite:`falahatgar2017maximum`
 
@@ -99,11 +69,11 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
     ...     [0.9, 0.8, 0.1, 0.8, 0.5]
     ... ])
     >>> random_state = np.random.RandomState()
-    >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
+    >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
     >>> rank = BinarySearchRanking(feedback_mechanism)
     >>> rank.run()
     >>> rank.get_ranking()
-    [0, 1, 3, 4, 2]
+    [2, 4, 3, 1, 0]
     """
 
     def __init__(
@@ -113,7 +83,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         epsilon: float = 0.1,
         random_state: np.random = None,
     ):
-        super().__init__(feedback_mechanism, time_horizon=time_horizon)
+        super().__init__(feedback_mechanism, time_horizon)
         self._epsilon = epsilon
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()
@@ -122,18 +92,48 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         self.preference_estimate = PreferenceEstimate(
             self.feedback_mechanism.get_num_arms()
         )
-        self._final_result: List = list()
+        self._final_result: Optional[List[int]] = None
+
+    class Node:
+        """Utility for implementation of Binary Search Tree.
+
+        Refer to `Algorithm 9` in paper :cite:`falahatgar2017maximum` for more details.
+        """
+
+        def __init__(self, lower_bound: int, upper_bound: int):
+            self.lower_bound = lower_bound
+            self.upper_bound = upper_bound
+            self.left: Optional[BinarySearchRanking.Node] = None
+            self.right: Optional[BinarySearchRanking.Node] = None
+            self.parent: Optional[BinarySearchRanking.Node] = None
+
+        def insert_child(self, lower_bound: int, upper_bound: int) -> Tuple:
+            """Add children to the current node and also set the current node as the parent in the child nodes."""
+            self.left = BinarySearchRanking.Node(
+                lower_bound, int(np.ceil(np.mean([lower_bound, upper_bound])))
+            )
+            self.left.parent = self
+            self.right = BinarySearchRanking.Node(
+                int(np.ceil(np.mean([lower_bound, upper_bound]))), upper_bound
+            )
+            self.right.parent = self
+            return self.left, self.right
+
+        def get_child(self) -> Tuple:
+            """Return the left and right children of current node."""
+            return self.left, self.right
+
+        def get_parent(self) -> Optional[BinarySearchRanking.Node]:
+            """Return the parent of the current node."""
+            return self.parent
 
     def exploration_finished(self) -> bool:
-        """Return True if ranking of arms has been created."""
-        return bool(self.get_ranking())
+        """Return ``True`` if the ranking of arms has been created."""
+        return self.get_ranking() is not None
 
-    def get_ranking(self) -> Optional[list]:
+    def get_ranking(self) -> Optional[List[int]]:
         """Return the ranked list of arms as decided by the algorithm."""
-        if self._final_result is not None:
-            return self._final_result
-        else:
-            return None
+        return self._final_result
 
     def _binary_search(
         self,
@@ -171,7 +171,9 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
             # call COMPARE2 method.
             _, compare_result = self._is_arm1_better(
                 search_arm,
-                sorted_list[ordered_node_list[int(np.mean([start_index, end_index]))]],
+                sorted_list[
+                    ordered_node_list[int(np.ceil(np.mean([start_index, end_index])))]
+                ],
                 10 * np.log(self.feedback_mechanism.get_num_arms() / pow(epsilon, 2)),
             )
 
@@ -193,7 +195,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
     def explore(self) -> None:
         """Find the ranked set of arms.
 
-        Implement the Algorithm 4 (Binary Search Ranking).
+        Implement the `Algorithm 4 (Binary Search Ranking)`.
         """
         try:
             # 1. create anchors randomly
@@ -240,7 +242,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
             bin_list: Dict[int, List] = dict()  # refer to ``S_j``.
 
             # this fetch the root node from the binary tree. Refer to :math:`\alpha` in algorithm 8.
-            root_node = build_binary_search_tree(len(ranked_anchor_arms))
+            root_node = self._build_binary_search_tree(len(ranked_anchor_arms))
 
             # refer to step 4.
             # remaining_arms doesn't contain previously selected anchor arms.
@@ -248,8 +250,8 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
                 bin_index = self._search_binary_interval(
                     ranked_anchor_arms, arm, self._epsilon / 15, root_node
                 )
-                # if dictionary contains any list at index of the bin, then add the arm to that list otherwise, assign new
-                # list to the bin_list.
+                # if dictionary contains any list at index of the bin, then add the arm to that list otherwise, assign
+                # new list to the bin_list.
                 if bin_list.get(bin_index) is not None:
                     bin_list[bin_index].append(arm)
                 else:
@@ -338,10 +340,9 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
                     elements_far_anchor[bin_index] = temp_list
 
                 # Refer to step 5.c.
-                if ranked_anchor_arms[bin_index] in [-1, -2]:
-                    pass
-                else:
+                if ranked_anchor_arms[bin_index] not in [-1, -2]:
                     final_sorted_list.append(ranked_anchor_arms[bin_index])
+
                 if elements_near_anchor.get(bin_index) is not None:
                     for each in elements_near_anchor[bin_index]:
                         final_sorted_list.append(each)
@@ -350,6 +351,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
                         final_sorted_list.append(each)
 
             self._final_result = final_sorted_list
+            self._final_result.reverse()
 
         except AlgorithmFinishedException:
             # the time_horizon is reached.
@@ -390,36 +392,47 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         count = 0
 
         # refer to step 3.
-        for i in range(int(30 * np.log(self.feedback_mechanism.get_num_arms()))):
-            i += 1
+        for _ in range(int(30 * np.log(self.feedback_mechanism.get_num_arms()))):
             if (
-                current_node.value2 - current_node.value1 > 1
+                current_node.upper_bound - current_node.lower_bound > 1
             ):  # implies there are child nodes of this node.
                 if current_node is None:
                     break
-                if current_node.value1 not in node_values:
-                    node_values.append(current_node.value1)
-                if current_node.value2 not in node_values:
-                    node_values.append(current_node.value2)
+                if current_node.lower_bound not in node_values:
+                    node_values.append(current_node.lower_bound)
+                if current_node.upper_bound not in node_values:
+                    node_values.append(current_node.upper_bound)
                 if (
-                    int(np.mean([current_node.value2, current_node.value1]))
+                    int(
+                        np.ceil(
+                            np.mean(
+                                [current_node.upper_bound, current_node.lower_bound]
+                            )
+                        )
+                    )
                     not in node_values
                 ):
                     node_values.append(
-                        int(np.mean([current_node.value2, current_node.value1]))
+                        int(
+                            np.ceil(
+                                np.mean(
+                                    [current_node.upper_bound, current_node.lower_bound]
+                                )
+                            )
+                        )
                     )
 
-                # check if anchor arm at position value1 of sorted list beats search arm. Refer to Algorithm 8 for more
+                # check if anchor arm at position lower_bound of sorted list beats search arm. Refer to Algorithm 8 for more
                 # details.
                 anchor_duel_result, _ = self._is_arm1_better(
-                    sorted_list[current_node.value1],
+                    sorted_list[current_node.lower_bound],
                     search_element,
                     int(10 / pow(epsilon, 2)),
                 )
-                # check if search arm beats anchor arm at position value2 of sorted list.
+                # check if search arm beats anchor arm at position upper_bound of sorted list.
                 search_arm_duel_result, _ = self._is_arm1_better(
                     search_element,
-                    sorted_list[current_node.value2],
+                    sorted_list[current_node.upper_bound],
                     int(10 / pow(epsilon, 2)),
                 )
 
@@ -435,7 +448,16 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
                     left_child, right_child = current_node.get_child()
                     search_arm_duel_result, _ = self._is_arm1_better(
                         sorted_list[
-                            int(np.mean([current_node.value1, current_node.value2]))
+                            int(
+                                np.ceil(
+                                    np.mean(
+                                        [
+                                            current_node.lower_bound,
+                                            current_node.upper_bound,
+                                        ]
+                                    )
+                                )
+                            )
                         ],
                         search_element,
                         int(10 / pow(epsilon, 2)),
@@ -446,11 +468,11 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
             else:
                 search_arm_duel_result, _ = self._is_arm1_better(
                     search_element,
-                    sorted_list[current_node.value1],
+                    sorted_list[current_node.lower_bound],
                     int(10 / pow(epsilon, 2)),
                 )
                 anchor_duel_result, _ = self._is_arm1_better(
-                    sorted_list[current_node.value2],
+                    sorted_list[current_node.upper_bound],
                     search_element,
                     int(10 / pow(epsilon, 2)),
                 )
@@ -470,14 +492,14 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         # refer to Step 4
         if count > 10 * np.log(self.feedback_mechanism.get_num_arms()):
             return (
-                current_node.value1
+                current_node.lower_bound
             )  # we are confident that search arm belong to the current bin.
         else:
             # sort node_value_list
             node_values.sort()
             # call binary search method at step 4.b.ii.
             return self._binary_search(
-                sorted_list, node_values, search_element, self._epsilon
+                sorted_list, node_values, search_element, epsilon
             )
 
     def _is_arm1_better(self, arm1: int, arm2: int, duel_count: float) -> Tuple:
@@ -510,23 +532,10 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         AlgorithmFinishedException
             Number of duels has equaled the given time_horizon by the user.
         """
-        if -1 in [arm1, arm2]:
-            if arm1 == -1:
-                return (
-                    False,
-                    0.0,
-                )  # as weak arm looses against all the arms. Refer to step 3 in algorithm 4.
-            else:
-                return True, 1.0
-        elif -2 in [arm1, arm2]:
-            if arm1 == -2:
-                return (
-                    True,
-                    1.0,
-                )  # as best arm beats all other arms. Refer to step 3 in algorithm 4.
-            else:
-                return False, 0.0
-        self.feedback_mechanism.duel(0, 0)  # to include the duel conducted above.
+        if arm1 == -1 or arm2 == -2:
+            return False, 0.0
+        if arm1 == -2 or arm2 == -1:
+            return True, 1.0
 
         arm1_win, estimate = self.feedback_mechanism.multi_duels_step(
             arm1, arm2, int(duel_count), duel_limit=self.time_horizon
@@ -606,28 +615,27 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         # if estimate_probability_arm1 <= 0.5, means that arm2 beats arm1. Hence -1 is returned.
         return 1 if estimate_probability_arm1 <= 0.5 else -1
 
+    def _build_binary_search_tree(self, size: int) -> BinarySearchRanking.Node:
+        """Implement Binary Search Tree.
 
-def build_binary_search_tree(size: int) -> Node:
-    """Implement Binary Search Tree.
+        For more details refer to Algorithm 9 of the paper :cite:`falahatgar2017maximum`.
 
-    For more details refer to Algorithm 9 of the paper :cite:`falahatgar2017maximum`.
+        Parameters
+        ----------
+        size
+            Number of leaves in the tree.
 
-    Parameters
-    ----------
-    size
-        Number of leaves in the tree.
-
-    Returns
-    -------
-    Node
-        Root node of the tree.
-    """
-    root = Node(0, size - 1)
-    tree_temp = list()
-    tree_temp.append(root)
-    for node in tree_temp:
-        if node.value2 - node.value1 > 1:
-            left, right = node.insert_child(node.value1, node.value2)
-            tree_temp.append(left)
-            tree_temp.append(right)
-    return root
+        Returns
+        -------
+        Node
+            Root node of the tree.
+        """
+        root = BinarySearchRanking.Node(0, size - 1)
+        tree_temp = list()
+        tree_temp.append(root)
+        for node in tree_temp:
+            if node.upper_bound - node.lower_bound > 1:
+                left, right = node.insert_child(node.lower_bound, node.upper_bound)
+                tree_temp.append(left)
+                tree_temp.append(right)
+        return root
