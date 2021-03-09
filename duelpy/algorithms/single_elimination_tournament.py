@@ -325,8 +325,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         )
 
         def compare_repeatedly(arm_1: int, arm_2: int) -> int:
-            if self.is_finished():
-                raise AlgorithmFinishedException
             self.preference_estimate.enter_sample(
                 arm_1, arm_2, self.feedback_mechanism.duel(arm_1, arm_2)
             )
