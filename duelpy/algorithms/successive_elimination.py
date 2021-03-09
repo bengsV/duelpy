@@ -130,13 +130,10 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         )
         # Since this algorithm is a PAC algorithm, we use "BudgetedFeedbackMechanism" to avoid overflow the duels
         # w.r.t the time_horizon (if it is given).
-        if self.time_horizon is not None:
-            self.feedback_mechanism = BudgetedFeedbackMechanism(
-                feedback_mechanism=feedback_mechanism,
-                max_duels=self.time_horizon - feedback_mechanism.get_num_duels(),
-            )
-        else:
-            self.feedback_mechanism = feedback_mechanism
+        self.feedback_mechanism = BudgetedFeedbackMechanism(
+            feedback_mechanism=feedback_mechanism,
+            max_duels=self.time_horizon,
+        )
         # The sparsity level, as recommended by the authors of the algorithm should be ``5`` for typical problems.
         # However, for ``n`` number of arms in the preference matrix, if n<5, this fails the condition of sparsity
         # level in [n-2]. Therefore, extra constraints are added for sparsity level. Use highest level of sparsity

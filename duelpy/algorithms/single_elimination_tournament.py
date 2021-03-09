@@ -294,12 +294,10 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         else:
             self.k_top_ranked = k_top_ranked
         self.time_horizon = time_horizon
-        self.budgeted_feedback_mechanism = feedback_mechanism
-        if self.time_horizon is not None:
-            self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-                self.feedback_mechanism,
-                max_duels=self.time_horizon - self.feedback_mechanism.get_num_duels(),
-            )
+        self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
+            self.feedback_mechanism,
+            max_duels=self.time_horizon,
+        )
         self.preference_estimate = PreferenceEstimate(
             self.feedback_mechanism.get_num_arms(),
         )
