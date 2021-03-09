@@ -178,7 +178,6 @@ class MergeRUCB(CondorcetProducer):
         # no more stages
         if self._num_arms_batches() == 1:
             return
-        self.stage += 1
         self._update_confidence_radius()
         # number of batches present in the current stage
         num_of_batches = len(self.arm_batches)
