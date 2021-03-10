@@ -6,6 +6,7 @@ from duelpy.algorithms.beat_the_mean import BeatTheMeanBanditPAC
 from duelpy.algorithms.copeland_confidence_bound import CopelandConfidenceBound
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSampling
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSamplingPlus
+from duelpy.algorithms.exploreverify import VerificationBasedCondorcet
 from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.kl_divergence_based_pac import KLDivergenceBasedPAC
 from duelpy.algorithms.knockout_tournament import KnockoutTournament
@@ -65,6 +66,7 @@ regret_minimizing_algorithms = [
     OptMax,
     ScalableCopelandBandits,
     KLDivergenceBasedPAC,
+    VerificationBasedCondorcet,
 ]
 other_algorithms = [ApproximateProbability]
 # This is not really needed, but otherwise zimports doesn't understand the
