@@ -30,16 +30,19 @@ def argmin_set(
     # np.argmin only returns the first index, to get the whole set,
     # we first find the minimum and then search for all indices which point
     # to a value equal to this minimum
-    if exclude_indexes is None or len(exclude_indexes) == 0:
-        # For this case the simpler implementation is more efficient, although
-        # the other one with a trivial mask would also work.
-        return np.argwhere(array == np.amin(array)).flatten()
-    mask = np.zeros(array.size, dtype=bool)
-    mask[exclude_indexes] = True
-    min_value = np.min(np.ma.array(array, mask=mask))
-    indices = set(np.ndarray.flatten(np.argwhere(array == min_value)))
-    indices = indices - set(exclude_indexes) if exclude_indexes is not None else indices
-    return list(indices)
+    min_value = 0
+    result: List[int] = []
+    for idx, item in enumerate(array):
+        if exclude_indexes is not None and idx in exclude_indexes:
+            continue
+        if not np.ma.getmaskarray(array)[idx] and (
+            len(result) == 0 or item < min_value
+        ):
+            min_value = item
+            result = [idx]
+        elif item == min_value:
+            result.append(idx)
+    return np.array(result)
 
 
 def argmax_set(
@@ -65,16 +68,19 @@ def argmax_set(
     # np.argmax only returns the first index, to get the whole set,
     # we first find the maximum and then search for all indices which point
     # to a value equal to this maximum
-    if exclude_indexes is None or len(exclude_indexes) == 0:
-        # For this case the simpler implementation is more efficient, although
-        # the other one with a trivial mask would also work.
-        return np.argwhere(array == np.amax(array)).flatten()
-    mask = np.zeros(array.size, dtype=bool)
-    mask[exclude_indexes] = True
-    max_value = np.max(np.ma.array(array, mask=mask))
-    indices = set(np.ndarray.flatten(np.argwhere(array == max_value)))
-    indices = indices - set(exclude_indexes) if exclude_indexes is not None else indices
-    return list(indices)
+    max_value = 0
+    result: List[int] = []
+    for idx, item in enumerate(array):
+        if exclude_indexes is not None and idx in exclude_indexes:
+            continue
+        if not np.ma.getmaskarray(array)[idx] and (
+            len(result) == 0 or item > max_value
+        ):
+            max_value = item
+            result = [idx]
+        elif item == max_value:
+            result.append(idx)
+    return np.array(result)
 
 
 def pop_random(
