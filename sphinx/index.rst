@@ -12,6 +12,7 @@ For an overview of the problem and algorithms, see :cite:`bengs2021preference`.
    installation
    examples
    autoapi/index
+   release
    glossary
    references
 
