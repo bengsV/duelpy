@@ -23,7 +23,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
     where :math:`N` is the number of arms and :math:`\epsilon` is the targeted
     estimation accuracy.
 
-    The approximate probability algorithm is based on `Algorithm 5` in :cite:`falahatgar2018limits`.
+    The approximate probability algorithm is based on *Algorithm 5* in :cite:`falahatgar2018limits`.
     It's an (:math:`\epsilon, \delta`)-:term:`PAC` algorithm with :math:`\delta = \frac{1}{N^2}`
     where :math:`N` is the number of arms.
 
