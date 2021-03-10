@@ -10,7 +10,7 @@ from duelpy.util.utility_functions import argmax_set
 
 
 class WinnerStaysWeakRegret(Algorithm):
-    r"""Implements the weak regret version of the `Winner Stays` algorithm :cite:`chen2017dueling`.
+    r"""Implements the weak regret version of the *Winner Stays* algorithm.
 
     The goal of this algorithm is to find the :term:`Condorcet winner` while minimizing the weak regret suffered in the process.
 
@@ -18,6 +18,7 @@ class WinnerStaysWeakRegret(Algorithm):
 
     The incurred weak regret is constant in time and only depends on the number of arms :math:`N`: :math:`\mathcal{O}(N^2)`. If a :term:`total order` over the arms exists, this is improved to :math:`\mathcal{O}(N \log(N))`.
 
+    The algorithm is described in :cite:`chen2017dueling`.
     The algorithm is tournament-based. It stores the difference between won and lost duels for each arm. The next arms are then selected from the set of arms with the highest difference. If one of the actions from the previous round is still in this argmax set, it is chosen again. In the first round and if the actions of the previous round are not part of the argmax set, the actions are chosen uniformly at random from it. The two chosen actions are guaranteed to be not identical.
 
     Parameters
@@ -137,7 +138,7 @@ class WinnerStaysWeakRegret(Algorithm):
 
 
 class WinnerStaysStrongRegret(Algorithm):
-    r"""Implements the strong regret version of the `Winner Stays` algorithm.
+    r"""Implements the strong regret version of the *Winner Stays* algorithm.
 
     The goal of this algorithm is to find the :term:`Condorcet winner` while minimizing the strong regret suffered in the process.
 
@@ -145,7 +146,7 @@ class WinnerStaysStrongRegret(Algorithm):
 
     The incurred strong regret is dependent on the duels made :math:`T` and on the number of arms :math:`N`: :math:`\mathcal{O}(N^2 + N \log(T))`. If a :term:`total order` over the arms exists, this is improved to :math:`\mathcal{O}(N \log(T) + N \log(N))`.
 
-    This algorithm is based on the weak regret version. It interleaves the weak regret `Winner Stays` algorithm with exponentially increasing periods of pure exploitation (pulling the currently believed-to-be-best arm twice).
+    This algorithm is based on the weak regret version. It interleaves the weak regret *Winner Stays* algorithm with exponentially increasing periods of pure exploitation (pulling the currently believed-to-be-best arm twice).
     As soon as we have found the best arm, the strong regret in the exploitation phase will be :math:`0`. Since the duration is exponentially increasing, this leads to a strong regret of :math:`0` per round in the limit. For details see :cite:`chen2017dueling`.
 
     Parameters
