@@ -40,8 +40,8 @@ class ScalableCopelandBandits(Algorithm):
     the goal would be achieved.
 
     This algorithm uses a KL-Divergence based :term:`PAC` algorithm as a subroutine to
-    determine a Copeland winner. The subroutine is based on `Algorithm 2` and
-    `Algorithm 4` stated in :cite:`zoghi2015copeland`. An additional termination
+    determine a :term:`Copeland winner`. The subroutine is based on *Algorithm 2* and
+    *Algorithm 4* stated in :cite:`zoghi2015copeland`. An additional termination
     condition is used in its implementation. This additional condition stops
     the exploration phase of the subroutine when there is only one Copeland
     winner candidate left. The additional condition is introduced to ensure that
