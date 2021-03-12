@@ -45,7 +45,13 @@ Glossary
       The unique arm which beats all others on average. It does not exist for all problems.
 
     Borda winner
-      The arm with the best chance of beating a uniformly random chosen arm. It always exists and does not have to be equal to the :term:`Condorcet winner`, if one exists.
+      The arm with the best chance of beating a uniformly random chosen arm. It always exists and does not have to be equal to the :term:`Condorcet winner`, if one exists. The Borda winner has the highest :term:`Borda score` of all arms.
+
+    Borda score
+      Probability of an arm winning against a uniformly random chosen other arm. Also called sum of expectations.
+
+    Borda ranking
+      A ranking of arms with respect to their :term:`Copeland score`.
 
     Copeland winner
       The arm that beats most other arms on average. It always exists, but there may be more than one. If a :term:`Condorcet winner` exists, it is the only Copeland winner.

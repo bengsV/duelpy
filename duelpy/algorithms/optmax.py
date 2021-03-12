@@ -22,7 +22,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
 
     It assumes :term:`moderate stochastic transitivity`.
 
-    As per the theorem 8 in the paper :cite:`falahatgar2018limits`, the OptMax algorithm takes
+    As per *Theorem 8* in the paper :cite:`falahatgar2018limits`, the OptMax algorithm takes
     :math:`\mathcal{O}\left(\frac{N}{\epsilon^2} \log\left(\frac{1}{\delta}\right)\right)` comparisons to find an
     :math:`\epsilon`-maximum arm. :math:`N` is the number of arms.
 
@@ -107,7 +107,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
     def explore(self) -> None:
         """Run one step of exploration.
 
-        Exploration is divided into 3 parts. For more details, refer to `Algorithm 4` of :cite:`falahatgar2018limits`.
+        Exploration is divided into 3 parts. For more details, refer to *Algorithm 4* of :cite:`falahatgar2018limits`.
         """
         try:
             if self._failure_probability <= 1 / np.power(

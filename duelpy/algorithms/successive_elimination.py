@@ -37,8 +37,8 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
     :cite:`jamieson2015sparse`) from the set and compares it with all the arms in the active set. A parameter
     ``time_gate`` (:math:`T_0` in :cite:`jamieson2015sparse`) is specified to guarantee that all arms with sufficiently
     large Borda score gaps :math:`s_1 - s_i` are eliminated by round :math:`T_0`. This condition is fulfilled by
-    `condition 2` in :cite:`jamieson2015sparse`. Once :math:`t>T_0`, i.e., ``round`` > ``time_gate``,
-    `condition 1` also becomes active and the algorithm starts removing the arms with large partial Borda gaps,
+    *condition 2* in :cite:`jamieson2015sparse`. Once :math:`t>T_0`, i.e., ``round`` > ``time_gate``,
+    *condition 1* also becomes active and the algorithm starts removing the arms with large partial Borda gaps,
     exploiting the assumption that the top arms can be distinguished by comparisons with a sparse set of
     other arms.
 
@@ -53,7 +53,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
     sparsity_level
-        Refers to :math:`k` in `Algorithm 1` in :cite:`jamieson2015sparse`. The assumed size of the sparsity set.
+        Refers to :math:`k` in *Algorithm 1* in :cite:`jamieson2015sparse`. The assumed size of the sparsity set.
         This is the set of similar and nearly-optimal arms which are easy to
         differentiate from all other arms. Should be a value between :math:`1` and :math:`n - 2`, where
         :math:`n` is the size of the set of arms. Defaults to ``3`` if at least :math:`5` arms are available,
@@ -63,10 +63,10 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         Refer to :math:`\delta` in :cite:`jamieson2015sparse`.
     time_gate
         It is specified to guarantee that all arms with sufficiently large Borda gaps are
-        eliminated when the number of rounds becomes greater than ``time_gate``. `Theorem 2` in
+        eliminated when the number of rounds becomes greater than ``time_gate``. *Theorem 2* in
         :cite:`jamieson2015sparse` specifies the requirement of ``time_gate`` parameter. Corresponds to
         :math:`T_0` in :cite:`jamieson2015sparse`. The paper :cite:`jamieson2015sparse` suggests :math:`T_0 = 0`
-        based on their experiments in `section 5`.
+        based on their experiments in section 5.
 
     Attributes
     ----------
@@ -82,7 +82,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
     confidence_factor
         Refer to :math:`C_t` in :cite:`jamieson2015sparse`.
     current_working_set
-        The set with possible Borda winners from the set :math:`N`. Corresponds to :math:`A_t` in `Algorithm 1` in
+        The set with possible Borda winners from the set :math:`N`. Corresponds to :math:`A_t` in *Algorithm 1* in
         :cite:`jamieson2015sparse`.
 
     Raises

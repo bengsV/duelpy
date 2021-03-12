@@ -214,7 +214,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
     A (max-) heap data structure is built from the short list,there by getting the top arm from the obtained heap, which will be the root element of the heap.
     Then the top arm is removed from the short list. In order to find the second best arm, again the home sub-group from which the previous top arm is taken, is accessed
     and the second best arm is identified and added to the short list. This process of identifying and removing is repeated for :math:`k - 1` times, untill all the top-k arms are identified.
-    See Algorithm 2 in :cite:`mohajer2017active` for more details.
+    See *Algorithm 2* in :cite:`mohajer2017active` for more details.
 
     Parameters
     ----------

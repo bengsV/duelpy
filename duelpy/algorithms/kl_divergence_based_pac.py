@@ -37,8 +37,8 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
     :math:`\Delta_i^\epsilon = \max(\Delta_i, \epsilon(1 - \mathit{cpld}(a_1)))`
 
     This was originally introduced as a component of the :class:`ScalableCopelandBandits<duelpy.algorithms.scalable_copeland_bandits.ScalableCopelandBandits>` algorithm described in :cite:`zoghi2015copeland`.
-    This implementation is based on `Algorithm 2` (which further uses
-    `Algorithm 4`) from the same paper. This algorithm uses
+    This implementation is based on *Algorithm 2* (which further uses
+    *Algorithm 4*) from the same paper. This algorithm uses
     KL-Divergence in the process of finding an approximate :term:`Copeland winner`.
     An additional condition is used to terminate the exploration
     phase. This additional condition checks whether there is only one :term:`Copeland winner`
@@ -51,7 +51,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
 
     The algorithm finds a :term:`Copeland winner` based on the smallest and greatest
     probability distribution that has a low KL-Divergence (less than or
-    equal to the value of :math:`\ln\left(\frac{4tN}{\delta}\right) + 2 \ln \ln(t)` in `Algorithm 4`
+    equal to the value of :math:`\ln\left(\frac{4tN}{\delta}\right) + 2 \ln \ln(t)` in *Algorithm 4*
     in the paper) to the estimated preference probabilities.
 
     Parameters
@@ -172,7 +172,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
         """Determine whether exploration is finished.
 
         This termination condition is based on the condition that is used in
-        Algorithm 4 in :cite:`zoghi2015copeland`. In addition to that, it is
+        *Algorithm 4* in :cite:`zoghi2015copeland`. In addition to that, it is
         also checked whether there exists only one :term:`Copeland winner` candidate
         in order to end the exploration phase and start with the exploitation
         phase as per the explore-then-exploit principle.
