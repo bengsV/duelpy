@@ -9,7 +9,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import PartialRankingProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.preference_estimate import PreferenceEstimate
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 from duelpy.util.heap import Heap
 
@@ -294,12 +293,10 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         else:
             self.k_top_ranked = k_top_ranked
         self.time_horizon = time_horizon
-        self.budgeted_feedback_mechanism = feedback_mechanism
-        if self.time_horizon is not None:
-            self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-                self.feedback_mechanism,
-                max_duels=self.time_horizon - self.feedback_mechanism.get_num_duels(),
-            )
+        self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
+            self.feedback_mechanism,
+            max_duels=self.time_horizon,
+        )
         self.preference_estimate = PreferenceEstimate(
             self.feedback_mechanism.get_num_arms(),
         )
@@ -325,8 +322,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         )
 
         def compare_repeatedly(arm_1: int, arm_2: int) -> int:
-            if self.is_finished():
-                raise AlgorithmFinishedException
             self.preference_estimate.enter_sample(
                 arm_1, arm_2, self.feedback_mechanism.duel(arm_1, arm_2)
             )
@@ -477,7 +472,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         if not self.exploration_finished():
             try:
                 self.explore()
-            except AlgorithmFinishedException:
+            except self.budgeted_feedback_mechanism.exception_class:
                 pass
         else:
             self.exploit()

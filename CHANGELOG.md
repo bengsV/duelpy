@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Changed
+
+- `BudgetedFeedbackMechanism` now throws an object-local exception. That makes
+  it possible to only catch exactly the intended exception.
+- `BudgetedFeedbackMechanism` now accepts `max_duels=None` for an unlimited
+  budget. That can be useful in some situations when the budget should be
+  applied conditionally.
 
 ## [0.1.0] - 2021-03-04
 

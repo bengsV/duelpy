@@ -11,7 +11,6 @@ from duelpy.algorithms.interfaces import BordaProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
@@ -130,13 +129,10 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         )
         # Since this algorithm is a PAC algorithm, we use "BudgetedFeedbackMechanism" to avoid overflow the duels
         # w.r.t the time_horizon (if it is given).
-        if self.time_horizon is not None:
-            self.feedback_mechanism = BudgetedFeedbackMechanism(
-                feedback_mechanism=feedback_mechanism,
-                max_duels=self.time_horizon - feedback_mechanism.get_num_duels(),
-            )
-        else:
-            self.feedback_mechanism = feedback_mechanism
+        self.feedback_mechanism: BudgetedFeedbackMechanism = BudgetedFeedbackMechanism(
+            feedback_mechanism=feedback_mechanism,
+            max_duels=self.time_horizon,
+        )
         # The sparsity level, as recommended by the authors of the algorithm should be ``5`` for typical problems.
         # However, for ``n`` number of arms in the preference matrix, if n<5, this fails the condition of sparsity
         # level in [n-2]. Therefore, extra constraints are added for sparsity level. Use highest level of sparsity
@@ -195,7 +191,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
                 )
             self._update_current_set()
             self.round += 1
-        except AlgorithmFinishedException:
+        except self.feedback_mechanism.exception_class:
             pass
 
     def _update_confidence_factor(self) -> None:
