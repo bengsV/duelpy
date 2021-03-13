@@ -36,6 +36,9 @@ disable=
 # imports. That might be a code smell for some projects, but not in our case.
 ignore-imports=yes
 
+# Minimum lines number of a similarity.
+min-similarity-lines=6
+
 [DESIGN]
 
 max-args=9
