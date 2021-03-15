@@ -43,12 +43,13 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
     gamma
-        The :term:`relaxed stochastic transitivity` (corresponds to :math:`\gamma` in :cite:`yue2011beat`) that the
+        The :math:`\gamma`-:term:`RST<Relaxed Stochastic Transitivity>` (corresponds to :math:`\gamma` in :cite:`yue2011beat`) that the
         algorithm should assume for the given problem setting. The value must be greater than :math:`0`.
-        A higher value corresponds to a stronger assumption, where :math:`1` corresponds to :term:`strong stochastic
-        transitivity`. In theory it is not possible to assume more than a gamma of :math:`1`, but in practice you can
+        A higher value of :math:`\gamma` corresponds to a stronger assumption, i.e., :math:`\gamma = 1` corresponds to
+        :term:`SST<strong stochastic transitivity>`.
+        In theory it is not possible to assume more than a gamma of :math:`1`, but in practice you can
         still specify higher values. This will lead to tighter confidence intervals and possibly better results,
-        but the theoretical guarantees do not hold in that case.
+        but the theoretical guarantees do not hold in that case. This parameter has been taken from the parent class.
 
 
     Attributes
@@ -348,7 +349,9 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     gamma
         The :math:`\gamma`-:term:`RST<Relaxed Stochastic Transitivity>` (corresponds to :math:`\gamma` in :cite:`yue2011beat`) that the
         algorithm should assume for the given problem setting. The value must be greater than :math:`0`.
-        A higher value corresponds to a stronger assumption, where :math:`1` corresponds to :term:`STI<stochastic triangle inequality>`. In theory it is not possible to assume more than a gamma of :math:`1`, but in practice you can
+        A higher value of :math:`\gamma` corresponds to a stronger assumption, i.e., :math:`\gamma = 1` corresponds to
+        :term:`SST<strong stochastic transitivity>`.
+        In theory it is not possible to assume more than a gamma of :math:`1`, but in practice you can
         still specify higher values. This will lead to tighter confidence intervals and possibly better results,
         but the theoretical guarantees do not hold in that case. This parameter has been taken from the parent class.
     epsilon
@@ -382,11 +385,12 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     ... ])
     >>> random_state = np.random.RandomState(43)
     >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
-    >>> btm = BeatTheMeanBanditPAC(feedback_mechanism=feedback_mechanism, random_state=random_state, epsilon=0.001)
+    >>> btm = BeatTheMeanBanditPAC(feedback_mechanism=feedback_mechanism, random_state=random_state, epsilon=0.001, gamma=0.3)
     >>> btm.run()
+    >>> comparisons = feedback_mechanism.get_num_duels()
     >>> best_arm = btm.get_condorcet_winner()
-    >>> best_arm
-    2
+    >>> best_arm, comparisons
+    (2, 158)
     """
 
     # Disabling pylint errors because we are reimplementing the initialization since the superclass expects a time
