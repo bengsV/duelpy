@@ -5,13 +5,14 @@ from typing import Optional
 import numpy as np
 
 from duelpy.algorithms.interfaces import CondorcetProducer
+from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.utility_functions import argmax_set
 
 
-class MergeRUCB(CondorcetProducer):
+class MergeRUCB(CondorcetProducer, PacAlgorithm):
     r"""Implementation of the Merge Relative Upper Confidence Bound algorithm.
 
     The goal of the algorithm is to find the :term:`Condorcet winner` while incurring minimum regret with minimum comparisons
@@ -74,14 +75,15 @@ class MergeRUCB(CondorcetProducer):
     >>> test_object = MergeRUCB(
     ...  feedback_mechanism=feedback_mechanism,
     ...  exploratory_constant=1.01,
-    ...  time_horizon=200,
     ...  random_state=random_state,
     ...  failure_probability=0.01)
     >>> test_object.run()
     >>> test_object.get_condorcet_winner()
     2
+    >>> feedback_mechanism.get_num_duels()
+    677
     >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
-    28.8
+    74.2
     """
 
     def __init__(
@@ -172,13 +174,24 @@ class MergeRUCB(CondorcetProducer):
         number_of_arms = [len(each_batch) for each_batch in self.arm_batches]
         return sum(number_of_arms)
 
-    def step(self) -> None:
-        """Run one round of an algorithm."""
+    def exploration_finished(self) -> bool:
+        """Determine whether the exploration phase is finished.
+
+        The exploration is finished once only a single batch with a single arm
+        remains. This termination behavior is not explicitly specified in
+        *Algorithm 1* of :cite:`zoghi2015mergerucb` but it is mentioned in the
+        corresponding explanation (*Section 4*).
+
+        Returns
+        -------
+        bool
+            ``True`` if the exploration phase is finished.
+        """
+        return len(self.arm_batches) == 1 and len(self.arm_batches[0]) == 1
+
+    def explore(self) -> None:
+        """Do one step of exploration."""
         self.time_step += 1
-        # no more stages
-        if self._num_arms_batches() == 1:
-            return
-        self.stage += 1
         self._update_confidence_radius()
         # number of batches present in the current stage
         num_of_batches = len(self.arm_batches)
@@ -258,6 +271,4 @@ class MergeRUCB(CondorcetProducer):
         Optional[int]
             The index of a Condorcet winner, if existent, among the given arms.
         """
-        return (
-            self.preference_estimate.get_mean_estimate_matrix().get_condorcet_winner()
-        )
+        return self.arm_batches[0][0] if self.exploration_finished() else None

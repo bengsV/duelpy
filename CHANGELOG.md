@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   budget. That can be useful in some situations when the budget should be
   applied conditionally.
 
+### Fixed
+
+- The `MergeRUCB` implementation now explores until only one arm remains and
+  then continues with exploitation. The stage counter is incremented less
+  often, which affects the merge frequency.
+
 ## [0.1.0] - 2021-03-04
 
 ### Added
