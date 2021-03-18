@@ -47,9 +47,8 @@ class PlackettLuceModel(MatrixFeedback):
         preferences = np.full((num_arms, num_arms), 0.5)
         for first_arm_idx in range(num_arms):
             for second_arm_idx in range(first_arm_idx):
-                relative_preference = (
-                    skill_vector[first_arm_idx] / skill_vector[first_arm_idx]
-                    + skill_vector[second_arm_idx]
+                relative_preference = skill_vector[first_arm_idx] / (
+                    skill_vector[first_arm_idx] + skill_vector[second_arm_idx]
                 )
                 preferences[first_arm_idx][second_arm_idx] = relative_preference
                 preferences[second_arm_idx][first_arm_idx] = 1 - relative_preference
