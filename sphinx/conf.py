@@ -54,6 +54,7 @@ autoapi_options = [
     "show-module-summary",
     "special-members",
     "imported-members",
+    "inherited-members",
 ]
 
 autoapi_modules = {"duelpy": None}
