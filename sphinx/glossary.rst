@@ -51,7 +51,7 @@ Glossary
       Probability of an arm winning against a uniformly random chosen other arm. Also called sum of expectations.
 
     Borda ranking
-      A ranking of arms with respect to their :term:`Copeland score`.
+      A ranking of arms with respect to their :term:`Borda score`.
 
     Copeland winner
       The arm that beats most other arms on average. It always exists, but there may be more than one. If a :term:`Condorcet winner` exists, it is the only Copeland winner.

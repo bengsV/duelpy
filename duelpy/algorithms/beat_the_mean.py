@@ -37,7 +37,7 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment.
+        A ``FeedbackMechanism`` object describing the environment.
     time_horizon
         The total number of rounds.
     random_state
@@ -343,7 +343,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     Parameters
     ----------
     feedback_mechanism
-        A FeedbackMechanism object describing the environment. This parameter has been taken from the parent class.
+        A ``FeedbackMechanism`` object describing the environment. This parameter has been taken from the parent class.
     random_state
         A numpy random state. Defaults to an unseeded state when not specified.
     gamma
@@ -368,7 +368,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     opt_n
         Corresponds to :math:`N'` in section 3.1.2 in :cite:`busa2018preference`.
     comparison_history
-        A ComparisonHistory object which stores the history of the comparisons between the arms.
+        A ``ComparisonHistory`` object which stores the history of the comparisons between the arms.
     random_state
 
 
