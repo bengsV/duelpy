@@ -34,16 +34,31 @@ sys.path.append(os.path.abspath("../"))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
-extensions = ["sphinx.ext.napoleon", "sphinx.ext.autodoc", "sphinx.ext.inheritance_diagram", "sphinx.ext.autodoc.typehints", "sphinxcontrib.bibtex", "sphinx_rtd_theme", "autoapi.extension"]
+extensions = [
+    "sphinx.ext.napoleon",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.autodoc.typehints",
+    "sphinxcontrib.bibtex",
+    "sphinx_rtd_theme",
+    "autoapi.extension",
+]
 
 autoapi_type = "python"
 autoapi_dirs = ["../duelpy"]
 
-autoapi_options = [ 'members', 'undoc-members', 'show-inheritance', 'show-module-summary', 'special-members', 'imported-members']
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+    "imported-members",
+]
 
 autoapi_modules = {"duelpy": None}
 
-autodoc_typehints = 'description'
+autodoc_typehints = "description"
 
 bibtex_bibfiles = ["refs.bib"]
 
