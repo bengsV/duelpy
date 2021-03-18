@@ -6,7 +6,28 @@ from duelpy.feedback import FeedbackMechanism
 
 
 class Algorithm:
-    """Parent class of all the implemented PB-MAB algorithms."""
+    r"""Parent class of all the implemented PB-MAB algorithms.
+
+    Parameters
+    ----------
+    feedback_mechanism
+        An object that describes the environment.
+    time_horizon
+        The number of duels the algorithm should perform. If a time horizon is
+        given, the algorithm should perform exactly as many duels. May be
+        ``None``, in which case the algorithm will execute until an
+        algorithm-specific termination condition is reached.
+
+    Attributes
+    ----------
+    feedback_mechanism
+        An object that describes the environment.
+    time_horizon
+        The number of duels the algorithm should perform. If a time horizon is
+        given, the algorithm should perform exactly as many duels. May be
+        ``None``, in which case the algorithm will execute until an
+        algorithm-specific termination condition is reached.
+    """
 
     def __init__(
         self, feedback_mechanism: FeedbackMechanism, time_horizon: Optional[int]
