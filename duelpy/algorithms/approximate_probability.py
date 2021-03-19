@@ -28,7 +28,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
     where :math:`N` is the number of arms.
 
     The algorithm takes an ordered set of arms and approximates all pairwise probabilities to
-    an accuracy of :term:`\epsilon`. Note that in this implementation a ranking is defined as ordered from best to worst, whereas in :cite:`falahatgar2018limits`, this is reversed. Probabilities are calculated starting with the worst arm against all others and then iterating down the ranking order. The result is guaranteed to be consistent with the ranking.
+    an accuracy of :math:`\epsilon`. Note that in this implementation a ranking is defined as ordered from best to worst, whereas in :cite:`falahatgar2018limits`, this is reversed. Probabilities are calculated starting with the worst arm against all others and then iterating down the ranking order. The result is guaranteed to be consistent with the ranking.
 
     Parameters
     ----------
