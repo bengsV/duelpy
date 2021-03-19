@@ -1,7 +1,6 @@
 """Gather feedback from a ground-truth preference matrix."""
 
 from typing import Optional
-from typing import Tuple
 from typing import Union
 
 import numpy as np
@@ -65,13 +64,12 @@ class MatrixFeedback(FeedbackMechanism):
         i_wins = self.random_state.uniform() <= probability_i_wins
         return i_wins
 
-    def multi_duels_step(
+    def duel_repeatedly(
         self,
         arm_i_index: int,
         arm_j_index: int,
         duel_count: int,
-        duel_limit: Optional[int] = None,
-    ) -> Tuple:
+    ) -> int:
         """Perform the duels between two arms multiple times.
 
         If the ``duel_count`` is a large number in the range of :math:`500000`, use this method.
@@ -90,25 +88,16 @@ class MatrixFeedback(FeedbackMechanism):
 
         Returns
         -------
-        bool
-            ``True`` means ``arm_i_index`` beats ``arm_j_index`` and otherwise ``False``.
-        mean_estimate
-            Average of ``arm_i_index`` winning against ``arm_j_index``.
+        int
+           The number of wins of the first arm against the second arm.
         """
-        if duel_limit is not None and self.get_num_duels() + duel_count > duel_limit:
-            self.num_duels = duel_limit
-        else:
-            self.num_duels += duel_count
-        arm_i_win_frequency = np.random.binomial(
-            int(duel_count),
+        self.num_duels += duel_count
+        arm_i_wins = np.random.binomial(
+            duel_count,
             self.preference_matrix.preferences[arm_i_index, arm_j_index],
         )
-        mean_estimate = arm_i_win_frequency / duel_count
 
-        if mean_estimate > 0.5:
-            return True, mean_estimate
-        else:
-            return False, mean_estimate
+        return arm_i_wins
 
     def get_num_duels(self) -> int:
         """Get the number of duels that were already performed.

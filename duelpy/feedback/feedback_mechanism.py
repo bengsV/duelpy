@@ -1,6 +1,4 @@
 """A generic way to compare two arms against each other."""
-from typing import Optional
-from typing import Tuple
 
 
 class FeedbackMechanism:
@@ -24,18 +22,17 @@ class FeedbackMechanism:
         Returns
         -------
         bool
-            True if arm_i wins.
+            True if the first arm wins.
         """
         raise NotImplementedError
 
-    def multi_duels_step(
+    def duel_repeatedly(
         self,
         arm_i_index: int,
         arm_j_index: int,
         duel_count: int,
-        duel_limit: Optional[int],
-    ) -> Tuple:
-        """Perform a duel between two arms in a single step.
+    ) -> int:
+        """Perform multiple duels between two arms in a single step.
 
         Parameters
         ----------
@@ -44,17 +41,20 @@ class FeedbackMechanism:
         arm_j_index
             The index of arm to compare against.
         duel_count
-            The number of rounds arm_i_index is compared against arm_j_index.
+            The number of rounds ``arm_i_index`` is compared against ``arm_j_index``.
         duel_limit
             The number of duels that the algorithm has budget to allow.
 
         Returns
         -------
-        bool
-            True if arm_i_index wins.
-        float
-            Probability estimate of arm_i_index duel against arm_j_index
+        int
+           The number of wins of the first arm against the second arm.
         """
+        wins = 0
+        for _ in range(duel_count):
+            if self.duel(arm_i_index, arm_j_index):
+                wins += 1
+        return wins
 
     def get_num_duels(self) -> int:
         """Get the number of duels that were already performed.

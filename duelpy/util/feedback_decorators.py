@@ -42,9 +42,38 @@ class FeedbackMechanismDecorator(FeedbackMechanism):
         Returns
         -------
         bool
-            True if ``arm_i`` wins.
+            True if the first arm wins.
         """
         return self.feedback_mechanism.duel(arm_i_index, arm_j_index)
+
+    def duel_repeatedly(
+        self,
+        arm_i_index: int,
+        arm_j_index: int,
+        duel_count: int,
+    ) -> int:
+        """Perform multiple duels between two arms in a single step.
+
+        This function allows for a more efficient implementation for repeating duels of the same arm pair.
+        The fallback if this implementation is not changed are repeated calls of ``duel``.
+
+        Parameters
+        ----------
+        arm_i_index
+            The arm of challenger arm.
+        arm_j_index
+            The index of arm to compare against.
+        duel_count
+            The number of rounds ``arm_i_index`` is compared against ``arm_j_index``.
+
+        Returns
+        -------
+        int
+           The number of wins of the first arm against the second arm.
+        """
+        return self.feedback_mechanism.duel_repeatedly(
+            arm_i_index, arm_j_index, duel_count
+        )
 
     def get_num_duels(self) -> int:
         """Get the number of duels that were already performed.
@@ -150,7 +179,7 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
         Returns
         -------
         bool
-            True if ``arm_i`` wins.
+            True if the first arm wins.
         """
         result = super().duel(arm_i_index, arm_j_index)
         for (name, metric) in self.metrics.items():
@@ -296,10 +325,54 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
         Returns
         -------
         bool
-            True if ``arm_i`` wins.
+            True if the first arm wins.
         """
         if self.duels_exhausted():
             raise self.exception_class()
         result = super().duel(arm_i_index, arm_j_index)
         self.duels_conducted += 1
         return result
+
+    def duel_repeatedly(
+        self,
+        arm_i_index: int,
+        arm_j_index: int,
+        duel_count: int,
+    ) -> int:
+        """Perform multiple duels between two arms in a single step.
+
+        Parameters
+        ----------
+        arm_i_index
+            The challenger arm.
+        arm_j_index
+            The arm to compare against.
+        duel_count
+            Number of duels that has to be performed.
+
+        Raises
+        ------
+        TimeBudgetExceededException
+            If the budget would be exceeded by this duel. The exception class
+            is local to the object. Different instances raise different
+            exceptions. The exception class of an instance can be accessed
+            through the ``exception_class`` attribute.
+
+        Returns
+        -------
+        int
+           The number of wins of the first arm against the second arm.
+        """
+        if (
+            self.max_duels is not None
+            and self.duels_conducted + duel_count >= self.max_duels
+        ):
+            duel_count = max(0, self.max_duels - self.duels_conducted)
+        self.duels_conducted += duel_count
+
+        wins = super().duel_repeatedly(arm_i_index, arm_j_index, duel_count)
+
+        if self.duels_exhausted():
+            raise self.exception_class()
+
+        return wins
