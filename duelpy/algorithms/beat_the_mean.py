@@ -49,7 +49,7 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
         :term:`SST<strong stochastic transitivity>`.
         In theory it is not possible to assume more than a gamma of :math:`1`, but in practice you can
         still specify higher values. This will lead to tighter confidence intervals and possibly better results,
-        but the theoretical guarantees do not hold in that case. This parameter has been taken from the parent class.
+        but the theoretical guarantees do not hold in that case.
 
 
     Attributes
@@ -414,8 +414,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
         )
         # Corresponds to `N'` in section 3.1.2 in :cite:`busa2018preference`
         self.opt_n = np.ceil(
-            36
-            / (gamma ** 6 * epsilon ** 2)
+            (36 / (gamma ** 6 * epsilon ** 2))
             * np.log(self.feedback_mechanism.get_num_arms() / failure_probability)
         )
 
