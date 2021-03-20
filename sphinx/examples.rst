@@ -93,7 +93,7 @@ An example of the structure is given here:
 
     class MyAlgorithm(CondorcetProducer):
         def __init__(self, feedback_mechanism, time_horizon, ...):
-            super().__init(feedback_mechanism, time_horizon)
+            super().__init__(feedback_mechanism, time_horizon)
             # self.feedback_mechanism and self.time_horizon are now defined
             # initialization
         
@@ -105,8 +105,10 @@ An example of the structure is given here:
             return finished
 
  
-The parameters in the constructor are ordered as follows. First, there are the standard parameters ``feedback_mechanism`` and ``time horizon``, and then algorithm specific parameters.
-These can include a ``random_state``, a ``np.random.RandomState`` object used for randomization or ``epsilon`` and ``failure_probability`` for (:math:`\epsilon`, :math:`\delta`)-PAC algorithms.
+The parameters in the constructor are ordered as follows. First, there are the standard parameters
+``feedback_mechanism``  and ``time horizon``. Then algorithm-specific parameters, these can include a
+``random_state``, a ``np.random.RandomState`` object used for randomization, or ``epsilon`` and
+``failure_probability`` for (:math:`\epsilon`, :math:`\delta`)-PAC algorithms.
 
 It may be helpful to store statistics about the duels in a :doc:`autoapi/duelpy/stats/preference_estimate/index` object, which allows for calculating mean and confidence values.
 The confidence radius can be freely defined, mostly a ``HoeffdingConfidenceRadius`` from the :doc:`autoapi/duelpy/stats/confidence_radius/index` module is used.
