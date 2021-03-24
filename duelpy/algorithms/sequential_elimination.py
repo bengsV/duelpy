@@ -10,7 +10,6 @@ from duelpy.algorithms.interfaces import SingleCopelandProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.stats.preference_estimate import PreferenceEstimate
-from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
@@ -146,12 +145,9 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
             random_state=self._random_state,
         )[0]
 
-        try:
-            comparison_result = self._is_competing_arm_better(
-                competing_arm=random_competing_arm,
-            )
-        except AlgorithmFinishedException:
-            return
+        comparison_result = self._is_competing_arm_better(
+            competing_arm=random_competing_arm,
+        )
         self._remaining_arms.remove(random_competing_arm)
         if comparison_result:
             # competing arm beats the anchor arm.
@@ -203,12 +199,6 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         competing_arm
             Arm that challenges the current anchor arm.
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            If the comparison budget is exceeded before the better arm could be
-            determined.
-
         Returns
         -------
         bool
@@ -245,8 +235,6 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
             and np.absolute(calibrated_preference_estimate - epsilon_mean)
             <= confidence_radius
         ):
-            if self.is_finished():
-                raise AlgorithmFinishedException()
             current_iteration_count += 1
             feedback_result = self.wrapped_feedback.duel(
                 competing_arm, self._anchor_arm

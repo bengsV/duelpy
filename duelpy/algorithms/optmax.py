@@ -11,7 +11,6 @@ from duelpy.algorithms.sequential_elimination import SequentialElimination
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.stats.preference_estimate import PreferenceEstimate
-from duelpy.util.exceptions import AlgorithmFinishedException
 import duelpy.util.utility_functions as utility
 
 
@@ -109,19 +108,16 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
 
         Exploration is divided into 3 parts. For more details, refer to *Algorithm 4* of :cite:`falahatgar2018limits`.
         """
-        try:
-            if self._failure_probability <= 1 / np.power(
-                len(self.wrapped_feedback.get_arms()), 1 / 3
-            ):
-                self._anchor_arm = self._pick_anchor_for_low_range()
-            elif self._failure_probability <= 1 / np.log(
-                len(self.wrapped_feedback.get_arms())
-            ):
-                self._anchor_arm = self._pick_anchor_for_medium_range()
-            else:
-                self._anchor_arm = self._pick_anchor_for_high_range()
-        except AlgorithmFinishedException:
-            return
+        if self._failure_probability <= 1 / np.power(
+            len(self.wrapped_feedback.get_arms()), 1 / 3
+        ):
+            self._anchor_arm = self._pick_anchor_for_low_range()
+        elif self._failure_probability <= 1 / np.log(
+            len(self.wrapped_feedback.get_arms())
+        ):
+            self._anchor_arm = self._pick_anchor_for_medium_range()
+        else:
+            self._anchor_arm = self._pick_anchor_for_high_range()
 
     def get_copeland_winner(self) -> Optional[int]:
         """Return the arm chosen by the algorithm as Copeland winner.
@@ -143,11 +139,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         which is found by using sequential elimination algorithm.
         For more details, refer to `Algorithm 3` of :cite:`falahatgar2018limits`
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            When number of duels equals time_horizon
-
         Returns
         -------
         int
@@ -166,16 +157,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             epsilon_range=self._epsilon_range / 2,
             failure_probability=self._failure_probability / 3,
         )
-        if picked_anchor is None:
-            # this implies that time_horizon has been passed.
-            raise AlgorithmFinishedException
 
-        if self.time_horizon is not None:
-            _time_horizon: Optional[int] = (
-                self.time_horizon - self.wrapped_feedback.get_num_duels()
-            )
-        else:
-            _time_horizon = None
         # sequential elimination runs on all the arms.
         seq_elim = SequentialElimination(
             feedback_mechanism=self.wrapped_feedback,
@@ -183,10 +165,8 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             epsilon_upper=self._epsilon_range,
             failure_probability=self._failure_probability / 3,
             anchor_arm=picked_anchor,
-            time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
-            seq_elim.explore()
+        seq_elim.run()
         return seq_elim.get_copeland_winner()
 
     def _pick_anchor_for_medium_range(self) -> Optional[int]:
@@ -197,11 +177,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         :math:`\mathcal{O}\left(\frac{N}{\epsilon^2} \log\left(\frac{1}{\delta}\right)\right)` complexity.
 
         Refer to `Algorithm 1` of :cite:`falahatgar2018limits` for more details.
-
-        Raises
-        ------
-        AlgorithmFinishedException
-            When number of duels equals ``time_horizon``
 
         Returns
         -------
@@ -243,13 +218,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             failure_probability=self._failure_probability / failure_probability_factor,
         )
 
-        if self.time_horizon is not None:
-            _time_horizon: Optional[int] = (
-                self.time_horizon - self.wrapped_feedback.get_num_duels()
-            )
-        else:
-            _time_horizon = None
-
         # sequential elimination runs on pruned_list of arms.
         seq_elim = SequentialElimination(
             feedback_mechanism=self.wrapped_feedback,
@@ -258,10 +226,8 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             failure_probability=self._failure_probability / 4,
             arms_subset=pruned_list,
             anchor_arm=selected_anchor_element,
-            time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
-            seq_elim.explore()
+        seq_elim.run()
         return seq_elim.get_copeland_winner()
 
     def _pick_anchor_for_high_range(self) -> Optional[int]:
@@ -274,11 +240,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         anchor element which is around :math:`\frac{\epsilon}{3}`-maximum arm to other arms. This anchor element is used for the
         next stage.
         Refer to `Algorithm 12` in :cite:`falahatgar2018limits` for more details.
-
-        Raises
-        ------
-        AlgorithmFinishedException
-            When number of duels equals time_horizon
 
         Returns
         -------
@@ -354,12 +315,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
                 / 2,
                 failure_probability=np.power(failure_probability_current_stage, 5) / 3,
             )
-            if self.time_horizon is not None:
-                _time_horizon: Optional[int] = (
-                    self.time_horizon - self.wrapped_feedback.get_num_duels()
-                )
-            else:
-                _time_horizon = None
 
             # sequential elimination runs on current_stage pruned_list.
             seq_elim = SequentialElimination(
@@ -369,10 +324,8 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
                 failure_probability=failure_probability_current_stage / 3,
                 arms_subset=pruned_list_current_stage,
                 anchor_arm=current_stage_anchor_arm,
-                time_horizon=_time_horizon,
             )
-            while not seq_elim.exploration_finished() and not seq_elim.is_finished():
-                seq_elim.explore()
+            seq_elim.run()
             selected_copeland_arm = seq_elim.get_copeland_winner()
 
         # Refer to line 15.
@@ -490,11 +443,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         random_state
             A numpy random state. Defaults to an unseeded state when not specified.
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            When number of duels equals time_horizon
-
         Returns
         -------
         int
@@ -523,12 +471,6 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             0
         ]
 
-        if self.time_horizon is not None:
-            _time_horizon: Optional[int] = (
-                self.time_horizon - self.wrapped_feedback.get_num_duels()
-            )
-        else:
-            _time_horizon = None
         # sequential elimination runs on pruned arms with the selected anchor arm.
         seq_elim = SequentialElimination(
             feedback_mechanism=self.wrapped_feedback,
@@ -536,17 +478,11 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             anchor_arm=random_anchor_arm,
             epsilon_upper=epsilon_range / 2,
             arms_subset=pruned_arms,
-            time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
-            seq_elim.explore()
+        seq_elim.run()
 
         candidate_anchor_arm = seq_elim.get_copeland_winner()
 
-        if self.time_horizon is not None:
-            _time_horizon = self.time_horizon - self.wrapped_feedback.get_num_duels()
-        else:
-            _time_horizon = None
         # sequential elimination run on arms provided to _pick_anchor method.
         seq_elim = SequentialElimination(
             feedback_mechanism=self.wrapped_feedback,
@@ -555,14 +491,15 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
             epsilon_lower=epsilon_range / 2,
             epsilon_upper=epsilon_range,
             arms_subset=arms,
-            time_horizon=_time_horizon,
         )
-        while not seq_elim.exploration_finished() and not seq_elim.is_finished():
-            seq_elim.explore()
+        seq_elim.run()
 
         _copeland_winner = seq_elim.get_copeland_winner()
-        if _copeland_winner is None:
-            raise AlgorithmFinishedException
+        # We executed sequential elimination until the exploration until
+        # termination, therefore it must have found a Copeland winner. If the
+        # time horizon of OptMax was reached before termination then the
+        # wrapped feedback mechanism would have raised an exception and this
+        # statement would not be reached.
         assert _copeland_winner is not None
         copeland_winner: int = _copeland_winner
         return copeland_winner
