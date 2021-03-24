@@ -102,7 +102,6 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
             adversaries=self.wrapped_feedback.get_num_arms() * [0],
             failure_probability=self.failure_probability / 2 * 2 ** self.round,
         )  # dummy value, the verifier cannot be defined until the exploration is completed
-        self._is_finished = False
 
     def _init_verifier(self) -> "VerificationBasedCondorcet.CondorcetVerifier":
         """Initialize the verifier object."""
@@ -129,7 +128,6 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
             try:
                 self._explorer.step()
             except AlgorithmFinishedException:
-                self._is_finished = True
                 return
             if self._explorer.is_finished():
                 self._verifier = self._init_verifier()
@@ -139,7 +137,6 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
             try:
                 self._verifier.step()
             except AlgorithmFinishedException:
-                self._is_finished = True
                 return
             if self._verifier.is_finished():
                 if not self._verifier.has_succeeded():
