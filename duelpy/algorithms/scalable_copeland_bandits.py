@@ -7,7 +7,6 @@ from duelpy.algorithms.algorithm import Algorithm
 from duelpy.algorithms.kl_divergence_based_pac import KLDivergenceBasedPAC
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class ScalableCopelandBandits(Algorithm):
@@ -120,23 +119,17 @@ class ScalableCopelandBandits(Algorithm):
         self.rounds += 1
         self.time_budget = 2 ** (2 ** self.rounds)
 
-        assert (
-            self.time_horizon is not None
-        )  # for mypy. Can never be none in this class, initialized in __init__.
-        budgeted_feedback = BudgetedFeedbackMechanism(
-            self.wrapped_feedback,
-            max_duels=self.time_horizon - self.wrapped_feedback.get_num_duels(),
-        )
+        # Passing `wrapped_feedback` ensures that KLDivergenceBasedPAC will not
+        # exceed our time horizon. Setting the `time_budget` ensures that that
+        # will not be exceeded either. The algorithm will terminate when one of
+        # the limits is reached.
         kl_divergence_based_pac = KLDivergenceBasedPAC(
-            feedback_mechanism=budgeted_feedback,
+            feedback_mechanism=self.wrapped_feedback,
             time_horizon=self.time_budget,
             random_state=self.random_state,
             epsilon=0,
             failure_probability=(np.log(self.time_budget) / self.time_budget),
             preference_estimate=self.preference_estimate,
         )
-        try:
-            kl_divergence_based_pac.run()
-        except budgeted_feedback.exception_class:
-            pass
+        kl_divergence_based_pac.run()
         self.copeland_winner = kl_divergence_based_pac.get_copeland_winner()

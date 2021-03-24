@@ -12,7 +12,6 @@ from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.exceptions import AlgorithmFinishedException
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
@@ -79,10 +78,6 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
         explore_failure_probability: Optional[float] = None,
         random_state: Optional[np.random.RandomState] = None,
     ) -> None:
-        if time_horizon is not None:
-            feedback_mechanism = BudgetedFeedbackMechanism(
-                feedback_mechanism, time_horizon
-            )
         super().__init__(
             feedback_mechanism=feedback_mechanism,
             time_horizon=time_horizon,

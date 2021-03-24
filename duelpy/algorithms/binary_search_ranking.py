@@ -16,7 +16,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.exceptions import AlgorithmFinishedException
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 from duelpy.util.sorting import MergeSort
 import duelpy.util.utility_functions as utility
 
@@ -137,10 +136,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         epsilon: float = 0.5,
         random_state: np.random.RandomState = None,
     ):
-        budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-            feedback_mechanism, time_horizon
-        )
-        super().__init__(budgeted_feedback_mechanism, time_horizon)
+        super().__init__(feedback_mechanism, time_horizon)
         self._epsilon = epsilon
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()

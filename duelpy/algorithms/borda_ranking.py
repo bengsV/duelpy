@@ -10,7 +10,6 @@ from duelpy.algorithms.interfaces import BordaRankingProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.util.exceptions import AlgorithmFinishedException
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class BordaRanking(BordaRankingProducer, PacAlgorithm):
@@ -80,10 +79,7 @@ class BordaRanking(BordaRankingProducer, PacAlgorithm):
         epsilon: float = 0.05,
         failure_probability: float = 0.1,
     ):
-        budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-            feedback_mechanism, time_horizon
-        )
-        super().__init__(budgeted_feedback_mechanism, time_horizon)
+        super().__init__(feedback_mechanism, time_horizon)
         self.random_state = (
             np.random.RandomState() if random_state is None else random_state
         )

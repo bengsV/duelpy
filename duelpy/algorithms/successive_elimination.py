@@ -11,7 +11,6 @@ from duelpy.algorithms.interfaces import BordaProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class SuccessiveElimination(BordaProducer, PacAlgorithm):
@@ -132,12 +131,6 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         self.random_state = (
             np.random.RandomState() if random_state is None else random_state
         )
-        # Since this algorithm is a PAC algorithm, we use "BudgetedFeedbackMechanism" to avoid overflow the duels
-        # w.r.t the time_horizon (if it is given).
-        self.wrapped_feedback: BudgetedFeedbackMechanism = BudgetedFeedbackMechanism(
-            feedback_mechanism=feedback_mechanism,
-            max_duels=self.time_horizon,
-        )
         # The sparsity level, as recommended by the authors of the algorithm should be ``5`` for typical problems.
         # However, for ``n`` number of arms in the preference matrix, if n<5, this fails the condition of sparsity
         # level in [n-2]. Therefore, extra constraints are added for sparsity level. Use highest level of sparsity
@@ -176,28 +169,25 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         """Run one step of exploration."""
         # Update and set the new confidence factor
         # in each ``round``.
-        try:
-            self._update_confidence_factor()
-            # Choose a random arm for each step.
-            arm2 = self.random_state.choice(self.wrapped_feedback.get_arms())
-            for arm1 in self.current_working_set:
-                if arm1 != arm2:
-                    first_won = self.wrapped_feedback.duel(
-                        arm_i_index=arm1, arm_j_index=arm2
-                    )
-                else:
-                    first_won = False
-                self.preference_estimate.enter_sample(
-                    first_arm_index=arm1, second_arm_index=arm2, first_won=first_won
+        self._update_confidence_factor()
+        # Choose a random arm for each step.
+        arm2 = self.random_state.choice(self.wrapped_feedback.get_arms())
+        for arm1 in self.current_working_set:
+            if arm1 != arm2:
+                first_won = self.wrapped_feedback.duel(
+                    arm_i_index=arm1, arm_j_index=arm2
                 )
-                # Update the borda score of ``arm1`` based on the duel outcome
-                self._update_borda_score(
-                    bernoulli_variable=1 if first_won else 0, arm_working_set=arm1
-                )
-            self._update_current_set()
-            self.round += 1
-        except self.wrapped_feedback.exception_class:
-            pass
+            else:
+                first_won = False
+            self.preference_estimate.enter_sample(
+                first_arm_index=arm1, second_arm_index=arm2, first_won=first_won
+            )
+            # Update the borda score of ``arm1`` based on the duel outcome
+            self._update_borda_score(
+                bernoulli_variable=1 if first_won else 0, arm_working_set=arm1
+            )
+        self._update_current_set()
+        self.round += 1
 
     def _update_confidence_factor(self) -> None:
         r"""Update Confidence factor (Corresponds to :math:`C_t` in :cite:`jamieson2015sparse`."""

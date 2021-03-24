@@ -9,7 +9,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.algorithms.interfaces import PartialRankingProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.preference_estimate import PreferenceEstimate
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 from duelpy.util.heap import Heap
 
 
@@ -238,8 +237,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         feedback mechanism will raise an exception if a time horizon is given
         and a duel would exceed it. The exception is caught in the ``run``
         function.
-    budgeted_feedback_mechanism
-        A ``BudgetedFeedbackMechanism`` object describing the environment.
     preference_estimate
         Estimation of a preference matrix based on samples.
     top_k_arms
@@ -298,10 +295,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
             self.k_top_ranked = 2
         else:
             self.k_top_ranked = k_top_ranked
-        self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-            self.wrapped_feedback,
-            max_duels=self.time_horizon,
-        )
         self.preference_estimate = PreferenceEstimate(
             self.wrapped_feedback.get_num_arms(),
         )
@@ -356,7 +349,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         self.top_1_selection_instance: Optional[
             SingleEliminationTop1Select
         ] = SingleEliminationTop1Select(
-            feedback_mechanism=self.budgeted_feedback_mechanism,
+            feedback_mechanism=self.wrapped_feedback,
             arms_subset=self.sub_groups[self.sub_group_index].copy(),
             preference_estimate=self.preference_estimate,
             time_horizon=self.time_horizon,
@@ -387,7 +380,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
                 return
 
             self.top_1_selection_instance = self.top_1_selection_class(
-                feedback_mechanism=self.budgeted_feedback_mechanism,
+                feedback_mechanism=self.wrapped_feedback,
                 arms_subset=self.sub_groups[self.sub_group_index].copy(),
                 preference_estimate=self.preference_estimate,
                 time_horizon=self.time_horizon,
@@ -411,7 +404,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
             min_node = self.heap.get_min()
             assert min_node is not None
             self.top_1_selection_instance = SingleEliminationTop1Select(
-                feedback_mechanism=self.budgeted_feedback_mechanism,
+                feedback_mechanism=self.wrapped_feedback,
                 arms_subset=min_node[1].copy(),
                 preference_estimate=self.preference_estimate,
                 time_horizon=self.time_horizon,
@@ -437,7 +430,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
                 min_heap.remove(min_node[0])
                 if len(min_node[1]) > 0:
                     self.top_1_selection_instance = SingleEliminationTop1Select(
-                        feedback_mechanism=self.budgeted_feedback_mechanism,
+                        feedback_mechanism=self.wrapped_feedback,
                         arms_subset=min_node[1].copy(),
                         preference_estimate=self.preference_estimate,
                     )
@@ -471,16 +464,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
                 self._top_k_sorting()
         else:
             raise Exception("Invalid value for K")
-
-    def step(self) -> None:
-        """Execute one step of the algorithm."""
-        if not self.exploration_finished():
-            try:
-                self.explore()
-            except self.budgeted_feedback_mechanism.exception_class:
-                pass
-        else:
-            self.exploit()
 
     def exploration_finished(self) -> bool:
         """Determine whether the exploration phase is finished.
