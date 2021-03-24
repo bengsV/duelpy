@@ -167,6 +167,25 @@ class BordaRankingProducer(Algorithm):
         self.feedback_mechanism.duel(ranking[0], ranking[0])
 
 
+class GeneralizedRankingProducer(Algorithm):
+    """An algorithm that produce the ranking of disjoint sets of arms in the user desired way."""
+
+    def get_ranking(self) -> Optional[List[List[int]]]:
+        """Return the computed ranking if it is ready.
+
+        This will only return a result when ``step`` has been called a
+        sufficient amount of times. If this is a PAC algorithm, the result
+        might be approximate.
+        """
+        raise NotImplementedError
+
+    def exploit(self) -> None:
+        """Run one step of exploitation."""
+        winner = self.get_ranking()
+        assert winner is not None
+        self.feedback_mechanism.duel(winner[0][0], winner[0][0])
+
+
 class PartialRankingProducer(Algorithm):
     """An Algorithm that computes or estimates the partial ranking over the arms."""
 

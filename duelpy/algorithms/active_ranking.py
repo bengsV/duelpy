@@ -12,6 +12,9 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.utility_functions import pop_random
 
 
+# pylint: disable=simplifiable-if-statement
+
+
 class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     r"""Implementation of the Active Ranking using pairwise comparisons.
 
@@ -38,12 +41,12 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     ----------
     feedback_mechanism
         A ``FeedbackMechanism`` object describing the environment
-    time_horizon
-        Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
-    failure_probability
-        An upper bound on the acceptable probability to fail. Default to ``0.15`` as mentioned in paper :cite:`heckel2019active`.
     border_element_list
         List of elements specifying the border of disjoint set. Refer to :math:`k_l` in paper :cite:`heckel2019active`.
+    failure_probability
+        An upper bound on the acceptable probability to fail. Default to ``0.15`` as mentioned in paper :cite:`heckel2019active`.
+    time_horizon
+        Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
 
     Examples
     --------
@@ -71,21 +74,18 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
-        time_horizon: Optional[int] = None,
-        random_state: Optional[np.random.RandomState] = None,
+        border_element_list: List[int],
+        random_state: float,
         failure_probability: float = 0.15,
-        border_element_list: Optional[List[int]] = None,
+        time_horizon: Optional[int] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon=time_horizon)
         self._remaining_arm: List[int] = self.feedback_mechanism.get_arms()
-        self._random_state = (
-            random_state if random_state is not None else np.random.RandomState()
-        )
+        self._random_state = random_state
 
         self.failure_probability = (
             failure_probability / self.feedback_mechanism.get_num_arms()
         )  # refer to equation 3.1 in paper :cite:`heckel2019active`.
-        assert border_element_list is not None
         self._bins_count = border_element_list[-1]  # refers to :math:`L`.
         self._current_round = 0
 
