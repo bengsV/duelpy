@@ -352,7 +352,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
             feedback_mechanism=self.wrapped_feedback,
             arms_subset=self.sub_groups[self.sub_group_index].copy(),
             preference_estimate=self.preference_estimate,
-            time_horizon=self.time_horizon,
         )
         self.short_list: List[int] = list()
         self.heap = Heap(compare_fn=compare_repeatedly)
@@ -383,7 +382,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
                 feedback_mechanism=self.wrapped_feedback,
                 arms_subset=self.sub_groups[self.sub_group_index].copy(),
                 preference_estimate=self.preference_estimate,
-                time_horizon=self.time_horizon,
             )
         self.top_1_selection_instance.step()
 
@@ -407,7 +405,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
                 feedback_mechanism=self.wrapped_feedback,
                 arms_subset=min_node[1].copy(),
                 preference_estimate=self.preference_estimate,
-                time_horizon=self.time_horizon,
             )
         else:
             if (
