@@ -71,7 +71,7 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
     >>> comparisons = feedback_mechanism.get_num_duels()
     >>> arm = mallows.get_condorcet_winner()
     >>> arm, comparisons
-    (2, 18)
+    (2, 65)
     """
 
     def __init__(
@@ -111,8 +111,6 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
         ):
             result = self.wrapped_feedback.duel(self._best_arm, rival_arm)
             self.preference_estimate.enter_sample(self._best_arm, rival_arm, result)
-            if self.is_finished():
-                return
         if (
             self.preference_estimate.get_upper_estimate(self._best_arm, rival_arm)
             < 1 / 2
