@@ -43,7 +43,11 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     failure_probability
     random_state
     preference_estimate
@@ -84,7 +88,7 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
             np.random.RandomState() if random_state is None else random_state
         )
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         def probability_scaling(num_samples: int) -> float:
             return num_arms * (2 * num_samples) ** 2
@@ -106,7 +110,7 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
             and self.preference_estimate.get_upper_estimate(self._best_arm, rival_arm)
             >= 1 / 2
         ):
-            result = self.feedback_mechanism.duel(self._best_arm, rival_arm)
+            result = self.wrapped_feedback.duel(self._best_arm, rival_arm)
             self.preference_estimate.enter_sample(self._best_arm, rival_arm, result)
             if self.is_finished():
                 return
@@ -162,7 +166,11 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     random_state
     failure_probability
     sorting_algorithm
@@ -202,7 +210,7 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
     ):
         super().__init__(feedback_mechanism, time_horizon)
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         self.failure_probability = failure_probability
 
@@ -254,7 +262,7 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
         """
         if self.is_finished():
             raise AlgorithmFinishedException()
-        first_arm_won = self.feedback_mechanism.duel(arm_1, arm_2)
+        first_arm_won = self.wrapped_feedback.duel(arm_1, arm_2)
         self.preference_estimate.enter_sample(arm_1, arm_2, first_arm_won)
         if self.preference_estimate.get_lower_estimate(arm_1, arm_2) > 0.5:
             return 1

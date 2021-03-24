@@ -59,7 +59,11 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     failure_probability
     preference_estimate
 
@@ -111,11 +115,11 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
         else:
             self._random_state = np.random.RandomState()
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
 
         if arms_subset is None:
-            self._remaining_arms: list = self.feedback_mechanism.get_arms()
+            self._remaining_arms: list = self.wrapped_feedback.get_arms()
         else:
             self._remaining_arms = arms_subset.copy()
 
@@ -244,7 +248,7 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
             if self.is_finished():
                 raise AlgorithmFinishedException()
             current_iteration_count += 1
-            feedback_result = self.feedback_mechanism.duel(
+            feedback_result = self.wrapped_feedback.duel(
                 competing_arm, self._anchor_arm
             )
 

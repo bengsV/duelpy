@@ -69,8 +69,12 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     random_state
-    feedback_mechanism
     time_horizon
     failure_probability
     time_gate
@@ -109,7 +113,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
     >>> secs = SuccessiveElimination(feedback_mechanism=feedback_mechanism, random_state=random_state, time_horizon=1000, time_gate = 50, failure_probability=0.1)
     >>> secs.run()
     >>> borda_winner = secs.get_borda_winner()
-    >>> comparisons = secs.feedback_mechanism.get_num_duels()
+    >>> comparisons = secs.wrapped_feedback.get_num_duels()
     >>> borda_winner, comparisons
     (2, 1000)
     """
@@ -130,7 +134,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         )
         # Since this algorithm is a PAC algorithm, we use "BudgetedFeedbackMechanism" to avoid overflow the duels
         # w.r.t the time_horizon (if it is given).
-        self.feedback_mechanism: BudgetedFeedbackMechanism = BudgetedFeedbackMechanism(
+        self.wrapped_feedback: BudgetedFeedbackMechanism = BudgetedFeedbackMechanism(
             feedback_mechanism=feedback_mechanism,
             max_duels=self.time_horizon,
         )
@@ -140,17 +144,17 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         # level, i.e., sparsity_level = n - 2 when 3<= n <=6. If the user defines sparsity level value greater than
         # n-2, for n<=2, a ValueError will be raised.
         if sparsity_level is None:
-            if self.feedback_mechanism.get_num_arms() > 6:
+            if self.wrapped_feedback.get_num_arms() > 6:
                 sparsity_level = 5
-            elif 3 <= self.feedback_mechanism.get_num_arms() <= 6:
-                sparsity_level = self.feedback_mechanism.get_num_arms() - 2
-            elif self.feedback_mechanism.get_num_arms() <= 2:
+            elif 3 <= self.wrapped_feedback.get_num_arms() <= 6:
+                sparsity_level = self.wrapped_feedback.get_num_arms() - 2
+            elif self.wrapped_feedback.get_num_arms() <= 2:
                 raise ValueError(
                     "Value of sparsity level must be between 1 and (number of arms - 2)"
                 )
         elif (
-            sparsity_level > self.feedback_mechanism.get_num_arms() - 2
-            or self.feedback_mechanism.get_num_arms() <= 2
+            sparsity_level > self.wrapped_feedback.get_num_arms() - 2
+            or self.wrapped_feedback.get_num_arms() <= 2
         ):
             raise ValueError(
                 "Value of sparsity level must be between 1 and (number of arms - 2)"
@@ -159,9 +163,9 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         self.failure_probability = failure_probability
         self.time_gate = time_gate
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
-        self.current_working_set = self.feedback_mechanism.get_arms()
+        self.current_working_set = self.wrapped_feedback.get_arms()
         self.borda_scores_array = np.zeros(
             feedback_mechanism.get_num_arms(), dtype=float
         )
@@ -175,10 +179,10 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         try:
             self._update_confidence_factor()
             # Choose a random arm for each step.
-            arm2 = self.random_state.choice(self.feedback_mechanism.get_arms())
+            arm2 = self.random_state.choice(self.wrapped_feedback.get_arms())
             for arm1 in self.current_working_set:
                 if arm1 != arm2:
-                    first_won = self.feedback_mechanism.duel(
+                    first_won = self.wrapped_feedback.duel(
                         arm_i_index=arm1, arm_j_index=arm2
                     )
                 else:
@@ -192,16 +196,14 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
                 )
             self._update_current_set()
             self.round += 1
-        except self.feedback_mechanism.exception_class:
+        except self.wrapped_feedback.exception_class:
             pass
 
     def _update_confidence_factor(self) -> None:
         r"""Update Confidence factor (Corresponds to :math:`C_t` in :cite:`jamieson2015sparse`."""
-        factor = (2 * self.feedback_mechanism.get_num_arms()) / self.round
-        scaling_factor = (
-            4 * self.feedback_mechanism.get_num_arms() ** 2 * self.round ** 2
-        )
-        additive_term = (2 * self.feedback_mechanism.get_num_arms()) / 3 * self.round
+        factor = (2 * self.wrapped_feedback.get_num_arms()) / self.round
+        scaling_factor = 4 * self.wrapped_feedback.get_num_arms() ** 2 * self.round ** 2
+        additive_term = (2 * self.wrapped_feedback.get_num_arms()) / 3 * self.round
         self.confidence_factor = np.sqrt(
             factor * np.log(scaling_factor / self.failure_probability)
         ) + additive_term * np.log(scaling_factor / self.failure_probability)
@@ -226,7 +228,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
         arm_working_set
             The arm in the ``current_working_set`` which is being dueled with the random arm.
         """
-        size = self.feedback_mechanism.get_num_arms()
+        size = self.wrapped_feedback.get_num_arms()
         self.borda_scores_array[arm_working_set] = (
             (self.round - 1 / self.round) * self.borda_scores_array[arm_working_set]
         ) + ((size / ((size - 1) * self.round)) * bernoulli_variable)
@@ -409,13 +411,13 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
             Whether the condition is ``True`` or ``False``.
         """
         threshold = (
-            self.feedback_mechanism.get_num_arms()
-            / (self.feedback_mechanism.get_num_arms() - 1)
+            self.wrapped_feedback.get_num_arms()
+            / (self.wrapped_feedback.get_num_arms() - 1)
         ) * np.sqrt(
             2
             * np.log(
                 4
-                * self.feedback_mechanism.get_num_arms()
+                * self.wrapped_feedback.get_num_arms()
                 * self.round ** 2
                 / self.failure_probability
             )

@@ -120,7 +120,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
             random_state if random_state is not None else np.random.RandomState()
         )
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         def probability_scaling(num_samples: int) -> float:
             return 4 * (num_arms * num_samples) ** 2
@@ -132,7 +132,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
 
         self._epsilon = epsilon
 
-        self._candidates = self.feedback_mechanism.get_arms()
+        self._candidates = self.wrapped_feedback.get_arms()
         self._condorcet_winners: Optional[List[int]] = None
 
     def _sort_step(self) -> List[List[int]]:
@@ -146,7 +146,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
         quicksort = Quicksort(
             self._candidates,
             lambda a1, a2: determine_better_arm(
-                self.feedback_mechanism, self.time_horizon, a1, a2
+                self.wrapped_feedback, self.time_horizon, a1, a2
             ),
             self.random_state,
         )
@@ -209,7 +209,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
 
     def exploit(self) -> None:
         """Exploit knowledge by uniformly random selection two of the epsilon-delta Condorcet winners."""
-        self.feedback_mechanism.duel(
+        self.wrapped_feedback.duel(
             self.random_state.choice(self._condorcet_winners),
             self.random_state.choice(self._condorcet_winners),
         )
@@ -325,7 +325,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
             random_state if random_state is not None else np.random.RandomState()
         )
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         def probability_scaling(num_samples: int) -> float:
             return 4 * (num_arms * num_samples) ** 2
@@ -348,7 +348,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
 
         These components are groups of arms, which can currently not be ordered.
         """
-        arms = self.feedback_mechanism.get_arms()
+        arms = self.wrapped_feedback.get_arms()
 
         # find connected components, arms with intersecting bounds
         components = [
@@ -389,9 +389,9 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
         if component_size > 1:
             comparison_bound = int(3 * (component_size + 1) * np.log(component_size))
             quicksort = Quicksort(
-                self.feedback_mechanism.get_arms().copy(),
+                self.wrapped_feedback.get_arms().copy(),
                 lambda a1, a2: determine_better_arm(
-                    self.feedback_mechanism, self.time_horizon, a1, a2
+                    self.wrapped_feedback, self.time_horizon, a1, a2
                 ),
                 self.random_state,
             )
@@ -409,7 +409,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
 
     def _update_arm_bounds(self) -> None:
         """Recalculate arm bounds based on preference estimates."""
-        arms = self.feedback_mechanism.get_arms()
+        arms = self.wrapped_feedback.get_arms()
         for i in arms:
             # update bounds
             self._arm_bounds[i].lower_bound = len(
@@ -437,7 +437,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
         terminated = self._is_order_known(components)
 
         if terminated:
-            arms = self.feedback_mechanism.get_arms()
+            arms = self.wrapped_feedback.get_arms()
             # ties are broken randomly
             tie_breaker = np.random.permutation(len(arms))
             # the second element of a tuple is used as a tie breaker by sorted

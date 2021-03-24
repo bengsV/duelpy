@@ -54,10 +54,14 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     comparison_history
         A ``ComparisonHistory`` object which stores the history of the comparisons between the arms.
     random_state
-    feedback_mechanism
     time_horizon
 
     Examples
@@ -108,14 +112,14 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
         # Allowed failure-probability (corresponds to :math:`\delta` in :cite:`yue2011beat`), i.e. probability
         # that the actual value lies outside of the computed confidence interval. Derived from the Hoeffding bound.
         self.failure_probability = 1 / (
-            2 * self.time_horizon * self.feedback_mechanism.get_num_arms()
+            2 * self.time_horizon * self.wrapped_feedback.get_num_arms()
         )
         confidence_radius = HoeffdingConfidenceRadius(
             failure_probability=self.failure_probability,
             factor=9 * (gamma ** 4) * 2,
         )
         self.comparison_history = ComparisonHistory(
-            number_of_arms=self.feedback_mechanism.get_num_arms(),
+            number_of_arms=self.wrapped_feedback.get_num_arms(),
             confidence_radius=confidence_radius,
         )
 
@@ -124,7 +128,7 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
         arm1, arm2 = self.comparison_history.get_dueling_arms(
             random_state=self.random_state
         )
-        first_won = self.feedback_mechanism.duel(arm_i_index=arm1, arm_j_index=arm2)
+        first_won = self.wrapped_feedback.duel(arm_i_index=arm1, arm_j_index=arm2)
         self.comparison_history.enter_sample(arm1=arm1, arm2=arm2, first_won=first_won)
         if (
             self.comparison_history.get_lower_bound()
@@ -415,10 +419,10 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
         # Corresponds to `N'` in section 3.1.2 in :cite:`busa2018preference`
         self.opt_n = np.ceil(
             (36 / (gamma ** 6 * epsilon ** 2))
-            * np.log(self.feedback_mechanism.get_num_arms() / failure_probability)
+            * np.log(self.wrapped_feedback.get_num_arms() / failure_probability)
         )
 
-        prob_scaling = (self.feedback_mechanism.get_num_arms() ** 3) * self.opt_n
+        prob_scaling = (self.wrapped_feedback.get_num_arms() ** 3) * self.opt_n
 
         confidence_radius = HoeffdingConfidenceRadius(
             failure_probability=failure_probability,
@@ -426,7 +430,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
             probability_scaling_factor=lambda x: prob_scaling,
         )
         self.comparison_history = ComparisonHistory(
-            number_of_arms=self.feedback_mechanism.get_num_arms(),
+            number_of_arms=self.wrapped_feedback.get_num_arms(),
             confidence_radius=confidence_radius,
         )
 

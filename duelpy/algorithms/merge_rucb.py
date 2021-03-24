@@ -46,7 +46,11 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     partition_size
     random_state
     preference_estimate
@@ -111,7 +115,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
         self.confidence = np.ceil(
             (
                 (4 * self.exploratory_constant - 1)
-                * self.feedback_mechanism.get_num_arms() ** 2
+                * self.wrapped_feedback.get_num_arms() ** 2
                 / ((2 * self.exploratory_constant - 1) * failure_probability)
             )
             ** (1.0 / (2 * self.exploratory_constant - 1))
@@ -126,9 +130,9 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
     def _set_arm_batches(self) -> None:
         """Divide the arms into the batches."""
         num_of_batches = np.floor(
-            self.feedback_mechanism.get_num_arms() / self.partition_size
+            self.wrapped_feedback.get_num_arms() / self.partition_size
         )
-        arms_shuffled_list = list(self.feedback_mechanism.get_arms())
+        arms_shuffled_list = list(self.wrapped_feedback.get_arms())
         self.random_state.shuffle(arms_shuffled_list)
         self.arm_batches = np.array_split(arms_shuffled_list, num_of_batches + 1)
 
@@ -211,7 +215,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
             upper_confidences = upper_confidence_bound_matrix[:, arm_c]
             # Select challenger arm i.e. arm_d (other than arm_c) whose upper confidence bound is maximum with
             # reference to arm_c.
-            non_challenger_arm = set(self.feedback_mechanism.get_arms()) - set(
+            non_challenger_arm = set(self.wrapped_feedback.get_arms()) - set(
                 self.arm_batches[batch_index]
             )
             non_challenger_arm.add(arm_c)
@@ -221,7 +225,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
 
             # Compare potential champion (arm_c) and challenger (arm_d).
             self.preference_estimate.enter_sample(
-                arm_c, arm_d, self.feedback_mechanism.duel(arm_c, arm_d)
+                arm_c, arm_d, self.wrapped_feedback.duel(arm_c, arm_d)
             )
 
         # merging logic
@@ -231,7 +235,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
         """Merge the two batches to get size between p/2 or 3p/2."""
         if (
             self._num_arms_batches()
-            <= self.feedback_mechanism.get_num_arms() / (2 ** self.stage)
+            <= self.wrapped_feedback.get_num_arms() / (2 ** self.stage)
             and len(self.arm_batches) > 1
         ):
             self._merge_batches()

@@ -94,7 +94,7 @@ class ScalableCopelandBandits(Algorithm):
     >>> scb.run()
     >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     68.0
-    >>> scb.feedback_mechanism.get_num_duels()
+    >>> scb.wrapped_feedback.get_num_duels()
     1000
     """
 
@@ -110,7 +110,7 @@ class ScalableCopelandBandits(Algorithm):
         )
         self.rounds: int = 0
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
         self.time_budget: int = 0
         self.copeland_winner: Optional[int] = None
@@ -124,8 +124,8 @@ class ScalableCopelandBandits(Algorithm):
             self.time_horizon is not None
         )  # for mypy. Can never be none in this class, initialized in __init__.
         budgeted_feedback = BudgetedFeedbackMechanism(
-            self.feedback_mechanism,
-            max_duels=self.time_horizon - self.feedback_mechanism.get_num_duels(),
+            self.wrapped_feedback,
+            max_duels=self.time_horizon - self.wrapped_feedback.get_num_duels(),
         )
         kl_divergence_based_pac = KLDivergenceBasedPAC(
             feedback_mechanism=budgeted_feedback,

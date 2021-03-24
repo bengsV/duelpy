@@ -78,12 +78,16 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     preference_estimate
         Estimation of a preference matrix based on samples.
     condorcet_winner
         Top-1 arm in the given set of arms.
     duels_per_comparison
-    feedback_mechanism
 
     Examples
     --------
@@ -118,7 +122,7 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
         self.arms = (
-            self.feedback_mechanism.get_arms() if arms_subset is None else arms_subset
+            self.wrapped_feedback.get_arms() if arms_subset is None else arms_subset
         )
 
         self.arms_duel_limit = duels_per_comparison
@@ -144,7 +148,7 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
         self.preference_estimate = (
             preference_estimate
             if preference_estimate is not None
-            else PreferenceEstimate(self.feedback_mechanism.get_num_arms())
+            else PreferenceEstimate(self.wrapped_feedback.get_num_arms())
         )
 
     def explore(self) -> None:
@@ -164,7 +168,7 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
             assert self.arms_duel_limit is not None
             for _ in range(self.arms_duel_limit):
                 self.preference_estimate.enter_sample(
-                    arm_1, arm_2, self.feedback_mechanism.duel(arm_1, arm_2)
+                    arm_1, arm_2, self.wrapped_feedback.duel(arm_1, arm_2)
                 )
                 if self.is_finished():
                     # time horizon reached before exploration was finished
@@ -229,6 +233,11 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     budgeted_feedback_mechanism
         A ``BudgetedFeedbackMechanism`` object describing the environment.
     preference_estimate
@@ -251,7 +260,6 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         Present rank index.
     heap_updated
         Check whether the heap is updated or not.
-    feedback_mechanism
     duels_per_comparison
 
     Examples
@@ -291,11 +299,11 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         else:
             self.k_top_ranked = k_top_ranked
         self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-            self.feedback_mechanism,
+            self.wrapped_feedback,
             max_duels=self.time_horizon,
         )
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms(),
+            self.wrapped_feedback.get_num_arms(),
         )
         if duels_per_comparison is not None and preference_separation is not None:
             raise Exception(
@@ -320,7 +328,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
 
         def compare_repeatedly(arm_1: int, arm_2: int) -> int:
             self.preference_estimate.enter_sample(
-                arm_1, arm_2, self.feedback_mechanism.duel(arm_1, arm_2)
+                arm_1, arm_2, self.wrapped_feedback.duel(arm_1, arm_2)
             )
             # In order to avoid incompatible type error, before the algorithm gives the winner.This
             # assertion is necessary for mypy since copeland_winner is defined as
@@ -339,7 +347,7 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
                 return 0
 
         self.sub_groups = [
-            self.feedback_mechanism.get_arms()[i :: self.k_top_ranked]
+            self.wrapped_feedback.get_arms()[i :: self.k_top_ranked]
             for i in range(self.k_top_ranked)
         ]
         self.sub_group_index = 0

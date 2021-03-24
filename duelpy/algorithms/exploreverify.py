@@ -97,14 +97,14 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
         self.round = 1
         self._exploring = True
         self._explorer = VerificationBasedCondorcet.CondorcetExplorer(
-            feedback_mechanism=self.feedback_mechanism,
+            feedback_mechanism=self.wrapped_feedback,
             failure_probability=self.explore_failure_probability,
             random_state=random_state,
         )
         self._verifier = VerificationBasedCondorcet.CondorcetVerifier(
-            feedback_mechanism=self.feedback_mechanism,
+            feedback_mechanism=self.wrapped_feedback,
             best_arm=0,
-            adversaries=self.feedback_mechanism.get_num_arms() * [0],
+            adversaries=self.wrapped_feedback.get_num_arms() * [0],
             failure_probability=self.failure_probability / 2 * 2 ** self.round,
         )  # dummy value, the verifier cannot be defined until the exploration is completed
         self._is_finished = False
@@ -116,7 +116,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
         assert best_arm is not None
         assert adversaries is not None
         return VerificationBasedCondorcet.CondorcetVerifier(
-            feedback_mechanism=self.feedback_mechanism,
+            feedback_mechanism=self.wrapped_feedback,
             best_arm=best_arm,
             adversaries=adversaries,
             failure_probability=self.failure_probability / 2 * 2 ** self.round,
@@ -202,7 +202,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
             self.random_state = (
                 random_state if random_state is not None else np.random.RandomState()
             )
-            num_arms = self.feedback_mechanism.get_num_arms()
+            num_arms = self.wrapped_feedback.get_num_arms()
             # mark all pairs without duplicates
             self.pair_is_active = np.ones((num_arms, num_arms)) - np.eye(num_arms) > 0
             # Note that the confidence radius is half of that in the paper since they consider the larger interval [-1, 1]
@@ -221,7 +221,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
 
         def reset(self) -> None:
             """Reset the exploration."""
-            num_arms = self.feedback_mechanism.get_num_arms()
+            num_arms = self.wrapped_feedback.get_num_arms()
             self.pair_is_active = np.ones((num_arms, num_arms)) - np.eye(num_arms) > 0
             self.preference_estimate = PreferenceEstimate(
                 num_arms=num_arms, confidence_radius=self._confidence_radius
@@ -235,14 +235,14 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
 
             The order of the arms does not matter, even if both are present they should only be compared once.
             """
-            num_arms = self.feedback_mechanism.get_num_arms()
+            num_arms = self.wrapped_feedback.get_num_arms()
             for arm1 in range(num_arms):
                 for arm2 in range(arm1):
                     if (
                         self.pair_is_active[arm1, arm2]
                         | self.pair_is_active[arm2, arm1]
                     ):
-                        result = self.feedback_mechanism.duel(arm1, arm2)
+                        result = self.wrapped_feedback.duel(arm1, arm2)
                         self.preference_estimate.enter_sample(arm1, arm2, result)
 
         def step(self) -> None:
@@ -285,7 +285,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
                 # has the lowest probability of winning in the upper-bound
                 # estimation.
                 corrected_upper_bound = upper_bound + np.eye(
-                    self.feedback_mechanism.get_num_arms()
+                    self.wrapped_feedback.get_num_arms()
                 )
                 self._adversaries = np.ma.array(
                     np.argmin(corrected_upper_bound, axis=1), mask=best_arm_encoding
@@ -357,7 +357,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
             self.best_arm = best_arm
             self.adversaries = adversaries
             self.failure_probability = failure_probability
-            num_arms = self.feedback_mechanism.get_num_arms()
+            num_arms = self.wrapped_feedback.get_num_arms()
 
             self.pair_is_active = np.eye(num_arms)[self.adversaries] > 0
             self.pair_is_active[self.best_arm, :] = False
@@ -379,7 +379,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
 
             The order of the arms does not matter, even if both are present they should only be compared once.
             """
-            num_arms = self.feedback_mechanism.get_num_arms()
+            num_arms = self.wrapped_feedback.get_num_arms()
             for arm1 in range(num_arms):
                 for arm2 in range(arm1):
                     if (
@@ -387,7 +387,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
                         or self.pair_is_active[arm2, arm1]
                     ):
                         self.preference_estimate.enter_sample(
-                            arm1, arm2, self.feedback_mechanism.duel(arm1, arm2)
+                            arm1, arm2, self.wrapped_feedback.duel(arm1, arm2)
                         )
 
         def step(self) -> None:

@@ -21,7 +21,7 @@ class Algorithm:
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
         The ``feedback_mechanism`` parameter with an added decorator. This
         feedback mechanism will raise an exception if a time horizon is given
         and a duel would exceed it. The exception is caught in the ``run``
@@ -36,7 +36,7 @@ class Algorithm:
     def __init__(
         self, feedback_mechanism: FeedbackMechanism, time_horizon: Optional[int]
     ):
-        self.feedback_mechanism = BudgetedFeedbackMechanism(
+        self.wrapped_feedback = BudgetedFeedbackMechanism(
             feedback_mechanism, max_duels=time_horizon
         )
         self.time_horizon = time_horizon
@@ -76,7 +76,7 @@ class Algorithm:
             raise NotImplementedError(
                 "No time horizon set and no custom termination condition implemented."
             )
-        return self.feedback_mechanism.duels_exhausted()
+        return self.wrapped_feedback.duels_exhausted()
 
     def run(self) -> None:
         """Run the algorithm until completion.
@@ -87,6 +87,6 @@ class Algorithm:
         while not self.is_finished():
             try:
                 self.step()
-            except self.feedback_mechanism.exception_class:
+            except self.wrapped_feedback.exception_class:
                 # Duel budget exhausted
                 return

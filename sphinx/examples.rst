@@ -41,7 +41,7 @@ You can run this example with ``python3 -m duelpy.examples.decision`` if you hav
 Writing a new algorithm
 ***********************
 Algorithms should inherit from the :class:`Algorithm<duelpy.algorithms.algorithm.Algorithm>` class. This class defines a general structure, consisting of ``step``, ``is_finished``, and ``run`` functions.
-Also, the constructor takes two parameters and sets the corresponding attributes ``feedback_mechanism`` and ``time_horizon``.
+Also, the constructor takes two parameters and sets the corresponding attributes ``wrapped_feedback`` and ``time_horizon``.
 The feedback mechanism models the environment, storing how many arms are available and providing the ``duel`` function to compare two arms.
 The :class:`FeedbackMechanism<duelpy.feedback.FeedbackMechanism>` module contains some implementations. If necessary, a new implementation for a specific application is possible by extending the ``FeedbackMechanism`` class.
 The time horizon is an upper bound on the duels (comparisons) to be made by the algorithm. The value ``None`` is interpreted as an infinite time horizon. The programmer is responsible for keeping this limit.
@@ -70,7 +70,7 @@ An example of the structure is given here:
     class MyAlgorithm(CondorcetProducer):
         def __init__(self, feedback_mechanism, time_horizon, ...):
             super().__init__(feedback_mechanism, time_horizon)
-            # self.feedback_mechanism and self.time_horizon are now defined
+            # self.wrapped_feedback and self.time_horizon are now defined
             # initialization
         
         def step(self):

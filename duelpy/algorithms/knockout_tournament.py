@@ -44,7 +44,11 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     tournament_arms
         The arms that are still in the tournament.
     epsilon
@@ -211,7 +215,7 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         ):
             # update information about the preferred and eliminated arms
             self.preference_estimate.enter_sample(
-                arm_j, arm_i, self.feedback_mechanism.duel(arm_i, arm_j)
+                arm_j, arm_i, self.wrapped_feedback.duel(arm_i, arm_j)
             )
             rounds += 1
             estimate_probability_arm_i = self.preference_estimate.get_mean_estimate(

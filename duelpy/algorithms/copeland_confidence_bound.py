@@ -141,7 +141,7 @@ class CopelandConfidenceBound(SingleCopelandProducer):
         self.max_allowed_losses: int = 0
 
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
         # Initialize the Copeland winner candidates, their respective opponents and
         # the maximum number of losses allowed for a Copeland winner
@@ -166,7 +166,7 @@ class CopelandConfidenceBound(SingleCopelandProducer):
             copeland_winner_candidate,
             suitable_opponent,
         ) = self._find_best_duel_candidates()
-        copeland_winner_candidate_won = self.feedback_mechanism.duel(
+        copeland_winner_candidate_won = self.wrapped_feedback.duel(
             copeland_winner_candidate, suitable_opponent
         )
         self.preference_estimate.enter_sample(
@@ -212,17 +212,17 @@ class CopelandConfidenceBound(SingleCopelandProducer):
     def _reset_copeland_winner_candidates(self) -> None:
         """Reset the winner candidates list to include all the arms."""
         self.copeland_winner_candidates = list(
-            range(self.feedback_mechanism.get_num_arms())
+            range(self.wrapped_feedback.get_num_arms())
         )
 
     def _reset_respective_opponents(self) -> None:
         """Clear the opponents list for all the arms."""
-        for arm in range(self.feedback_mechanism.get_num_arms()):
+        for arm in range(self.wrapped_feedback.get_num_arms()):
             self.respective_opponents[arm] = list()
 
     def _reset_max_allowed_losses(self) -> None:
         """Set maximum allowed losses for a Copeland winner."""
-        self.max_allowed_losses = self.feedback_mechanism.get_num_arms()
+        self.max_allowed_losses = self.wrapped_feedback.get_num_arms()
 
     def _reset_disproven_hypotheses(self) -> None:
         """Check if the Copeland winner attributes need a reset.
@@ -261,7 +261,7 @@ class CopelandConfidenceBound(SingleCopelandProducer):
                     break
             if len(self.respective_opponents[candidate]) != self.max_allowed_losses + 1:
                 new_opponents = list()
-                for arm in range(self.feedback_mechanism.get_num_arms()):
+                for arm in range(self.wrapped_feedback.get_num_arms()):
                     if optimistic_matrix[candidate][arm] < 0.5:
                         new_opponents.append(arm)
                 self.respective_opponents[candidate] = new_opponents
@@ -289,11 +289,11 @@ class CopelandConfidenceBound(SingleCopelandProducer):
                 self.copeland_winner_candidates.append(arm)
                 self.respective_opponents[arm].clear()
                 self.max_allowed_losses = (
-                    self.feedback_mechanism.get_num_arms()
+                    self.wrapped_feedback.get_num_arms()
                     - 1
                     - optimistic_copeland_scores[arm]
                 )
-                for other_arm in range(self.feedback_mechanism.get_num_arms()):
+                for other_arm in range(self.wrapped_feedback.get_num_arms()):
                     if other_arm != arm:
                         if (
                             len(self.respective_opponents[other_arm])
@@ -395,9 +395,9 @@ class CopelandConfidenceBound(SingleCopelandProducer):
         if self.random_state.random() < 0.5:
             opponent_list = self.respective_opponents[copeland_winner_candidate]
         else:
-            opponent_list = list(range(self.feedback_mechanism.get_num_arms()))
+            opponent_list = list(range(self.wrapped_feedback.get_num_arms()))
 
-        candidate_opponents = np.zeros(self.feedback_mechanism.get_num_arms())
+        candidate_opponents = np.zeros(self.wrapped_feedback.get_num_arms())
         for j in opponent_list:
             if pessimistic_matrix[j][copeland_winner_candidate] <= 0.5:
                 candidate_opponents[j] = optimistic_matrix[j][copeland_winner_candidate]

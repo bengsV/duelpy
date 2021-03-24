@@ -189,7 +189,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         while end_index - start_index > 0:
             interval_center = math.ceil((start_index + end_index) / 2)
             duel_count = int(
-                10 * math.log(self.feedback_mechanism.get_num_arms() / epsilon ** 2)
+                10 * math.log(self.wrapped_feedback.get_num_arms() / epsilon ** 2)
             )
             mean_value = (
                 self._duels_with_dummies(
@@ -218,8 +218,8 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         Tuple[List[int], List[int]]
             The ranked anchor arms and the remaining arms.
         """
-        num_arms = self.feedback_mechanism.get_num_arms()
-        arms = self.feedback_mechanism.get_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
+        arms = self.wrapped_feedback.get_arms()
         num_anchors = math.floor(num_arms / pow(math.log(num_arms), 3))
         anchor_arms = utility.pop_random(arms, self.random_state, amount=num_anchors)
 
@@ -285,7 +285,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         Tuple[List[int], List[int], List[int]]
             The list of arms close to the first anchor, those in between (sorted) and those close to the next anchor
         """
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
         duel_count = int(10 / pow(self._epsilon / 15, 2) * math.log(num_arms))
         tolerance = 6 * self._epsilon / 15
         close_to_current: List[int] = []
@@ -416,7 +416,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         count = 0
         duel_count = int(10 / pow(epsilon, 2))
 
-        for _ in range(int(30 * math.log(self.feedback_mechanism.get_num_arms()))):
+        for _ in range(int(30 * math.log(self.wrapped_feedback.get_num_arms()))):
             if (
                 current_node.high - current_node.low > 1
             ):  # implies there are child nodes of this node.
@@ -500,7 +500,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
                     else:
                         count -= 1  # this decreases our confidence that search arm belongs to current bin.
 
-        if count > 10 * math.log(self.feedback_mechanism.get_num_arms()):
+        if count > 10 * math.log(self.wrapped_feedback.get_num_arms()):
             return (
                 current_node.low
             )  # we are confident that search arm belong to the current bin.
@@ -547,7 +547,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         ):
             return duel_count
 
-        wins = self.feedback_mechanism.duel_repeatedly(
+        wins = self.wrapped_feedback.duel_repeatedly(
             arm_i_index, arm_j_index, duel_count
         )
 
@@ -603,7 +603,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
             abs(estimate_probability - 0.5) <= confidence_radius(iteration) - epsilon
             and iteration <= comparison_budget
         ):
-            if self.feedback_mechanism.duel(arm1, arm2):
+            if self.wrapped_feedback.duel(arm1, arm2):
                 wins += 1
             iteration += 1
             estimate_probability = wins / iteration

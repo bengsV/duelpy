@@ -34,9 +34,13 @@ class WinnerStaysWeakRegret(CondorcetProducer):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     win_deltas
         Stores the difference between won and lost rounds for each arm. Corresponds to the :math:`C(t,i)` values in :cite:`chen2017dueling`.
-    feedback_mechanism
     random_state
 
     Examples
@@ -75,7 +79,7 @@ class WinnerStaysWeakRegret(CondorcetProducer):
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()
         )
-        self.arm_count = self.feedback_mechanism.get_num_arms()
+        self.arm_count = self.wrapped_feedback.get_num_arms()
         self.win_deltas = np.zeros((self.arm_count,))
         self._last_arm_i = -1
         self._last_arm_j = -1
@@ -117,7 +121,7 @@ class WinnerStaysWeakRegret(CondorcetProducer):
         self._last_arm_j = arm_j
 
         # updating win-lose differences for the chosen arms
-        if self.feedback_mechanism.duel(arm_i, arm_j):
+        if self.wrapped_feedback.duel(arm_i, arm_j):
             winner, loser = arm_i, arm_j
         else:
             winner, loser = arm_j, arm_i
@@ -167,7 +171,11 @@ class WinnerStaysStrongRegret(CondorcetProducer):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     exploitation_factor
     random_state
 
@@ -211,7 +219,7 @@ class WinnerStaysStrongRegret(CondorcetProducer):
         self._exploitation_factor = exploitation_factor
         # time_horizon is None since we control the execution manually
         self._ws = WinnerStaysWeakRegret(
-            self.feedback_mechanism, time_horizon=None, random_state=random_state
+            self.wrapped_feedback, time_horizon=None, random_state=random_state
         )
         self._round_index = 0
         self._round_length = 0
@@ -232,7 +240,7 @@ class WinnerStaysStrongRegret(CondorcetProducer):
             self._ws.step()
             self._best_arm = self._ws.get_condorcet_winner()
         else:
-            self.feedback_mechanism.duel(self._best_arm, self._best_arm)
+            self.wrapped_feedback.duel(self._best_arm, self._best_arm)
             self._current_round_iteration += 1
 
     def get_condorcet_winner(self) -> int:
