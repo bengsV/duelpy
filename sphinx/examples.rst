@@ -42,10 +42,13 @@ Writing a new algorithm
 ***********************
 Algorithms should inherit from the :class:`Algorithm<duelpy.algorithms.algorithm.Algorithm>` class. This class defines a general structure, consisting of ``step``, ``is_finished``, and ``run`` functions.
 Also, the constructor takes two parameters and sets the corresponding attributes ``wrapped_feedback`` and ``time_horizon``.
+The time horizon determines the number of duels (comparisons) to be made by the algorithm. If it is ``None`` the algorithm may conduct as many duels as it needs to satisfy some termination condition.
 The feedback mechanism models the environment, storing how many arms are available and providing the ``duel`` function to compare two arms.
-The :class:`FeedbackMechanism<duelpy.feedback.FeedbackMechanism>` module contains some implementations. If necessary, a new implementation for a specific application is possible by extending the ``FeedbackMechanism`` class.
-The time horizon determines the number of duels (comparisons) to be made by the algorithm. If it is ``None`` the algorithm may conduct as many duels as it needs to satisfy some termination condition. The programmer is responsible for keeping this limit.
-If this complicates the implementation and it is strictly necessary to not exceed the time horizon, the ``BudgetedFeedbackMechanism`` may help.
+It is automatically wrapped in the :class:`Algorithm<duelpy.algorithms.algorithm.Algorithm>` constructor to ensure that the time horizon is kept.
+The wrapped feedback mechanism will raise an exception if a duel would exceed the time horizon.
+That exception is then caught in the ``run`` function, allowing you to perform multiple duels in ``step`` without worrying about early termination.
+You should be aware that the execution of ``step`` could be terminated early anywhere you call ``duel``.
+The :class:`FeedbackMechanism<duelpy.feedback.FeedbackMechanism>` module contains some feedback mechanism implementations. If necessary, a new implementation for a specific application is possible by extending the ``FeedbackMechanism`` class.
 The basic structure of an algorithm is defined by its ``step`` function. What is done in one step can be decided by the designer. Some possible options are dueling two arms once per call or executing one logical step.
 For convenience, a ``run`` function is implemented which calls ``step`` until ``is_finished`` is true. For most algorithms, only ``step`` and often ``is_finished`` need to be overridden in the subclasses.
 
