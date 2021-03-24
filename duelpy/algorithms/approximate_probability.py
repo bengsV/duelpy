@@ -174,8 +174,6 @@ class ApproximateProbability(PreferenceMatrixProducer):
 
     def step(self) -> None:
         """Take multiple samples per step in the algorithm."""
-        if self.is_finished():
-            return
         if self.comparison_arm == self.tournament_arms - 1:
             self.estimate_probabilities_against_worst_arm()
         else:

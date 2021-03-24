@@ -169,9 +169,6 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
                 self.preference_estimate.enter_sample(
                     arm_1, arm_2, self.wrapped_feedback.duel(arm_1, arm_2)
                 )
-                if self.is_finished():
-                    # time horizon reached before exploration was finished
-                    return
                 # The winner is moved to the next step, that is to the first half of the currently investigated part of the arm list
                 if self.preference_estimate.get_mean_estimate(arm_1, arm_2) > 1 / 2:
                     self.arms[arm_index] = self.arms[2 * arm_index]

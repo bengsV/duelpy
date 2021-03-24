@@ -120,8 +120,6 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
 
         This executes one explore step of the explore-then-exploit approach. This should not be confused with the interleaved explore and verify phases of the algorithm.
         """
-        if self.is_finished():
-            return
         if self._exploring:
             # explore
             self._explorer.step()
@@ -232,8 +230,6 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
 
         def step(self) -> None:
             """Advance the algorithm by one step."""
-            if self.is_finished():
-                return
             self._query_pairs()
             lower_bound = (
                 2 * self.preference_estimate.get_lower_estimate_matrix().preferences - 1
