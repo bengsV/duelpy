@@ -207,9 +207,6 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
         """Determine rewards (0 or 1) for Copeland winner candidates."""
         # Calculate and add reward for each arm
         for index in range(np.size(self.copeland_winner_candidates)):
-            # Check whether further reward generation is necessary
-            if self.is_finished():
-                return
             self.rewards_for_candidates[index] += self._reward_for(
                 self.copeland_winner_candidates[index]
             )
