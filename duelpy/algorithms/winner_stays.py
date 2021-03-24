@@ -211,7 +211,7 @@ class WinnerStaysStrongRegret(CondorcetProducer):
         self._exploitation_factor = exploitation_factor
         # time_horizon is None since we control the execution manually
         self._ws = WinnerStaysWeakRegret(
-            feedback_mechanism, time_horizon=None, random_state=random_state
+            self.feedback_mechanism, time_horizon=None, random_state=random_state
         )
         self._round_index = 0
         self._round_length = 0

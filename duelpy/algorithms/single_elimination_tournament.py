@@ -117,7 +117,6 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
         epsilon: float = 0.01,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        self.feedback_mechanism = feedback_mechanism
         self.arms = (
             self.feedback_mechanism.get_arms() if arms_subset is None else arms_subset
         )
@@ -287,12 +286,10 @@ class SingleEliminationTopKSorting(PartialRankingProducer, PacAlgorithm):
         epsilon: float = 0.01,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
-        self.feedback_mechanism = feedback_mechanism
         if k_top_ranked is None:
             self.k_top_ranked = 2
         else:
             self.k_top_ranked = k_top_ranked
-        self.time_horizon = time_horizon
         self.budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
             self.feedback_mechanism,
             max_duels=self.time_horizon,
