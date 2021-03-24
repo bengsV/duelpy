@@ -6,7 +6,6 @@ import numpy as np
 
 from duelpy.algorithms.interfaces import CopelandRankingProducer
 from duelpy.feedback import FeedbackMechanism
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.sorting import Quicksort
 
 
@@ -106,10 +105,7 @@ class Multisort(CopelandRankingProducer):
                 compare_fn=self._determine_better_arm,
                 random_state=self.random_state,
             )
-        try:
-            self._quicksort_instance.step()
-        except AlgorithmFinishedException:
-            pass
+        self._quicksort_instance.step()
 
     def step(self) -> None:
         """Execute one step of the algorithm."""
@@ -138,18 +134,11 @@ class Multisort(CopelandRankingProducer):
         arm_2
             The second arm.
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            If the comparison budget is reached.
-
         Returns
         -------
         int
             1 if the first arm is better, -1 if the second arm is better.
         """
-        if self.is_finished():
-            raise AlgorithmFinishedException()
         first_arm_won = self.wrapped_feedback.duel(arm_1, arm_2)
         if first_arm_won:
             return 1

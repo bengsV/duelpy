@@ -9,7 +9,6 @@ import numpy as np
 from duelpy.algorithms.interfaces import BordaRankingProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
-from duelpy.util.exceptions import AlgorithmFinishedException
 
 
 class BordaRanking(BordaRankingProducer, PacAlgorithm):
@@ -109,11 +108,8 @@ class BordaRanking(BordaRankingProducer, PacAlgorithm):
         )
         for _ in range(comparison_budget):
             random_arm = self.random_state.randint(num_arms)
-            try:
-                if self.wrapped_feedback.duel(self._current_arm, random_arm):
-                    wins += 1
-            except AlgorithmFinishedException:
-                return
+            if self.wrapped_feedback.duel(self._current_arm, random_arm):
+                wins += 1
 
         estimated_score = wins / num_arms
 

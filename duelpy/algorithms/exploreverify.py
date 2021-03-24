@@ -11,7 +11,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
-from duelpy.util.exceptions import AlgorithmFinishedException
 
 
 class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
@@ -125,19 +124,13 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
             return
         if self._exploring:
             # explore
-            try:
-                self._explorer.step()
-            except AlgorithmFinishedException:
-                return
+            self._explorer.step()
             if self._explorer.is_finished():
                 self._verifier = self._init_verifier()
                 self._exploring = False
         else:
             # verify
-            try:
-                self._verifier.step()
-            except AlgorithmFinishedException:
-                return
+            self._verifier.step()
             if self._verifier.is_finished():
                 if not self._verifier.has_succeeded():
                     self._explorer.reset()

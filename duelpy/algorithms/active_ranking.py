@@ -8,7 +8,6 @@ import numpy as np
 from duelpy.algorithms.interfaces import GeneralizedRankingProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.utility_functions import pop_random
 
 
@@ -155,27 +154,23 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
             arms_copy = self.wrapped_feedback.get_arms()
             arms_copy.remove(first_arm)
             second_arm = pop_random(arms_copy, self._random_state)[0]
-            try:
-                result_duel = self.wrapped_feedback.duel(first_arm, second_arm)
+            result_duel = self.wrapped_feedback.duel(first_arm, second_arm)
 
-                # refer to equation 3.2 in Algorithm 1.
-                score_estimation = (
-                    (self._current_round - 1)
-                    * self._estimated_score_arms[first_arm]
-                    / self._current_round
-                )
+            # refer to equation 3.2 in Algorithm 1.
+            score_estimation = (
+                (self._current_round - 1)
+                * self._estimated_score_arms[first_arm]
+                / self._current_round
+            )
 
-                self._estimated_score_arms.__setitem__(
-                    first_arm,
-                    (
-                        score_estimation + 1 / self._current_round
-                        if result_duel
-                        else score_estimation
-                    ),
-                )
-
-            except AlgorithmFinishedException:
-                pass
+            self._estimated_score_arms.__setitem__(
+                first_arm,
+                (
+                    score_estimation + 1 / self._current_round
+                    if result_duel
+                    else score_estimation
+                ),
+            )
 
     def _comparison_with_previous_border(self, bin_location: int, arm: int) -> bool:
         """Refer to equation 3.3a for more details in the paper :cite:`heckel2019active`.

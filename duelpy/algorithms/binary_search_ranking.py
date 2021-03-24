@@ -15,7 +15,6 @@ from duelpy.algorithms.interfaces import CopelandRankingProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.sorting import MergeSort
 import duelpy.util.utility_functions as utility
 
@@ -341,40 +340,34 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
 
         Implement the *Algorithm 4 (Binary Search Ranking)*.
         """
-        try:
-            anchor_arms, remaining_arms = self._create_ordered_anchors()
+        anchor_arms, remaining_arms = self._create_ordered_anchors()
 
-            bins: Dict[int, List[int]] = defaultdict(list)  # S_j
+        bins: Dict[int, List[int]] = defaultdict(list)  # S_j
 
-            self._sort_arms_in_bins(bins, anchor_arms, remaining_arms)
+        self._sort_arms_in_bins(bins, anchor_arms, remaining_arms)
 
-            self._final_result = []
-            # needed to carry arms over to next loop iteration
-            close_to_next_anchor: List[int] = []
+        self._final_result = []
+        # needed to carry arms over to next loop iteration
+        close_to_next_anchor: List[int] = []
 
-            for bin_index, _ in enumerate(bins):
-                close_to_current_anchor = close_to_next_anchor  # start with those arms assigned in last iteration
-                (
-                    close_current,
-                    between_anchors,
-                    close_to_next_anchor,
-                ) = self._sort_bin(
-                    bins[bin_index], anchor_arms[bin_index], anchor_arms[bin_index + 1]
-                )
+        for bin_index, _ in enumerate(bins):
+            close_to_current_anchor = (
+                close_to_next_anchor  # start with those arms assigned in last iteration
+            )
+            (close_current, between_anchors, close_to_next_anchor,) = self._sort_bin(
+                bins[bin_index], anchor_arms[bin_index], anchor_arms[bin_index + 1]
+            )
 
-                close_to_current_anchor.extend(close_current)
+            close_to_current_anchor.extend(close_current)
 
-                if (
-                    anchor_arms[bin_index] != BinarySearchRanking.loser_arm_dummy
-                    and anchor_arms[bin_index] != BinarySearchRanking.winner_arm_dummy
-                ):
-                    self._final_result.append(anchor_arms[bin_index])
+            if (
+                anchor_arms[bin_index] != BinarySearchRanking.loser_arm_dummy
+                and anchor_arms[bin_index] != BinarySearchRanking.winner_arm_dummy
+            ):
+                self._final_result.append(anchor_arms[bin_index])
 
-                self._final_result.extend(close_to_current_anchor)
-                self._final_result.extend(between_anchors)
-
-        except AlgorithmFinishedException:
-            return
+            self._final_result.extend(close_to_current_anchor)
+            self._final_result.extend(between_anchors)
 
     # pylint: disable=too-many-locals
     def _find_bin(

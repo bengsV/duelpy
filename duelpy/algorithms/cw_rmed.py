@@ -13,8 +13,6 @@ from duelpy.algorithms.algorithm import Algorithm
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.metrics import AverageCopelandRegret
-from duelpy.util.exceptions import AlgorithmFinishedException
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class CwRmed(Algorithm):
@@ -114,7 +112,7 @@ class CwRmed(Algorithm):
         regret_bound_constant: float = 0.01,
     ) -> None:
         super().__init__(
-            BudgetedFeedbackMechanism(feedback_mechanism, max_duels=time_horizon),
+            feedback_mechanism,
             time_horizon,
         )
         self.random_state = (
@@ -148,8 +146,6 @@ class CwRmed(Algorithm):
         try:
             self._conditional_sampling()
             self._update_dueling_pairs_for_next_round()
-        except AlgorithmFinishedException:
-            return
         except ValueError:
             pass
         self.dueling_pairs = self.dueling_pairs_for_next_step.copy()
@@ -164,8 +160,10 @@ class CwRmed(Algorithm):
 
         Raises
         ------
-            AlgorithmFinishedException
-                When the number of duels match the time horizon.
+        AlgorithmFinishedException
+            When the number of duels match the time horizon. Raised by the
+            ``duel`` method. The exception can be accessed by
+            ``self.wrapped_feedback.exception_class``.
         """
         for (arm_i, arm_j) in self.dueling_pairs:
             self.preference_estimate.enter_sample(
@@ -198,8 +196,10 @@ class CwRmed(Algorithm):
 
         Raises
         ------
-            AlgorithmFinishedException
-                When the number of duels match the time horizon.
+        AlgorithmFinishedException
+            When the number of duels match the time horizon. Raised by the
+            ``duel`` method. The exception can be accessed by
+            ``self.wrapped_feedback.exception_class``.
         """
         for (arm_i, arm_j) in self.wrapped_feedback.get_dueling_pair_combinations():
             if self.wrapped_feedback.get_num_duels() > 1:

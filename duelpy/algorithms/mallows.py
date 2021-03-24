@@ -11,7 +11,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.sorting import MergeSort
 from duelpy.util.sorting import SortingAlgorithm
 from duelpy.util.utility_functions import pop_random
@@ -250,18 +249,11 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
         arm_2
             The second arm.
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            If the comparison budget is reached.
-
         Returns
         -------
         int
             1 if the first arm is better, -1 if the second arm is better, 0 if not sure yet.
         """
-        if self.is_finished():
-            raise AlgorithmFinishedException()
         first_arm_won = self.wrapped_feedback.duel(arm_1, arm_2)
         self.preference_estimate.enter_sample(arm_1, arm_2, first_arm_won)
         if self.preference_estimate.get_lower_estimate(arm_1, arm_2) > 0.5:
@@ -273,10 +265,7 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
 
     def explore(self) -> None:
         """Explore arms by advancing the sorting algorithm."""
-        try:
-            self._sorting_algorithm.step()
-        except AlgorithmFinishedException:
-            pass
+        self._sorting_algorithm.step()
         if self._sorting_algorithm.is_finished():
             self._ranking = self._sorting_algorithm.get_result()
 

@@ -10,7 +10,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
-from duelpy.util.exceptions import AlgorithmFinishedException
 
 
 class KnockoutTournament(CondorcetProducer, PacAlgorithm):
@@ -127,15 +126,12 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         )
 
         pairs = combinations(self.tournament_arms, 2)
-        try:
-            for arm_i, arm_j in pairs:
-                winning_arms.add(
-                    self._determine_winner(
-                        arm_i, arm_j, current_epsilon, current_failure_probability
-                    )
+        for arm_i, arm_j in pairs:
+            winning_arms.add(
+                self._determine_winner(
+                    arm_i, arm_j, current_epsilon, current_failure_probability
                 )
-        except AlgorithmFinishedException:
-            return
+            )
 
         self.tournament_arms = winning_arms
         self.time_step += 1
@@ -180,12 +176,6 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         arm_j
             index of the second arm
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            If the comparison budget is reached.
-
-
         Returns
         -------
         int
@@ -221,7 +211,5 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
             estimate_probability_arm_i = self.preference_estimate.get_mean_estimate(
                 arm_j, arm_i
             )
-            if self.is_finished():
-                raise AlgorithmFinishedException()
 
         return arm_j if estimate_probability_arm_i <= 0.5 else arm_i
