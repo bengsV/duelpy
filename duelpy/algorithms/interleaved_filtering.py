@@ -132,9 +132,6 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
                 arm,
                 self.wrapped_feedback.duel(self.candidate_arm, arm),
             )
-            # Terminate explore
-            if self.wrapped_feedback.get_num_duels() == self.time_horizon:
-                break
         updated_arms_without_candidate = self._prune_arms()
         (self.arms_without_candidate) = self._find_candidate_arm(
             updated_arms_without_candidate
