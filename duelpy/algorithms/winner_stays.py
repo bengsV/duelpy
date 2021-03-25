@@ -4,12 +4,12 @@ from typing import Optional
 
 import numpy as np
 
-from duelpy.algorithms.algorithm import Algorithm
+from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.util.utility_functions import argmax_set
 
 
-class WinnerStaysWeakRegret(Algorithm):
+class WinnerStaysWeakRegret(CondorcetProducer):
     r"""Implements the weak regret version of the *Winner Stays* algorithm.
 
     The goal of this algorithm is to find the :term:`Condorcet winner` while minimizing the weak regret suffered in the process.
@@ -137,7 +137,7 @@ class WinnerStaysWeakRegret(Algorithm):
         return argmax_set(self.win_deltas)[0]
 
 
-class WinnerStaysStrongRegret(Algorithm):
+class WinnerStaysStrongRegret(CondorcetProducer):
     r"""Implements the strong regret version of the *Winner Stays* algorithm.
 
     The goal of this algorithm is to find the :term:`Condorcet winner` while minimizing the strong regret suffered in the process.
