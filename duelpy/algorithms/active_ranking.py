@@ -21,14 +21,13 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
 
     The sample complexity related to comparisons is :math:`\frac{n \log n}{(\tau_{k}-\tau_{k+1})^2}`.
 
-    The algorithm maintains the disjoint sets(bins) which contains the
-    arms. The user select the number of disjoint sets and provide a list, whose each element denote the number of arms that each bin can contain.
-    The algorithm will rank those disjoint sets. So the desired ranking, here, refers to either the ranking of all
-    arms or ranking the group of :math:`k` arms.
+    The algorithm maintains the disjoint sets(bins) which contains the arms. The user provide a list of border elements.
+    Difference between two consecutive borders of the list specifies the size of bins. These bins are ranked in order
+    from best group of arms to worst group of arms.
 
-    The user will specify the number of subsets referred by :math:`L` in the paper and the user will provide a collection of
-    numbers, referred by :math:`\{k_l\}_{l=1}^{L}` which defines the border element for each disjoint set. So if
-    :math:`L=n` and :math:`(k_1,k_2,\dots,k_n) = (1,2,\dots,n)`, the partition :math:`\{S_l\}_{l=1}^{L}` will produce the
+    The number of bins is referred by :math:`L` in the paper and the collections of bins with their sizes is, referred
+    by :math:`\{k_l\}_{l=1}^{L}`.
+    So if :math:`L=n` and :math:`(k_1,k_2,\dots,k_n) = (1,2,\dots,n)`, the partition :math:`\{S_l\}_{l=1}^{L}` will produce the
     full ranking over all the arms. But if :math:`L=2` and :math:`k_1=k`, then the set partition :math:`(S_1, S_2)`
     split :math:`[n]` into top k elements and its complement.
 
@@ -43,7 +42,10 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     failure_probability
         An upper bound on the acceptable probability to fail. Default to ``0.15`` as mentioned in paper :cite:`heckel2019active`.
     border_element_list
-        List of elements specifying the border of disjoint set. Refer to :math:`k_l` in paper :cite:`heckel2019active`.
+        Ascending list of elements specifying the border of bins. Difference between two consecutive borders specify the
+        size of the partitions. If not provided, the algorithm will assume a full ranking has to be returned.
+        Refer to :math:`k_l` in paper :cite:`heckel2019active`.
+
 
     Examples
     --------
