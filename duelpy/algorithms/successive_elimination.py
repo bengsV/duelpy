@@ -106,11 +106,12 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
     ... ])
     >>> random_state = np.random.RandomState(43)
     >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
-    >>> secs = SuccessiveElimination(feedback_mechanism=feedback_mechanism, random_state=random_state, failure_probability=0.1)
+    >>> secs = SuccessiveElimination(feedback_mechanism=feedback_mechanism, random_state=random_state, time_horizon=1000, time_gate = 50, failure_probability=0.1)
     >>> secs.run()
     >>> borda_winner = secs.get_borda_winner()
-    >>> borda_winner
-    2
+    >>> comparisons = secs.feedback_mechanism.get_num_duels()
+    >>> borda_winner, comparisons
+    (2, 1000)
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -408,21 +409,15 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
             Whether the condition is ``True`` or ``False``.
         """
         threshold = (
-            (
-                self.feedback_mechanism.get_num_arms()
-                / self.feedback_mechanism.get_num_arms()
-                - 1
-            )
-            * np.sqrt(
-                (
-                    2
-                    * np.log(
-                        4
-                        * self.feedback_mechanism.get_num_arms()
-                        * self.round ** 2
-                        / self.failure_probability
-                    )
-                )
+            self.feedback_mechanism.get_num_arms()
+            / (self.feedback_mechanism.get_num_arms() - 1)
+        ) * np.sqrt(
+            2
+            * np.log(
+                4
+                * self.feedback_mechanism.get_num_arms()
+                * self.round ** 2
+                / self.failure_probability
             )
             / self.round
         )
