@@ -12,9 +12,6 @@ from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.utility_functions import pop_random
 
 
-# pylint: disable=simplifiable-if-statement
-
-
 class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     r"""Implementation of the Active Ranking using pairwise comparisons.
 
@@ -24,8 +21,8 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
 
     The sample complexity related to comparisons is :math:`\frac{n \log n}{(\tau_{k}-\tau_{k+1})^2}`.
 
-    The algorithm maintains the disjoint sets which contains the
-    arms. The user select the number of disjoint sets and the number of arms each disjoint set can contain.
+    The algorithm maintains the disjoint sets(bins) which contains the
+    arms. The user select the number of disjoint sets and provide a list, whose each element denote the number of arms that each bin can contain.
     The algorithm will rank those disjoint sets. So the desired ranking, here, refers to either the ranking of all
     arms or ranking the group of :math:`k` arms.
 
@@ -41,12 +38,12 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     ----------
     feedback_mechanism
         A ``FeedbackMechanism`` object describing the environment
-    border_element_list
-        List of elements specifying the border of disjoint set. Refer to :math:`k_l` in paper :cite:`heckel2019active`.
-    failure_probability
-        An upper bound on the acceptable probability to fail. Default to ``0.15`` as mentioned in paper :cite:`heckel2019active`.
     time_horizon
         Optional, the maximum amount of arm comparisons to execute. This may be exceeded, but will always be reached.
+    failure_probability
+        An upper bound on the acceptable probability to fail. Default to ``0.15`` as mentioned in paper :cite:`heckel2019active`.
+    border_element_list
+        List of elements specifying the border of disjoint set. Refer to :math:`k_l` in paper :cite:`heckel2019active`.
 
     Examples
     --------
@@ -74,18 +71,26 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
-        border_element_list: List[int],
-        random_state: float,
-        failure_probability: float = 0.15,
         time_horizon: Optional[int] = None,
+        random_state: Optional[np.random.RandomState] = None,
+        failure_probability: float = 0.15,
+        border_element_list: Optional[List[int]] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon=time_horizon)
         self._remaining_arm: List[int] = self.feedback_mechanism.get_arms()
-        self._random_state = random_state
+        self._random_state = (
+            random_state if random_state is not None else np.random.RandomState()
+        )
 
         self.failure_probability = (
             failure_probability / self.feedback_mechanism.get_num_arms()
         )  # refer to equation 3.1 in paper :cite:`heckel2019active`.
+
+        if border_element_list is None:
+            border_element_list = list(
+                range(1, self.feedback_mechanism.get_num_arms() + 1)
+            )
+
         self._bins_count = border_element_list[-1]  # refers to :math:`L`.
         self._current_round = 0
 
