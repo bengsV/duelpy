@@ -1,4 +1,5 @@
 """A generic way to compare two arms against each other."""
+from itertools import combinations
 
 
 class FeedbackMechanism:
@@ -73,3 +74,13 @@ class FeedbackMechanism:
     def get_num_arms(self) -> int:
         """Get the number of arms."""
         return len(self.arms)
+
+    def get_dueling_pair_combinations(self) -> list:
+        """Get the possible dueling pair combinations from the participating arms.
+
+        Returns
+        -------
+        list
+            The list of dueling pair combinations.
+        """
+        return list(combinations(range(self.get_num_arms()), 2))
