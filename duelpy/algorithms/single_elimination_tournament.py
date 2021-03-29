@@ -50,7 +50,7 @@ class SingleEliminationTop1Select(CondorcetProducer, PacAlgorithm):
 
     The goal of this algorithm is to find the top (Rank = 1) arm while minimizing the sample complexity.
 
-    A :term:`total order` over arms, :term:`strong stochastic transitivity` and the :term:`stochastic triangle inequality` are assumed.
+    A :term:`total order` over arms and :term:`strong stochastic transitivity` are assumed.
 
     The amount of pairwise comparisons made by the algorithm is bound by :math:`O\left(\frac{ N \log\log N}{\Delta_{1}}\right)`, where :math:`N` is the number of arms, and :math:`\Delta` is the preference separation.
 
