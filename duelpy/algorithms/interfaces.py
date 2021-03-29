@@ -62,7 +62,7 @@ class PacAlgorithm(Algorithm):
         """
         if self.time_horizon is not None:
             # "Regret-minimizing mode"
-            return self.wrapped_feedback.get_num_duels() >= self.time_horizon
+            return self.wrapped_feedback.duels_exhausted()
         else:
             # "PAC mode"
             return self.exploration_finished()

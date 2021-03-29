@@ -262,8 +262,10 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
 
     >>> pac_algorithm = Savage(feedback_mechanism, time_horizon=100)
     >>> pac_algorithm.run()
-    >>> feedback_mechanism.get_num_duels()  # Time horizon is both upper and lower limit.
-    100
+    >>> # 5 duels conducted previously, 100 new duels. The time horizon is both
+    >>> # an upper and a lower bound.
+    >>> feedback_mechanism.get_num_duels()
+    105
     >>> pac_algorithm.get_copeland_winner()
     0
 

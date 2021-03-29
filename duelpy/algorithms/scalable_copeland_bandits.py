@@ -92,7 +92,7 @@ class ScalableCopelandBandits(Algorithm):
     ...     random_state=random_state)
     >>> scb.run()
     >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
-    65.25
+    76.0
     >>> scb.wrapped_feedback.get_num_duels()
     1000
     """
