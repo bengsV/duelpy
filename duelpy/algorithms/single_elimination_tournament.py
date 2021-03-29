@@ -37,7 +37,7 @@ def _compute_binary_comparisons(
     return int(
         np.ceil(
             (1 + probability_scaling_factor)
-            * np.log2(2)
+            * np.log(2)
             / 2
             * np.log(np.log(len(arms)))
             / preference_separation
