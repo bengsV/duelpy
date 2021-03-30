@@ -32,44 +32,23 @@ A user is supposed to find the best among a set of options. Since this is usuall
 The results of these queries are then used to find the best option based on the users preferences.
 
 
- .. code-block:: python
+ .. literalinclude:: ../duelpy/examples/decision.py
+    :language: python
 
-    """A simple example of how a decision-tool using duelpy could work."""
-
-    from duelpy.algorithms.savage import Savage
-    from duelpy.feedback import CommandlineFeedback
-
-
-    def _run_decision_experiment() -> None:
-        arms = [
-            "The best arm.",  # 0
-            "The second best arm.",  # 1
-            "The other second best arm, flip a coin.",  # 2
-            "Third best arm.",  # 3
-            "Least favorite arm.",  # 4
-        ]
-        feedback_mechanism = CommandlineFeedback(arms)
-        algorithm = Savage(feedback_mechanism=feedback_mechanism, failure_probability=0.5)
-        while not algorithm.is_finished():
-            algorithm.step()
-            print("Preference estimate is now")
-            print(algorithm.preference_estimate)
-        print("Estimated Copeland winner:")
-        print(algorithm.get_copeland_winner())
-
-
-    if __name__ == "__main__":
-        _run_decision_experiment()
+You can run this example with ``python3 -m duelpy.examples.decision`` if you have installed ``duelpy``.
 
 ***********************
 Writing a new algorithm
 ***********************
 Algorithms should inherit from the :class:`Algorithm<duelpy.algorithms.algorithm.Algorithm>` class. This class defines a general structure, consisting of ``step``, ``is_finished``, and ``run`` functions.
-Also, the constructor takes two parameters and sets the corresponding attributes ``feedback_mechanism`` and ``time_horizon``.
+Also, the constructor takes two parameters and sets the corresponding attributes ``wrapped_feedback`` and ``time_horizon``.
+The time horizon determines the number of duels (comparisons) to be made by the algorithm. If it is ``None`` the algorithm may conduct as many duels as it needs to satisfy some termination condition.
 The feedback mechanism models the environment, storing how many arms are available and providing the ``duel`` function to compare two arms.
-The :class:`FeedbackMechanism<duelpy.feedback.FeedbackMechanism>` module contains some implementations. If necessary, a new implementation for a specific application is possible by extending the ``FeedbackMechanism`` class.
-The time horizon is an upper bound on the duels (comparisons) to be made by the algorithm. The value ``None`` is interpreted as an infinite time horizon. The programmer is responsible for keeping this limit.
-If this complicates the implementation and it is strictly necessary to not exceed the time horizon, the ``BudgetedFeedbackMechanism`` may help.
+It is automatically wrapped in the :class:`Algorithm<duelpy.algorithms.algorithm.Algorithm>` constructor to ensure that the time horizon is kept.
+The wrapped feedback mechanism will raise an exception if a duel would exceed the time horizon.
+That exception is then caught in the ``run`` function, allowing you to perform multiple duels in ``step`` without worrying about early termination.
+You should be aware that the execution of ``step`` could be terminated early anywhere you call ``duel``.
+The :class:`FeedbackMechanism<duelpy.feedback.FeedbackMechanism>` module contains some feedback mechanism implementations. If necessary, a new implementation for a specific application is possible by extending the ``FeedbackMechanism`` class.
 The basic structure of an algorithm is defined by its ``step`` function. What is done in one step can be decided by the designer. Some possible options are dueling two arms once per call or executing one logical step.
 For convenience, a ``run`` function is implemented which calls ``step`` until ``is_finished`` is true. For most algorithms, only ``step`` and often ``is_finished`` need to be overridden in the subclasses.
 
@@ -94,7 +73,7 @@ An example of the structure is given here:
     class MyAlgorithm(CondorcetProducer):
         def __init__(self, feedback_mechanism, time_horizon, ...):
             super().__init__(feedback_mechanism, time_horizon)
-            # self.feedback_mechanism and self.time_horizon are now defined
+            # self.wrapped_feedback and self.time_horizon are now defined
             # initialization
         
         def step(self):

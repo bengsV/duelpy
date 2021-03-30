@@ -58,7 +58,11 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     failure_probability
     preference_estimate
         The current estimate of the preference matrix.
@@ -97,7 +101,7 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
 
         # The number of random variables that we attempt to estimate
         # (corresponds to the upper triangle of the preference matrix).
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
         num_random_variables = num_arms * (num_arms - 1) / 2
 
         # The failure probability of each individual confidence interval must be
@@ -198,7 +202,7 @@ class Savage(SingleCopelandProducer, PacAlgorithm):
         if next_sample is not None:
             # Sample a duel and keep track of the results.
             self.preference_estimate.enter_sample(
-                *next_sample, self.feedback_mechanism.duel(*next_sample)
+                *next_sample, self.wrapped_feedback.duel(*next_sample)
             )
 
         # According to the algorithm in the paper, we should always check *all*

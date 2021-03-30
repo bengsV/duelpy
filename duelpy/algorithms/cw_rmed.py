@@ -13,8 +13,6 @@ from duelpy.algorithms.algorithm import Algorithm
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.metrics import AverageCopelandRegret
-from duelpy.util.exceptions import AlgorithmFinishedException
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class CwRmed(Algorithm):
@@ -56,6 +54,11 @@ class CwRmed(Algorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     current_copeland_winner_pairs
         Corresponds to :math:`L_{NC}` in :cite:`komiyama2016copeland`.
     dueling_pairs
@@ -96,7 +99,7 @@ class CwRmed(Algorithm):
     >>> cwrmed.run()
     >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     31.5
-    >>> cwrmed.feedback_mechanism.get_num_duels()
+    >>> cwrmed.wrapped_feedback.get_num_duels()
     100
     """
 
@@ -109,7 +112,7 @@ class CwRmed(Algorithm):
         regret_bound_constant: float = 0.01,
     ) -> None:
         super().__init__(
-            BudgetedFeedbackMechanism(feedback_mechanism, max_duels=time_horizon),
+            feedback_mechanism,
             time_horizon,
         )
         self.random_state = (
@@ -122,7 +125,7 @@ class CwRmed(Algorithm):
 
         # Referred as ``L_C`` in the paper
         self.dueling_pairs: Set[Tuple[int, int]] = set(
-            self.feedback_mechanism.get_dueling_pair_combinations()
+            self.wrapped_feedback.get_dueling_pair_combinations()
         )
         # Referred as ``L_R`` in the paper
         self.remaining_pairs_for_dueling: Set[
@@ -135,7 +138,7 @@ class CwRmed(Algorithm):
 
         self.copeland_winner: int = 0
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
 
     def step(self) -> None:
@@ -143,8 +146,6 @@ class CwRmed(Algorithm):
         try:
             self._conditional_sampling()
             self._update_dueling_pairs_for_next_round()
-        except AlgorithmFinishedException:
-            return
         except ValueError:
             pass
         self.dueling_pairs = self.dueling_pairs_for_next_step.copy()
@@ -159,14 +160,16 @@ class CwRmed(Algorithm):
 
         Raises
         ------
-            AlgorithmFinishedException
-                When the number of duels match the time horizon.
+        AlgorithmFinishedException
+            When the number of duels match the time horizon. Raised by the
+            ``duel`` method. The exception can be accessed by
+            ``self.wrapped_feedback.exception_class``.
         """
         for (arm_i, arm_j) in self.dueling_pairs:
             self.preference_estimate.enter_sample(
                 arm_i,
                 arm_j,
-                self.feedback_mechanism.duel(arm_i, arm_j),
+                self.wrapped_feedback.duel(arm_i, arm_j),
             )
             self.current_copeland_winner_pairs = set()
 
@@ -183,7 +186,7 @@ class CwRmed(Algorithm):
             self.remaining_pairs_for_dueling -= {(arm_i, arm_j)}
 
             for (arm_1, arm_2) in self.current_copeland_winner_pairs & (
-                set(self.feedback_mechanism.get_dueling_pair_combinations())
+                set(self.wrapped_feedback.get_dueling_pair_combinations())
                 - self.remaining_pairs_for_dueling
             ):
                 self.dueling_pairs_for_next_step |= {(arm_1, arm_2)}
@@ -193,30 +196,32 @@ class CwRmed(Algorithm):
 
         Raises
         ------
-            AlgorithmFinishedException
-                When the number of duels match the time horizon.
+        AlgorithmFinishedException
+            When the number of duels match the time horizon. Raised by the
+            ``duel`` method. The exception can be accessed by
+            ``self.wrapped_feedback.exception_class``.
         """
-        for (arm_i, arm_j) in self.feedback_mechanism.get_dueling_pair_combinations():
-            if self.feedback_mechanism.get_num_duels() > 1:
+        for (arm_i, arm_j) in self.wrapped_feedback.get_dueling_pair_combinations():
+            if self.wrapped_feedback.get_num_duels() > 1:
                 if self.preference_estimate.get_num_samples(
                     arm_i, arm_j
                 ) < self.exploratory_constant * math.sqrt(
-                    math.log(self.feedback_mechanism.get_num_duels())
+                    math.log(self.wrapped_feedback.get_num_duels())
                 ) or self.preference_estimate.get_mean_estimate(
                     arm_i, arm_j
                 ) < self.regret_bound_constant / math.log(
-                    math.log(self.feedback_mechanism.get_num_duels())
+                    math.log(self.wrapped_feedback.get_num_duels())
                 ):
                     self.preference_estimate.enter_sample(
                         arm_i,
                         arm_j,
-                        self.feedback_mechanism.duel(arm_i, arm_j),
+                        self.wrapped_feedback.duel(arm_i, arm_j),
                     )
             else:
                 self.preference_estimate.enter_sample(
                     arm_i,
                     arm_j,
-                    self.feedback_mechanism.duel(arm_i, arm_j),
+                    self.wrapped_feedback.duel(arm_i, arm_j),
                 )
 
     # pylint: disable=too-many-branches
@@ -233,8 +238,8 @@ class CwRmed(Algorithm):
             copeland_winner
         ) in self.preference_estimate.get_mean_estimate_matrix().get_copeland_winners():
             condition_satisfied = True
-            for arm_i in self.feedback_mechanism.get_arms():
-                for arm_j in self.feedback_mechanism.get_arms():
+            for arm_i in self.wrapped_feedback.get_arms():
+                for arm_j in self.wrapped_feedback.get_arms():
                     if arm_i > arm_j:
                         kl_div = rel_entr(
                             1
@@ -246,7 +251,7 @@ class CwRmed(Algorithm):
                         )
                         if (
                             self.preference_estimate.get_num_samples(arm_i, arm_j)
-                            / math.log(self.feedback_mechanism.get_num_duels())
+                            / math.log(self.wrapped_feedback.get_num_duels())
                             * kl_div
                             > 1.0
                         ):
@@ -267,7 +272,7 @@ class CwRmed(Algorithm):
             for arm in inferiors:
                 arms_for_emp_div |= {(copeland_winner, arm)}
 
-            for arm in self.feedback_mechanism.get_arms():
+            for arm in self.wrapped_feedback.get_arms():
                 if arm is not copeland_winner:
                     superiors = self.preference_estimate.get_mean_estimate_matrix().get_winners_against(
                         arm
@@ -286,7 +291,7 @@ class CwRmed(Algorithm):
                 )
                 emp_div.append(
                     self.preference_estimate.get_num_samples(arm_i, arm_j)
-                    / math.log(self.feedback_mechanism.get_num_duels())
+                    / math.log(self.wrapped_feedback.get_num_duels())
                     * kl_div
                 )
 
@@ -318,7 +323,7 @@ class CwRmed(Algorithm):
             (self.copeland_winner, self.copeland_winner)
         }
 
-        candidates = self.feedback_mechanism.get_arms()
+        candidates = self.wrapped_feedback.get_arms()
         candidates.remove(self.copeland_winner)
 
         try:
@@ -364,7 +369,7 @@ class CwRmed(Algorithm):
                     comparison_array,
                     (
                         self.preference_estimate.get_num_samples(superior, candidate)
-                        / math.log(self.feedback_mechanism.get_num_duels())
+                        / math.log(self.wrapped_feedback.get_num_duels())
                     ),
                 )
                 costs = np.append(costs, regret(superior, candidate) / kl_div)

@@ -51,6 +51,11 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     failure_probability
         Allowed failure-probability (:math:`\delta`), i.e. probability that the actual value lies outside of the computed confidence interval.
         Derived from the Hoeffding bound.
@@ -60,7 +65,6 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
         The remaining set of arms (corresponds to :math:`W` in :cite:`yue2012bandits`) after removing the candidate arm.
     preference_estimate
         Estimation of a preference matrix based on samples.
-    feedback_mechanism
     time_horizon
 
     Examples
@@ -93,13 +97,13 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
         super().__init__(feedback_mechanism, time_horizon)
         assert self.time_horizon is not None  # for mypy
         self.failure_probability = 1 / (
-            self.time_horizon * (self.feedback_mechanism.get_num_arms() ** 2)
+            self.time_horizon * (self.wrapped_feedback.get_num_arms() ** 2)
         )
         random_state = (
             random_state if random_state is not None else np.random.RandomState()
         )
-        self.candidate_arm = random_state.choice(self.feedback_mechanism.get_arms())
-        self.arms_without_candidate = self.feedback_mechanism.get_arms().copy()
+        self.candidate_arm = random_state.choice(self.wrapped_feedback.get_arms())
+        self.arms_without_candidate = self.wrapped_feedback.get_arms().copy()
         self.arms_without_candidate.remove(self.candidate_arm)
         # See the proof of Lemma 4 in the paper. The factor `8` corresponds to `m` in the proof.
         self.preference_estimate = PreferenceEstimate(
@@ -126,11 +130,8 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
             self.preference_estimate.enter_sample(
                 self.candidate_arm,
                 arm,
-                self.feedback_mechanism.duel(self.candidate_arm, arm),
+                self.wrapped_feedback.duel(self.candidate_arm, arm),
             )
-            # Terminate explore
-            if self.feedback_mechanism.get_num_duels() == self.time_horizon:
-                break
         updated_arms_without_candidate = self._prune_arms()
         (self.arms_without_candidate) = self._find_candidate_arm(
             updated_arms_without_candidate

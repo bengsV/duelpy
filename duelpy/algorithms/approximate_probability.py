@@ -42,7 +42,11 @@ class ApproximateProbability(PreferenceMatrixProducer):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     tournament_arms
         The arms that are still in the tournament.
     estimate_pairwise_probability
@@ -161,7 +165,7 @@ class ApproximateProbability(PreferenceMatrixProducer):
         )
         wins_i = 0
         for _ in range(compare_range):
-            if self.feedback_mechanism.duel(arm_i, arm_j):
+            if self.wrapped_feedback.duel(arm_i, arm_j):
                 wins_i += 1
 
         # approximate_probability corresponds to \hat\tilde p and is the estimated
@@ -170,8 +174,6 @@ class ApproximateProbability(PreferenceMatrixProducer):
 
     def step(self) -> None:
         """Take multiple samples per step in the algorithm."""
-        if self.is_finished():
-            return
         if self.comparison_arm == self.tournament_arms - 1:
             self.estimate_probabilities_against_worst_arm()
         else:

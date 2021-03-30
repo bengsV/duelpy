@@ -49,7 +49,11 @@ class DoubleThompsonSampling(SingleCopelandProducer):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     exploratory_constant
     random_state
     time_horizon
@@ -92,7 +96,7 @@ class DoubleThompsonSampling(SingleCopelandProducer):
         self.time_step = 0
         self.exploratory_constant = exploratory_constant
         self.preference_estimate = PreferenceEstimate(
-            num_arms=self.feedback_mechanism.get_num_arms()
+            num_arms=self.wrapped_feedback.get_num_arms()
         )
         self.random_state = (
             random_state if random_state is not None else np.random.RandomState()
@@ -132,7 +136,7 @@ class DoubleThompsonSampling(SingleCopelandProducer):
         )
 
         non_potential_champion = (
-            set(self.feedback_mechanism.get_arms()) - potential_champion
+            set(self.wrapped_feedback.get_arms()) - potential_champion
         )
 
         # sample preference matrix between the arm through beta distribution
@@ -173,7 +177,7 @@ class DoubleThompsonSampling(SingleCopelandProducer):
             ]
             <= 0.5
         )
-        non_potential_challenger = set(self.feedback_mechanism.get_arms()) - set(
+        non_potential_challenger = set(self.wrapped_feedback.get_arms()) - set(
             potential_challenger
         )
 
@@ -213,7 +217,7 @@ class DoubleThompsonSampling(SingleCopelandProducer):
         arm_c = self._choose_first_candidate()
         arm_d = self._choose_second_candidate(arm_c)
         self.preference_estimate.enter_sample(
-            arm_c, arm_d, self.feedback_mechanism.duel(arm_c, arm_d)
+            arm_c, arm_d, self.wrapped_feedback.duel(arm_c, arm_d)
         )
 
 
@@ -253,7 +257,11 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     exploratory_constant
     random_state
     time_horizon
@@ -303,7 +311,7 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
             self.preference_estimate.get_upper_estimate_matrix().get_copeland_winners()
         )
         non_potential_champion_arms = (
-            set(self.feedback_mechanism.get_arms()) - potential_champion_arms
+            set(self.wrapped_feedback.get_arms()) - potential_champion_arms
         )
 
         # sample preference matrix between the arm through beta distribution
@@ -316,8 +324,8 @@ class DoubleThompsonSamplingPlus(DoubleThompsonSampling):
         )
         max_normalized_copeland_score = np.amax(normalized_copeland_scores)
 
-        regret_one_vs_all = np.zeros(self.feedback_mechanism.get_num_arms())
-        all_arms = np.array(self.feedback_mechanism.get_arms())
+        regret_one_vs_all = np.zeros(self.wrapped_feedback.get_num_arms())
+        all_arms = np.array(self.wrapped_feedback.get_arms())
         for potential_champion in potential_champion_arms:
             # All arms whose estimated preference against the potential
             # champion is not 1/2 (most of the time this will be all arms

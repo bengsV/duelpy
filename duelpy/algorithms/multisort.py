@@ -6,7 +6,6 @@ import numpy as np
 
 from duelpy.algorithms.interfaces import CopelandRankingProducer
 from duelpy.feedback import FeedbackMechanism
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.sorting import Quicksort
 
 
@@ -43,7 +42,11 @@ class Multisort(CopelandRankingProducer):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     random_state
 
     Examples
@@ -78,10 +81,10 @@ class Multisort(CopelandRankingProducer):
         )
         self._ranking: Optional[List[int]] = None
         self._copeland_agg_scores = np.zeros(
-            self.feedback_mechanism.get_num_arms(), dtype=int
+            self.wrapped_feedback.get_num_arms(), dtype=int
         )
         self._quicksort_instance = Quicksort(
-            items=self.feedback_mechanism.get_arms(),
+            items=self.wrapped_feedback.get_arms(),
             compare_fn=self._determine_better_arm,
             random_state=random_state,
         )
@@ -94,18 +97,15 @@ class Multisort(CopelandRankingProducer):
             if self._ranking is not None:
                 for index, arm in enumerate(self._ranking):
                     self._copeland_agg_scores[arm] += (
-                        self.feedback_mechanism.get_num_arms() - index
+                        self.wrapped_feedback.get_num_arms() - index
                     )
             # re-initialize quicksort with a new random seed to get a different ranking with a random pivot element.
             self._quicksort_instance = Quicksort(
-                items=self.feedback_mechanism.get_arms(),
+                items=self.wrapped_feedback.get_arms(),
                 compare_fn=self._determine_better_arm,
                 random_state=self.random_state,
             )
-        try:
-            self._quicksort_instance.step()
-        except AlgorithmFinishedException:
-            pass
+        self._quicksort_instance.step()
 
     def step(self) -> None:
         """Execute one step of the algorithm."""
@@ -134,19 +134,12 @@ class Multisort(CopelandRankingProducer):
         arm_2
             The second arm.
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            If the comparison budget is reached.
-
         Returns
         -------
         int
             1 if the first arm is better, -1 if the second arm is better.
         """
-        if self.is_finished():
-            raise AlgorithmFinishedException()
-        first_arm_won = self.feedback_mechanism.duel(arm_1, arm_2)
+        first_arm_won = self.wrapped_feedback.duel(arm_1, arm_2)
         if first_arm_won:
             return 1
         else:

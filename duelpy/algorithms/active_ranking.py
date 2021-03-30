@@ -8,7 +8,6 @@ import numpy as np
 from duelpy.algorithms.interfaces import GeneralizedRankingProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback.feedback_mechanism import FeedbackMechanism
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.utility_functions import pop_random
 
 
@@ -46,6 +45,14 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
         size of the partitions. If not provided, the algorithm will assume a full ranking has to be returned.
         Refer to :math:`k_l` in paper :cite:`heckel2019active`.
 
+    Attributes
+    ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
+
 
     Examples
     --------
@@ -79,18 +86,18 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
         border_element_list: Optional[List[int]] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon=time_horizon)
-        self._remaining_arm: List[int] = self.feedback_mechanism.get_arms()
+        self._remaining_arm: List[int] = self.wrapped_feedback.get_arms()
         self._random_state = (
             random_state if random_state is not None else np.random.RandomState()
         )
 
         self.failure_probability = (
-            failure_probability / self.feedback_mechanism.get_num_arms()
+            failure_probability / self.wrapped_feedback.get_num_arms()
         )  # refer to equation 3.1 in paper :cite:`heckel2019active`.
 
         if border_element_list is None:
             border_element_list = list(
-                range(1, self.feedback_mechanism.get_num_arms() + 1)
+                range(1, self.wrapped_feedback.get_num_arms() + 1)
             )
 
         self._bins_count = border_element_list[-1]  # refers to :math:`L`.
@@ -109,9 +116,9 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
         # refers to :math:`\{\tau_1, \tau_2, \dots, \tau_n\}`.
         self._estimated_score_arms: List[float] = [
             0.0
-        ] * self.feedback_mechanism.get_num_arms()
+        ] * self.wrapped_feedback.get_num_arms()
         self._sorted_arm_list = (
-            self.feedback_mechanism.get_arms()
+            self.wrapped_feedback.get_arms()
         )  # initialize with random ordered list.
 
     def _get_updated_alpha(self) -> float:
@@ -144,30 +151,26 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
         the arm selected.
         """
         for first_arm in self._remaining_arm:
-            arms_copy = self.feedback_mechanism.get_arms()
+            arms_copy = self.wrapped_feedback.get_arms()
             arms_copy.remove(first_arm)
             second_arm = pop_random(arms_copy, self._random_state)[0]
-            try:
-                result_duel = self.feedback_mechanism.duel(first_arm, second_arm)
+            result_duel = self.wrapped_feedback.duel(first_arm, second_arm)
 
-                # refer to equation 3.2 in Algorithm 1.
-                score_estimation = (
-                    (self._current_round - 1)
-                    * self._estimated_score_arms[first_arm]
-                    / self._current_round
-                )
+            # refer to equation 3.2 in Algorithm 1.
+            score_estimation = (
+                (self._current_round - 1)
+                * self._estimated_score_arms[first_arm]
+                / self._current_round
+            )
 
-                self._estimated_score_arms.__setitem__(
-                    first_arm,
-                    (
-                        score_estimation + 1 / self._current_round
-                        if result_duel
-                        else score_estimation
-                    ),
-                )
-
-            except AlgorithmFinishedException:
-                pass
+            self._estimated_score_arms.__setitem__(
+                first_arm,
+                (
+                    score_estimation + 1 / self._current_round
+                    if result_duel
+                    else score_estimation
+                ),
+            )
 
     def _comparison_with_previous_border(self, bin_location: int, arm: int) -> bool:
         """Refer to equation 3.3a for more details in the paper :cite:`heckel2019active`.

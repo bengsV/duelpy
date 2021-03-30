@@ -9,8 +9,6 @@ import numpy as np
 from duelpy.algorithms.interfaces import BordaRankingProducer
 from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
-from duelpy.util.exceptions import AlgorithmFinishedException
-from duelpy.util.feedback_decorators import BudgetedFeedbackMechanism
 
 
 class BordaRanking(BordaRankingProducer, PacAlgorithm):
@@ -80,17 +78,14 @@ class BordaRanking(BordaRankingProducer, PacAlgorithm):
         epsilon: float = 0.05,
         failure_probability: float = 0.1,
     ):
-        budgeted_feedback_mechanism = BudgetedFeedbackMechanism(
-            feedback_mechanism, time_horizon
-        )
-        super().__init__(budgeted_feedback_mechanism, time_horizon)
+        super().__init__(feedback_mechanism, time_horizon)
         self.random_state = (
             np.random.RandomState() if random_state is None else random_state
         )
         self.epsilon = epsilon
         self.failure_probability = failure_probability
         self._current_arm = 0
-        self._estimate_borda_scores = np.zeros(self.feedback_mechanism.get_num_arms())
+        self._estimate_borda_scores = np.zeros(self.wrapped_feedback.get_num_arms())
 
     def exploration_finished(self) -> bool:
         """Determine if the actual algorithm has terminated.
@@ -102,22 +97,19 @@ class BordaRanking(BordaRankingProducer, PacAlgorithm):
         bool
             Whether the algorithm is finished.
         """
-        return self._current_arm >= self.feedback_mechanism.get_num_arms()
+        return self._current_arm >= self.wrapped_feedback.get_num_arms()
 
     def explore(self) -> None:
         """Run one step of exploration."""
         wins = 0
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
         comparison_budget = math.ceil(
             2 / self.epsilon ** 2 * math.log(2 * num_arms / self.failure_probability)
         )
         for _ in range(comparison_budget):
             random_arm = self.random_state.randint(num_arms)
-            try:
-                if self.feedback_mechanism.duel(self._current_arm, random_arm):
-                    wins += 1
-            except AlgorithmFinishedException:
-                return
+            if self.wrapped_feedback.duel(self._current_arm, random_arm):
+                wins += 1
 
         estimated_score = wins / num_arms
 

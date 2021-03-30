@@ -97,7 +97,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
 
     The best arm in this case is the last arm (index 2)
 
-    >>> kldpac.feedback_mechanism.get_num_duels()
+    >>> kldpac.wrapped_feedback.get_num_duels()
     89
     >>> kldpac.get_copeland_winner()
     2
@@ -123,10 +123,10 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
         self.preference_estimate = (
             preference_estimate
             if preference_estimate is not None
-            else PreferenceEstimate(self.feedback_mechanism.get_num_arms())
+            else PreferenceEstimate(self.wrapped_feedback.get_num_arms())
         )
         confidence_radius = HoeffdingConfidenceRadius(
-            self.failure_probability / (self.feedback_mechanism.get_num_arms() ** 2)
+            self.failure_probability / (self.wrapped_feedback.get_num_arms() ** 2)
         )
         self.preference_estimate.set_confidence_radius(confidence_radius)
 
@@ -134,13 +134,13 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
 
         # Refer "Algorithm 4" in :cite:`zoghi2015copeland` for details.
         self.copeland_winner_candidates = np.arange(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
         self.rewards_for_candidates = np.zeros(
-            self.feedback_mechanism.get_num_arms(), dtype=int
+            self.wrapped_feedback.get_num_arms(), dtype=int
         )
         self.no_of_times_rewards_determined_for_candidates = np.full(
-            self.feedback_mechanism.get_num_arms(), 2, dtype=int
+            self.wrapped_feedback.get_num_arms(), 2, dtype=int
         )
 
         # Refer "Algorithm 4" in :cite:`zoghi2015copeland` for details.
@@ -151,10 +151,10 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
         # function of ``scipy``. Refer the following link for details:
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.newton.html
         self.left_boundary_for_candidates = np.full(
-            self.feedback_mechanism.get_num_arms(), (1.48e-8), dtype=float
+            self.wrapped_feedback.get_num_arms(), (1.48e-8), dtype=float
         )
         self.right_boundary_for_candidates = np.full(
-            self.feedback_mechanism.get_num_arms(), (1 - 1.48e-8), dtype=float
+            self.wrapped_feedback.get_num_arms(), (1 - 1.48e-8), dtype=float
         )
 
     def get_copeland_winner(self) -> Optional[int]:
@@ -207,9 +207,6 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
         """Determine rewards (0 or 1) for Copeland winner candidates."""
         # Calculate and add reward for each arm
         for index in range(np.size(self.copeland_winner_candidates)):
-            # Check whether further reward generation is necessary
-            if self.is_finished():
-                return
             self.rewards_for_candidates[index] += self._reward_for(
                 self.copeland_winner_candidates[index]
             )
@@ -237,7 +234,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
         """
         # Sample a random opponent from a uniform distribution on the participating
         # arms. Opponent must be different than the provided arm.
-        arm_candidates = self.feedback_mechanism.get_arms()
+        arm_candidates = self.wrapped_feedback.get_arms()
         arm_candidates.remove(arm)
         opponent = pop_random(arm_candidates, self.random_state)[0]
 
@@ -246,7 +243,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
             or self.preference_estimate.get_upper_estimate(arm, opponent) < 0.5
             or self.is_finished()
         ):
-            arm_won = self.feedback_mechanism.duel(arm, opponent)
+            arm_won = self.wrapped_feedback.duel(arm, opponent)
             self.preference_estimate.enter_sample(arm, opponent, arm_won)
 
         arm_win_estimate = self.preference_estimate.get_mean_estimate(arm, opponent)
@@ -290,7 +287,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
                         np.log(
                             4
                             * np.sum(self.no_of_times_rewards_determined_for_candidates)
-                            * self.feedback_mechanism.get_num_arms()
+                            * self.wrapped_feedback.get_num_arms()
                             / self.failure_probability
                         )
                         + (

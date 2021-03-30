@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The feedback mechanism is now automatically wrapped with a
+  `BudgetedFeedbackMechanism` by the `Algorithm` superclass. This reduces the
+  need for algorithm-specific early termination logic. The `step` function may
+  now raise an exception because of this wrapper. The exception is caught in
+  `run`. This is a breaking change.
 - `BudgetedFeedbackMechanism` now throws an object-local exception. That makes
   it possible to only catch exactly the intended exception.
 - `BudgetedFeedbackMechanism` now accepts `max_duels=None` for an unlimited

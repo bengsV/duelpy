@@ -41,7 +41,11 @@ class PreferenceBasedRacing(TopKArmsProducer):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     failure_probability
     random_state
     preference_estimate
@@ -68,7 +72,7 @@ class PreferenceBasedRacing(TopKArmsProducer):
             random_state if random_state is not None else np.random.RandomState()
         )
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         self.max_comparisons = max_comparisons
 
@@ -97,14 +101,14 @@ class PreferenceBasedRacing(TopKArmsProducer):
         """Explore arms by advancing the sorting algorithm."""
         for arm_1, arm_2 in self._active_arm_pairs:
             self.preference_estimate.enter_sample(
-                arm_1, arm_2, self.feedback_mechanism.duel(arm_1, arm_2)
+                arm_1, arm_2, self.wrapped_feedback.duel(arm_1, arm_2)
             )
 
         self.sampling()
 
     def exploit(self) -> None:
         """Exploit by choosing two top arms randomly."""
-        self.feedback_mechanism.duel(
+        self.wrapped_feedback.duel(
             self.random_state.choice(self._selected_arms),
             self.random_state.choice(self._selected_arms),
         )
@@ -181,7 +185,11 @@ class CopelandPBR(PreferenceBasedRacing):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     random_state
     failure_probability
     sorting_algorithm
@@ -240,7 +248,7 @@ class CopelandPBR(PreferenceBasedRacing):
         upper_estimate = (
             self.preference_estimate.get_upper_estimate_matrix().preferences
         )
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
         cpld_lower_bound = num_arms - np.sum(
             upper_estimate < 1 / 2, axis=0
         )  # beaten by
@@ -296,7 +304,11 @@ class BordaPBR(PreferenceBasedRacing):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     random_state
     failure_probability
     sorting_algorithm
@@ -344,12 +356,12 @@ class BordaPBR(PreferenceBasedRacing):
             failure_probability=failure_probability,
         )
 
-        self._discarded_arms = np.full(self.feedback_mechanism.get_num_arms(), False)
+        self._discarded_arms = np.full(self.wrapped_feedback.get_num_arms(), False)
 
     # pylint: disable=too-many-locals
     def sampling(self) -> None:
         """Update the selected arms."""
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
         active_arms = np.full(num_arms, False)  # G in the paper
         for pair in self._active_arm_pairs:
             active_arms[pair[0]] = True
@@ -424,7 +436,11 @@ class RandomWalkPBR(PreferenceBasedRacing):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     random_state
     failure_probability
     sorting_algorithm
@@ -475,7 +491,7 @@ class RandomWalkPBR(PreferenceBasedRacing):
     # pylint: disable=too-many-locals
     def sampling(self) -> None:
         """Update the selected arms."""
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
         mean_matrix = self.preference_estimate.get_mean_estimate_matrix().preferences
         # each column is summed for normalization
         column_sum = np.sum(mean_matrix, axis=0)

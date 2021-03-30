@@ -48,9 +48,13 @@ class RelativeUCB(Algorithm):
 
     Attributes
     ----------
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     preference_estimate
         Estimation of a preference matrix based on samples.
-    feedback_mechanism
     exploratory_constant
     random_state
 
@@ -166,10 +170,10 @@ class RelativeUCB(Algorithm):
         int
             Champion arm at time-step :math:`T`.
         """
-        arms_win_count = np.zeros(self.feedback_mechanism.get_num_arms())
+        arms_win_count = np.zeros(self.wrapped_feedback.get_num_arms())
         # calculate number of expected wins for each arm
-        for arm_i in range(self.feedback_mechanism.get_num_arms()):
-            for arm_j in range(self.feedback_mechanism.get_num_arms()):
+        for arm_i in range(self.wrapped_feedback.get_num_arms()):
+            for arm_j in range(self.wrapped_feedback.get_num_arms()):
                 if self.preference_estimate.get_mean_estimate(arm_i, arm_j) > 0.5:
                     arms_win_count[arm_i] += self.preference_estimate.wins[arm_i, arm_j]
 
@@ -187,9 +191,9 @@ class RelativeUCB(Algorithm):
         )
         # Step 6: compute potential champion of arms
         potential_arms = set()
-        for arm_i in range(self.feedback_mechanism.get_num_arms()):
+        for arm_i in range(self.wrapped_feedback.get_num_arms()):
             could_be_winner = True  # selected arm wins all other arm or not
-            for arm_j in range(self.feedback_mechanism.get_num_arms()):
+            for arm_j in range(self.wrapped_feedback.get_num_arms()):
                 if upper_confidence_bound_matrix[arm_i][arm_j] < 0.5:
                     could_be_winner = False
             if could_be_winner:
@@ -198,7 +202,7 @@ class RelativeUCB(Algorithm):
         # Step 7: potential set is empty
         if len(potential_arms) == 0:
             arm_c = self.random_state.choice(
-                range(self.feedback_mechanism.get_num_arms())
+                range(self.wrapped_feedback.get_num_arms())
             )
             potential_arms.add(arm_c)
 
@@ -219,7 +223,7 @@ class RelativeUCB(Algorithm):
         arm_d = self.random_state.choice(argmax_set(upper_confidences, [arm_c]))
 
         # Step 14: Compare potential champion(arm_c) and challenger(arm_d).
-        if self.feedback_mechanism.duel(arm_c, arm_d) < 0:
+        if self.wrapped_feedback.duel(arm_c, arm_d) < 0:
             winner, loser = arm_d, arm_c
         else:
             winner, loser = arm_c, arm_d

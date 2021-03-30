@@ -58,7 +58,11 @@ class RelativeConfidenceSampling(CondorcetProducer):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     exploratory_constant
     random_state
     time_step
@@ -110,11 +114,11 @@ class RelativeConfidenceSampling(CondorcetProducer):
         self.exploratory_constant = exploratory_constant
         self.time_step = 0
         self.preference_estimate = PreferenceEstimate(
-            self.feedback_mechanism.get_num_arms()
+            self.wrapped_feedback.get_num_arms()
         )
         # Number of times each arm was already chosen as the champion
         self._champion_chosen_frequency = np.zeros(
-            self.feedback_mechanism.get_num_arms(), dtype=int
+            self.wrapped_feedback.get_num_arms(), dtype=int
         )
 
     def step(self) -> None:
@@ -126,7 +130,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
 
         champion = self._run_simulated_tournament()
         challenger = self._select_challenger_for(champion)
-        champion_won = self.feedback_mechanism.duel(champion, challenger)
+        champion_won = self.wrapped_feedback.duel(champion, challenger)
         # Enter the duel result
         self.preference_estimate.enter_sample(champion, challenger, champion_won)
 
@@ -201,7 +205,7 @@ class RelativeConfidenceSampling(CondorcetProducer):
         """
         upper_confidence_bounds = [
             self.preference_estimate.get_upper_estimate(arm_j, champion)
-            for arm_j in range(self.feedback_mechanism.get_num_arms())
+            for arm_j in range(self.wrapped_feedback.get_num_arms())
         ]
         challenger = np.argmax(upper_confidence_bounds)
         return challenger

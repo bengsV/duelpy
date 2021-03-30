@@ -10,7 +10,6 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
-from duelpy.util.exceptions import AlgorithmFinishedException
 
 
 class KnockoutTournament(CondorcetProducer, PacAlgorithm):
@@ -44,7 +43,11 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
 
     Attributes
     ----------
-    feedback_mechanism
+    wrapped_feedback
+        The ``feedback_mechanism`` parameter with an added decorator. This
+        feedback mechanism will raise an exception if a time horizon is given
+        and a duel would exceed it. The exception is caught in the ``run``
+        function.
     tournament_arms
         The arms that are still in the tournament.
     epsilon
@@ -123,15 +126,12 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         )
 
         pairs = combinations(self.tournament_arms, 2)
-        try:
-            for arm_i, arm_j in pairs:
-                winning_arms.add(
-                    self._determine_winner(
-                        arm_i, arm_j, current_epsilon, current_failure_probability
-                    )
+        for arm_i, arm_j in pairs:
+            winning_arms.add(
+                self._determine_winner(
+                    arm_i, arm_j, current_epsilon, current_failure_probability
                 )
-        except AlgorithmFinishedException:
-            return
+            )
 
         self.tournament_arms = winning_arms
         self.time_step += 1
@@ -176,12 +176,6 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         arm_j
             index of the second arm
 
-        Raises
-        ------
-        AlgorithmFinishedException
-            If the comparison budget is reached.
-
-
         Returns
         -------
         int
@@ -211,13 +205,11 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
         ):
             # update information about the preferred and eliminated arms
             self.preference_estimate.enter_sample(
-                arm_j, arm_i, self.feedback_mechanism.duel(arm_i, arm_j)
+                arm_j, arm_i, self.wrapped_feedback.duel(arm_i, arm_j)
             )
             rounds += 1
             estimate_probability_arm_i = self.preference_estimate.get_mean_estimate(
                 arm_j, arm_i
             )
-            if self.is_finished():
-                raise AlgorithmFinishedException()
 
         return arm_j if estimate_probability_arm_i <= 0.5 else arm_i

@@ -11,41 +11,30 @@ from duelpy.algorithms.interfaces import PacAlgorithm
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
-from duelpy.util.exceptions import AlgorithmFinishedException
 from duelpy.util.sorting import Quicksort
 
 
 def determine_better_arm(
     feedback_mechanism: FeedbackMechanism,
-    time_horizon: Optional[int],
     arm_1: int,
     arm_2: int,
 ) -> int:
-    """Duel the given arms once and determine the winner, but avoid violating the time horizon.
+    """Duel the given arms once and determine the winner.
 
     Parameters
     ----------
     feedback_mechanism
         The ``FeedbackMechanism`` object used for dueling
-    time_horizon
-        The time horizon bound
     arm_1
         The first arm.
     arm_2
         The second arm.
-
-    Raises
-    ------
-    AlgorithmFinishedException
-        If the comparison budget is reached.
 
     Returns
     -------
     int
         1 if the first arm won, -1 if the second arm won.
     """
-    if time_horizon is not None and time_horizon <= feedback_mechanism.get_num_duels():
-        raise AlgorithmFinishedException()
     if feedback_mechanism.duel(arm_1, arm_2):
         return 1
     else:
@@ -120,7 +109,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
             random_state if random_state is not None else np.random.RandomState()
         )
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         def probability_scaling(num_samples: int) -> float:
             return 4 * (num_arms * num_samples) ** 2
@@ -132,7 +121,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
 
         self._epsilon = epsilon
 
-        self._candidates = self.feedback_mechanism.get_arms()
+        self._candidates = self.wrapped_feedback.get_arms()
         self._condorcet_winners: Optional[List[int]] = None
 
     def _sort_step(self) -> List[List[int]]:
@@ -145,18 +134,13 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
         """
         quicksort = Quicksort(
             self._candidates,
-            lambda a1, a2: determine_better_arm(
-                self.feedback_mechanism, self.time_horizon, a1, a2
-            ),
+            lambda a1, a2: determine_better_arm(self.wrapped_feedback, a1, a2),
             self.random_state,
         )
         # execute |arms|-1 sorting steps
         steps = len(self._candidates) - 1
-        try:
-            for _ in range(steps):
-                quicksort.step()
-        except AlgorithmFinishedException:
-            pass
+        for _ in range(steps):
+            quicksort.step()
 
         return quicksort.get_intermediate_result()
 
@@ -209,7 +193,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
 
     def exploit(self) -> None:
         """Exploit knowledge by uniformly random selection two of the epsilon-delta Condorcet winners."""
-        self.feedback_mechanism.duel(
+        self.wrapped_feedback.duel(
             self.random_state.choice(self._condorcet_winners),
             self.random_state.choice(self._condorcet_winners),
         )
@@ -325,7 +309,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
             random_state if random_state is not None else np.random.RandomState()
         )
 
-        num_arms = self.feedback_mechanism.get_num_arms()
+        num_arms = self.wrapped_feedback.get_num_arms()
 
         def probability_scaling(num_samples: int) -> float:
             return 4 * (num_arms * num_samples) ** 2
@@ -348,7 +332,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
 
         These components are groups of arms, which can currently not be ordered.
         """
-        arms = self.feedback_mechanism.get_arms()
+        arms = self.wrapped_feedback.get_arms()
 
         # find connected components, arms with intersecting bounds
         components = [
@@ -389,17 +373,12 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
         if component_size > 1:
             comparison_bound = int(3 * (component_size + 1) * np.log(component_size))
             quicksort = Quicksort(
-                self.feedback_mechanism.get_arms().copy(),
-                lambda a1, a2: determine_better_arm(
-                    self.feedback_mechanism, self.time_horizon, a1, a2
-                ),
+                self.wrapped_feedback.get_arms().copy(),
+                lambda a1, a2: determine_better_arm(self.wrapped_feedback, a1, a2),
                 self.random_state,
             )
-            try:
-                for _ in range(comparison_bound):
-                    quicksort.step()
-            except AlgorithmFinishedException:
-                pass
+            for _ in range(comparison_bound):
+                quicksort.step()
             ranking = quicksort.get_intermediate_result()
             for rank_index, rank in enumerate(ranking):
                 for arm in rank:
@@ -409,7 +388,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
 
     def _update_arm_bounds(self) -> None:
         """Recalculate arm bounds based on preference estimates."""
-        arms = self.feedback_mechanism.get_arms()
+        arms = self.wrapped_feedback.get_arms()
         for i in arms:
             # update bounds
             self._arm_bounds[i].lower_bound = len(
@@ -437,7 +416,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
         terminated = self._is_order_known(components)
 
         if terminated:
-            arms = self.feedback_mechanism.get_arms()
+            arms = self.wrapped_feedback.get_arms()
             # ties are broken randomly
             tie_breaker = np.random.permutation(len(arms))
             # the second element of a tuple is used as a tie breaker by sorted
