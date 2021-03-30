@@ -71,7 +71,7 @@ class ActiveRanking(GeneralizedRankingProducer, PacAlgorithm):
     ...                                       random_state=random_state)
     >>> active_rank = ActiveRanking(feedback_mechanism=feedback_mechanism, random_state=random_state, failure_probability=0.15, border_element_list=[1,2,3,4,5])
     >>> active_rank.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = active_rank.wrapped_feedback.duels_conducted
     >>> rank = active_rank.get_ranking()
     >>> rank
     [[2], [4], [3], [1], [0]]

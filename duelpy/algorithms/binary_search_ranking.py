@@ -74,7 +74,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
     >>> rank.run()
     >>> rank.get_ranking()
     [2, 4, 3, 1, 0]
-    >>> feedback_mechanism.get_num_duels()
+    >>> rank.wrapped_feedback.duels_conducted
     1786021
     """
 

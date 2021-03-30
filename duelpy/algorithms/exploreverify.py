@@ -63,7 +63,7 @@ class VerificationBasedCondorcet(CondorcetProducer, PacAlgorithm):
 
     The best arm in this case is the last arm (index 2)
 
-    >>> feedback_mechanism.get_num_duels()
+    >>> vbc.wrapped_feedback.duels_conducted
     3254
     >>> vbc.get_condorcet_winner()
     2

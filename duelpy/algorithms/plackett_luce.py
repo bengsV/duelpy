@@ -89,7 +89,7 @@ class PlackettLucePACItem(AllApproximateCondorcetProducer, PacAlgorithm):
     ...                                       random_state=random_state)
     >>> plackett_luce = PlackettLucePACItem(feedback_mechanism, random_state=random_state, failure_probability=0.1, epsilon=0.01)
     >>> plackett_luce.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = plackett_luce.wrapped_feedback.duels_conducted
     >>> arm = plackett_luce.get_approximate_condorcet_winners()
     >>> arm, comparisons
     ([2], 476)
@@ -258,7 +258,7 @@ class PlackettLuceAMPR(CopelandRankingProducer, PacAlgorithm):
     ...                                       random_state=random_state)
     >>> pl = PlackettLuceAMPR(feedback_mechanism, random_state=random_state, failure_probability=0.9, epsilon=0.1)
     >>> pl.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = pl.wrapped_feedback.duels_conducted
     >>> ranking = pl.get_ranking()
     >>> ranking, comparisons
     ([2, 4, 3, 1, 0], 1097)

@@ -154,6 +154,7 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
         sample_interval: int = 1,
     ):
         super().__init__(feedback_mechanism)
+        self.duels_conducted = 0
         self.metrics = metrics
         self.sample_interval = sample_interval
         self.results: Dict[str, List[float]] = {key: [] for key in metrics.keys()}
@@ -181,14 +182,15 @@ class MetricKeepingFeedbackMechanism(FeedbackMechanismDecorator):
         bool
             True if the first arm wins.
         """
+        self.duels_conducted += 1
         result = super().duel(arm_i_index, arm_j_index)
         for (name, metric) in self.metrics.items():
             # Always call the metric, in case it keeps some internal state.
             metric_value = metric(arm_i_index, arm_j_index)
-            if self.get_num_duels() % self.sample_interval == 0:
+            if self.duels_conducted % self.sample_interval == 0:
                 self.results[name].append(metric_value)
-        if self.get_num_duels() % self.sample_interval == 0:
-            self.results["time_step"].append(self.get_num_duels())
+        if self.duels_conducted % self.sample_interval == 0:
+            self.results["time_step"].append(self.duels_conducted)
         return result
 
 
@@ -222,7 +224,7 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     >>> from duelpy.algorithms import Savage
     >>> pac_algorithm = Savage(feedback_mechanism)
     >>> pac_algorithm.run()
-    >>> feedback_mechanism.get_num_duels()
+    >>> pac_algorithm.wrapped_feedback.duels_conducted
     2
     >>> pac_algorithm.get_copeland_winner()
     0
@@ -237,8 +239,8 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     ... except budgeted_feedback.exception_class:
     ...     # The algorithm was not able to find a Copeland winner with the limited duel budget.
     ...     pass
-    >>> feedback_mechanism.get_num_duels()  # Just one additional duel
-    3
+    >>> pac_algorithm.wrapped_feedback.duels_conducted # Just one additional duel
+    1
     >>> pac_algorithm.get_copeland_winner() is None  # Algorithm terminated early
     True
 
@@ -252,8 +254,8 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
     ... except budgeted_feedback.exception_class:
     ...     # This should not happen, the budget is sufficiently large
     ...     assert False
-    >>> feedback_mechanism.get_num_duels()
-    5
+    >>> pac_algorithm.wrapped_feedback.duels_conducted
+    2
     >>> pac_algorithm.get_copeland_winner()
     0
 
@@ -262,10 +264,9 @@ class BudgetedFeedbackMechanism(FeedbackMechanismDecorator):
 
     >>> pac_algorithm = Savage(feedback_mechanism, time_horizon=100)
     >>> pac_algorithm.run()
-    >>> # 5 duels conducted previously, 100 new duels. The time horizon is both
-    >>> # an upper and a lower bound.
-    >>> feedback_mechanism.get_num_duels()
-    105
+    >>> # Time horizon is both an upper and a lower bound.
+    >>> pac_algorithm.wrapped_feedback.duels_conducted
+    100
     >>> pac_algorithm.get_copeland_winner()
     0
 

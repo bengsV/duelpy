@@ -391,7 +391,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
     >>> feedback_mechanism = MatrixFeedback(preference_matrix=preference_matrix, random_state=random_state)
     >>> btm = BeatTheMeanBanditPAC(feedback_mechanism=feedback_mechanism, random_state=random_state, epsilon=0.001, gamma=0.3)
     >>> btm.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = btm.wrapped_feedback.duels_conducted
     >>> best_arm = btm.get_condorcet_winner()
     >>> best_arm, comparisons
     (2, 158)

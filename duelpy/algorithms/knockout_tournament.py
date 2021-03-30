@@ -73,7 +73,7 @@ class KnockoutTournament(CondorcetProducer, PacAlgorithm):
     >>> best_arm = knockout_tournament.get_condorcet_winner()
     >>> best_arm
     2
-    >>> feedback_mechanism.get_num_duels()
+    >>> knockout_tournament.wrapped_feedback.duels_conducted
     300
 
     In this example the :math:`epsilon`-Condorcet winner is the arm with index 2.

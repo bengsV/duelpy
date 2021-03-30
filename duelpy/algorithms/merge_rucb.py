@@ -84,7 +84,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
     >>> test_object.run()
     >>> test_object.get_condorcet_winner()
     2
-    >>> feedback_mechanism.get_num_duels()
+    >>> test_object.wrapped_feedback.duels_conducted
     677
     >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
     74.2

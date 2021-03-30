@@ -99,7 +99,7 @@ class CwRmed(Algorithm):
     >>> cwrmed.run()
     >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     31.5
-    >>> cwrmed.wrapped_feedback.get_num_duels()
+    >>> cwrmed.wrapped_feedback.duels_conducted
     100
     """
 
@@ -202,15 +202,15 @@ class CwRmed(Algorithm):
             ``self.wrapped_feedback.exception_class``.
         """
         for (arm_i, arm_j) in self.wrapped_feedback.get_dueling_pair_combinations():
-            if self.wrapped_feedback.get_num_duels() > 1:
+            if self.wrapped_feedback.duels_conducted > 1:
                 if self.preference_estimate.get_num_samples(
                     arm_i, arm_j
                 ) < self.exploratory_constant * math.sqrt(
-                    math.log(self.wrapped_feedback.get_num_duels())
+                    math.log(self.wrapped_feedback.duels_conducted)
                 ) or self.preference_estimate.get_mean_estimate(
                     arm_i, arm_j
                 ) < self.regret_bound_constant / math.log(
-                    math.log(self.wrapped_feedback.get_num_duels())
+                    math.log(self.wrapped_feedback.duels_conducted)
                 ):
                     self.preference_estimate.enter_sample(
                         arm_i,
@@ -251,7 +251,7 @@ class CwRmed(Algorithm):
                         )
                         if (
                             self.preference_estimate.get_num_samples(arm_i, arm_j)
-                            / math.log(self.wrapped_feedback.get_num_duels())
+                            / math.log(self.wrapped_feedback.duels_conducted)
                             * kl_div
                             > 1.0
                         ):
@@ -291,7 +291,7 @@ class CwRmed(Algorithm):
                 )
                 emp_div.append(
                     self.preference_estimate.get_num_samples(arm_i, arm_j)
-                    / math.log(self.wrapped_feedback.get_num_duels())
+                    / math.log(self.wrapped_feedback.duels_conducted)
                     * kl_div
                 )
 
@@ -369,7 +369,7 @@ class CwRmed(Algorithm):
                     comparison_array,
                     (
                         self.preference_estimate.get_num_samples(superior, candidate)
-                        / math.log(self.wrapped_feedback.get_num_duels())
+                        / math.log(self.wrapped_feedback.duels_conducted)
                     ),
                 )
                 costs = np.append(costs, regret(superior, candidate) / kl_div)
