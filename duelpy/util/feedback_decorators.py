@@ -75,16 +75,6 @@ class FeedbackMechanismDecorator(FeedbackMechanism):
             arm_i_index, arm_j_index, duel_count
         )
 
-    def get_num_duels(self) -> int:
-        """Get the number of duels that were already performed.
-
-        Returns
-        -------
-        int
-            The number of duels.
-        """
-        return self.feedback_mechanism.get_num_duels()
-
     def get_arms(self) -> list:
         """Get the pool of arms available."""
         return self.feedback_mechanism.get_arms()
