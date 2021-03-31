@@ -5,14 +5,14 @@ from typing import Set
 
 import numpy as np
 
-from duelpy.algorithms.algorithm import Algorithm
+from duelpy.algorithms.interfaces import CondorcetProducer
 from duelpy.feedback import FeedbackMechanism
 from duelpy.stats import PreferenceEstimate
 from duelpy.stats.confidence_radius import HoeffdingConfidenceRadius
 from duelpy.util.utility_functions import argmax_set
 
 
-class RelativeUCB(Algorithm):
+class RelativeUCB(CondorcetProducer):
     r"""Implementation of the Relative Upper Confidence Bound algorithm.
 
     The goal of this algorithm is to find the :term:`Condorcet winner` while incurring minimal regret.
@@ -63,7 +63,7 @@ class RelativeUCB(Algorithm):
     Define a preference-based multi-armed bandit problem through a preference matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
-    >>> from duelpy.stats.metrics import WeakRegret
+    >>> from duelpy.stats.metrics import AverageRegret
     >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1],
@@ -73,7 +73,7 @@ class RelativeUCB(Algorithm):
     >>> random_state = np.random.RandomState(43)
     >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
     ...     MatrixFeedback(preference_matrix, random_state=random_state),
-    ...     metrics={"weak_regret": WeakRegret(preference_matrix)}
+    ...     metrics={"average_regret": AverageRegret(preference_matrix)}
     ... )
     >>> test_object = RelativeUCB(
     ...     feedback_mechanism=feedback_mechanism,
@@ -82,10 +82,10 @@ class RelativeUCB(Algorithm):
     ...     random_state=random_state,
     ... )
     >>> test_object.run()
-    >>> test_object.get_champion()
+    >>> test_object.get_condorcet_winner()
     2
-    >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
-    5.6
+    >>> np.round(np.sum(feedback_mechanism.results["average_regret"]), 2)
+    19.2
     """
 
     def __init__(
@@ -162,23 +162,17 @@ class RelativeUCB(Algorithm):
             )
         return arm_c
 
-    def get_champion(self) -> int:
-        """Get the champion arm that has won more often than any other arm.
+    def get_condorcet_winner(self) -> Optional[int]:
+        """Determine a Condorcet winner using RCS algorithm.
 
         Returns
         -------
-        int
-            Champion arm at time-step :math:`T`.
+        Optional[int]
+            The index of a Condorcet winner, if existent, among the given arms.
         """
-        arms_win_count = np.zeros(self.wrapped_feedback.get_num_arms())
-        # calculate number of expected wins for each arm
-        for arm_i in range(self.wrapped_feedback.get_num_arms()):
-            for arm_j in range(self.wrapped_feedback.get_num_arms()):
-                if self.preference_estimate.get_mean_estimate(arm_i, arm_j) > 0.5:
-                    arms_win_count[arm_i] += self.preference_estimate.wins[arm_i, arm_j]
-
-        winner_arm = int(np.argmax(arms_win_count))
-        return winner_arm
+        return (
+            self.preference_estimate.get_mean_estimate_matrix().get_condorcet_winner()
+        )
 
     def step(self) -> None:
         """Run one round of an algorithm."""
