@@ -31,12 +31,13 @@ These are the essential steps. Make sure to follow them before releasing.
 
 .. code-block:: Markdown
 
-    [ ] The new version follows SemVer.
-    [ ] The Changelog is up to date.
-    [ ] The Changelog has a section for the new version.
-    [ ] The Changelog has a link for the new version.
-    [ ] The version is updated in `setup.py`.
-    [ ] I have checked for other mentions of the old version.
+    - [ ] The new version follows SemVer.
+    - [ ] The Changelog is up to date.
+    - [ ] The Changelog has a section for the new version.
+    - [ ] The Changelog has a link for the new version.
+    - [ ] The Changelog has a new "Unreleased" section with an updated link.
+    - [ ] The version is updated in `setup.py`.
+    - [ ] I have checked for other mentions of the old version.
 
 - Double check each of the entries. Mark them as done when they are done.
 - Wait for a review. Merge the MR.

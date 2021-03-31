@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+Nothing yet.
+
+### Changed
+
+Nothing yet.
+
+### Fixed
+
+Nothing yet.
+
+## [1.0.0] - 2021-03-31
+
+### Added
+
+- Algorithm implementations (see the documentation for references).
+	- ActiveRanking
+	- BinarySearchRanking
+	- BordaRanking
+	- CwRmed
+	- Rmed1
+	- Rmed2
+	- Rmed2FH
+	- VerificationBasedCondorcet
+- Algorithm result superclasses
+	- BordaRankingProducer
+	- GeneralizedRankingProducer
+- A new `duel_repeatedly` function that can be implemented for a
+  `FeedbackMechanism` to optimize repeated duels of the same arms. A custom
+  implementation is optional. The default implementation falls back to repeated
+  calls of `duel`.
+
 ### Changed
 
 - The feedback mechanism is now automatically wrapped with a
@@ -14,11 +47,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   need for algorithm-specific early termination logic. The `step` function may
   now raise an exception because of this wrapper. The exception is caught in
   `run`. This is a breaking change.
+- As a consequence of the last bullet point the `feedback_mechanism` attribute
+  has been replaced by `wrapped_feedback`. This should make it clear that the
+  feedback mechanism is wrapped and avoid surprises.
 - `BudgetedFeedbackMechanism` now throws an object-local exception. That makes
   it possible to only catch exactly the intended exception.
 - `BudgetedFeedbackMechanism` now accepts `max_duels=None` for an unlimited
   budget. That can be useful in some situations when the budget should be
   applied conditionally.
+- The decision example (`examples/decision.py`) now uses a feedback mechanism
+  decorator to implement the printing of the current preference estimate. This
+  is because `step` does not execute just a single duel in some of our
+  algorithm implementations. It may also raise an exception now. It is now best
+  practice to use decorators instead of relying on calling `step` manually.
 - The duel count was removed from the main `FeedbackMechanism` class. You can
   use a `BudgetedFeedbackMechanism` (accessible on all `Algorithm` instances by
   `instance.wrapped_feedback` and its `duels_conducted` attribute as a
@@ -31,6 +72,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `MergeRUCB` implementation now explores until only one arm remains and
   then continues with exploitation. The stage counter is incremented less
   often, which affects the merge frequency.
+- The relative preference computation in `PlackettLuceModel` has changed. The
+  previous calculation was wrong due to operator precedence.
+- The `WinnerStaysWeakRegret` and `WinnerStaysStrongRegret` implementations now
+  inherit from `CondorcetProducer`.
+- The threshold computation in `SuccessiveElimination` was fixed. Operator
+  precedence strikes again.
+- `SingleEliminationTopKSorting` would previously spend its entire duel budget
+  on a single execution of `SingleEliminationTop1Select` (including
+  exploitation). This has been fixed.
+- `MallowsMPI` in "PAC mode" (no time horizon) would previously terminate as
+  soon as only two arms remain, without properly determining the winner of the
+  two. This has been fixed.
+- The `KLDivergenceBasedPAC` component of `ScalableCopelandBandits` no longer
+  terminates exploration during reward generation in "PAC mode".
+- The number of comparisons in `SingleEliminationTop1Select` and
+  `SingleEliminationTopKSorting` was previously computed with a base-2
+  logarithm although a natural logarithm should be used. This has been fixed.
 
 ## [0.1.0] - 2021-03-04
 
@@ -76,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A basic skeleton of the project without any functionality.
 
-[Unreleased]: https://gitlab.com/duelpy/duelpy/compare/v0.1.0...master
+[Unreleased]: https://gitlab.com/duelpy/duelpy/compare/v1.0.0...master
+[1.0.0]: https://gitlab.com/duelpy/duelpy/compare/v0.1.0...v1.0.0
 [0.1.0]: https://gitlab.com/duelpy/duelpy/compare/v0.0.1...v0.1.0
 [0.0.1]: https://gitlab.com/duelpy/duelpy/-/releases/v0.0.1
 
