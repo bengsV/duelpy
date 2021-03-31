@@ -35,6 +35,7 @@ These are the essential steps. Make sure to follow them before releasing.
     - [ ] The Changelog is up to date.
     - [ ] The Changelog has a section for the new version.
     - [ ] The Changelog has a link for the new version.
+    - [ ] The Changelog has a new "Unreleased" section with an updated link.
     - [ ] The version is updated in `setup.py`.
     - [ ] I have checked for other mentions of the old version.
 
