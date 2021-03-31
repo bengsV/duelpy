@@ -7,7 +7,7 @@ with open("README.md", "r") as readme_file:
 
 setuptools.setup(
     name="duelpy",
-    version="0.1.0",
+    version="1.0.0",
     author="The duelpy team",
     author_email="contact.us.at@gitlab.invalid",
     description="Dueling Bandit Algorithms in Python",

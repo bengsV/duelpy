@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+Nothing yet.
+
+### Changed
+
+Nothing yet.
+
+### Fixed
+
+Nothing yet.
+
+## [1.0.0] - 2021-03-31
+
+### Added
+
 - Algorithm implementations (see the documentation for references).
 	- ActiveRanking
 	- BinarySearchRanking
@@ -120,7 +134,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A basic skeleton of the project without any functionality.
 
-[Unreleased]: https://gitlab.com/duelpy/duelpy/compare/v0.1.0...master
+[Unreleased]: https://gitlab.com/duelpy/duelpy/compare/v1.0.0...master
+[1.0.0]: https://gitlab.com/duelpy/duelpy/compare/v0.1.0...v1.0.0
 [0.1.0]: https://gitlab.com/duelpy/duelpy/compare/v0.0.1...v0.1.0
 [0.0.1]: https://gitlab.com/duelpy/duelpy/-/releases/v0.0.1
 
