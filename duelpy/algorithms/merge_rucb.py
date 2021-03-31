@@ -62,7 +62,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
     matrix:
 
     >>> from duelpy.feedback import MatrixFeedback
-    >>> from duelpy.stats.metrics import WeakRegret
+    >>> from duelpy.stats.metrics import AverageRegret
     >>> from duelpy.util.feedback_decorators import MetricKeepingFeedbackMechanism
     >>> preference_matrix = np.array([
     ...     [0.5, 0.1, 0.1, 0.1, 0.1],
@@ -74,7 +74,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
     >>> random_state=np.random.RandomState(43)
     >>> feedback_mechanism = MetricKeepingFeedbackMechanism(
     ...     MatrixFeedback(preference_matrix, random_state=random_state),
-    ...     metrics={"weak_regret": WeakRegret(preference_matrix)}
+    ...     metrics={"average_regret": AverageRegret(preference_matrix)}
     ... )
     >>> test_object = MergeRUCB(
     ...  feedback_mechanism=feedback_mechanism,
@@ -86,8 +86,8 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
     2
     >>> test_object.wrapped_feedback.duels_conducted
     677
-    >>> np.round(np.sum(feedback_mechanism.results["weak_regret"]), 2)
-    74.2
+    >>> np.round(np.sum(feedback_mechanism.results["average_regret"]), 2)
+    145.3
     """
 
     def __init__(
