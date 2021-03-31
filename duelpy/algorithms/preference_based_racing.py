@@ -213,7 +213,7 @@ class CopelandPBR(PreferenceBasedRacing):
     ...                                       random_state=random_state)
     >>> test_object = CopelandPBR(feedback_mechanism, random_state=random_state, num_top_arms=2, failure_probability=0.1)
     >>> test_object.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = test_object.wrapped_feedback.duels_conducted
     >>> top_k = test_object.get_top_k()
     >>> top_k, comparisons
     ([4, 2], 614)
@@ -332,7 +332,7 @@ class BordaPBR(PreferenceBasedRacing):
     ...                                       random_state=random_state)
     >>> test_object = BordaPBR(feedback_mechanism, random_state=random_state, num_top_arms=2, failure_probability=0.1, max_comparisons=100)
     >>> test_object.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = test_object.wrapped_feedback.duels_conducted
     >>> top_k = test_object.get_top_k()
     >>> top_k, comparisons
     ([4, 2], 1000)
@@ -464,7 +464,7 @@ class RandomWalkPBR(PreferenceBasedRacing):
     ...                                       random_state=random_state)
     >>> test_object = RandomWalkPBR(feedback_mechanism, random_state=random_state, num_top_arms=2, failure_probability=0.1, max_comparisons=200)
     >>> test_object.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = test_object.wrapped_feedback.duels_conducted
     >>> top_k = test_object.get_top_k()
     >>> top_k, comparisons
     ([2, 4], 1102)

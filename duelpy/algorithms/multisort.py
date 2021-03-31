@@ -63,7 +63,7 @@ class Multisort(CopelandRankingProducer):
     >>> feedback_mechanism = MatrixFeedback(preference_matrix, random_state=random_state)
     >>> multisort = Multisort(feedback_mechanism=feedback_mechanism, time_horizon=1000, random_state=random_state)
     >>> multisort.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = multisort.wrapped_feedback.duels_conducted
     >>> ranking = multisort.get_ranking()
     >>> ranking, comparisons
     ([2, 4, 3, 1, 0], 1000)

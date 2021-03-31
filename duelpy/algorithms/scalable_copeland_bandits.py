@@ -93,7 +93,7 @@ class ScalableCopelandBandits(Algorithm):
     >>> scb.run()
     >>> np.round(np.sum(feedback_mechanism.results["copeland_regret"]), 2)
     76.0
-    >>> scb.wrapped_feedback.get_num_duels()
+    >>> scb.wrapped_feedback.duels_conducted
     1000
     """
 

@@ -68,7 +68,7 @@ class MallowsMPI(CondorcetProducer, PacAlgorithm):
     ...                                       random_state=random_state)
     >>> mallows = MallowsMPI(feedback_mechanism, random_state=random_state, failure_probability=0.9)
     >>> mallows.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = mallows.wrapped_feedback.duels_conducted
     >>> arm = mallows.get_condorcet_winner()
     >>> arm, comparisons
     (2, 65)
@@ -191,7 +191,7 @@ class MallowsMPR(CopelandRankingProducer, PacAlgorithm):
     ...                                       random_state=random_state)
     >>> mallows = MallowsMPR(feedback_mechanism, random_state=random_state, failure_probability=0.9)
     >>> mallows.run()
-    >>> comparisons = feedback_mechanism.get_num_duels()
+    >>> comparisons = mallows.wrapped_feedback.duels_conducted
     >>> ranking = mallows.get_ranking()
     >>> ranking, comparisons
     ([2, 4, 3, 1, 0], 571)

@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `BudgetedFeedbackMechanism` now accepts `max_duels=None` for an unlimited
   budget. That can be useful in some situations when the budget should be
   applied conditionally.
+- The duel count was removed from the main `FeedbackMechanism` class. You can
+  use a `BudgetedFeedbackMechanism` (accessible on all `Algorithm` instances by
+  `instance.wrapped_feedback` and its `duels_conducted` attribute as a
+  replacement. As a result the `FeedbackMechanism` superclass no longer
+  requires any state. Subclasses may or may not have state. For example
+  `MatrixFeedback` still requires a numpy random state.
 
 ### Fixed
 

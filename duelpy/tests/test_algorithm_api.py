@@ -29,4 +29,4 @@ def test_time_horizon_kept(algorithm_class: Type[Algorithm], time_horizon: int) 
         parameters["random_state"] = random_state
     algorithm = algorithm_class(**parameters)  # type: ignore
     algorithm.run()
-    assert feedback_mechanism.get_num_duels() == time_horizon
+    assert algorithm.wrapped_feedback.duels_conducted == time_horizon

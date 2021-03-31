@@ -97,7 +97,7 @@ class KLDivergenceBasedPAC(SingleCopelandProducer, PacAlgorithm):
 
     The best arm in this case is the last arm (index 2)
 
-    >>> kldpac.wrapped_feedback.get_num_duels()
+    >>> kldpac.wrapped_feedback.duels_conducted
     89
     >>> kldpac.get_copeland_winner()
     2

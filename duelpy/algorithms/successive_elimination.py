@@ -112,7 +112,7 @@ class SuccessiveElimination(BordaProducer, PacAlgorithm):
     >>> secs = SuccessiveElimination(feedback_mechanism=feedback_mechanism, random_state=random_state, time_horizon=1000, time_gate = 50, failure_probability=0.1)
     >>> secs.run()
     >>> borda_winner = secs.get_borda_winner()
-    >>> comparisons = secs.wrapped_feedback.get_num_duels()
+    >>> comparisons = secs.wrapped_feedback.duels_conducted
     >>> borda_winner, comparisons
     (2, 1000)
     """

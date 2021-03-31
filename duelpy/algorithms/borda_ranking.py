@@ -66,7 +66,7 @@ class BordaRanking(BordaRankingProducer, PacAlgorithm):
     >>> test_object.run()
     >>> test_object.get_ranking()
     [2, 1, 0]
-    >>> feedback_mechanism.get_num_duels()
+    >>> test_object.wrapped_feedback.duels_conducted
     9828
     """
 
