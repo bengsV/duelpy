@@ -133,7 +133,7 @@ class BinarySearchRanking(CopelandRankingProducer, PacAlgorithm):
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,
         epsilon: float = 0.5,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
     ):
         super().__init__(feedback_mechanism, time_horizon)
         self._epsilon = epsilon

@@ -22,12 +22,12 @@ class PreferenceMatrix:
 
     def __init__(
         self,
-        preferences: np.array,
+        preferences: np.ndarray,
     ):
         self.preferences = preferences
 
     @staticmethod
-    def from_upper_triangle(matrix: np.array) -> "PreferenceMatrix":
+    def from_upper_triangle(matrix: np.ndarray) -> "PreferenceMatrix":
         """Construct a coherent preference matrix from an upper triangle.
 
         All entries below the diagonal (including the diagonal) are ignored.
@@ -114,7 +114,7 @@ class PreferenceMatrix:
         """
         return set(argmax_set(self.get_copeland_scores()))
 
-    def get_copeland_scores(self) -> np.array:
+    def get_copeland_scores(self) -> np.ndarray:
         """Calculate Copeland scores for each arm.
 
         The :term:`Copeland score` of an arm is the number of other arms that the arm is expected to win against.
@@ -126,7 +126,7 @@ class PreferenceMatrix:
         """
         return (self.preferences > 0.5).sum(axis=1)
 
-    def get_normalized_copeland_scores(self) -> np.array:
+    def get_normalized_copeland_scores(self) -> np.ndarray:
         """Calculate the normalized Copeland scores for each arm.
 
         The normalized :term:`Copeland score` of an arm is the fraction of other arms it is expected to win against.
@@ -150,7 +150,7 @@ class PreferenceMatrix:
                     break
         return set(candidates)
 
-    def get_borda_scores(self) -> np.array:
+    def get_borda_scores(self) -> np.ndarray:
         """Calculate the Borda score, also called sum of expectations.
 
         Returns
@@ -173,6 +173,18 @@ class PreferenceMatrix:
         """
         return set(argmax_set(self.get_borda_scores()))
 
+    def _get_arms_by_preference(self, arm: int, *, above: bool) -> List[int]:
+        threshold = 0.5
+        return [
+            opponent
+            for opponent in range(self.get_num_arms())
+            if (
+                self.preferences[arm, opponent] > threshold
+                if above
+                else self.preferences[arm, opponent] < threshold
+            )
+        ]
+
     def get_winners_against(self, arm: int) -> List[int]:
         """Get the list of arms which beat the provided arm.
 
@@ -191,12 +203,7 @@ class PreferenceMatrix:
         list
             The list of all winners against the given arm.
         """
-        winners = list()
-        for opponent in range(self.get_num_arms()):
-            if self.preferences[arm, opponent] < 0.5:
-                winners.append(opponent)
-
-        return winners
+        return self._get_arms_by_preference(arm, above=False)
 
     def get_losers_against(self, arm: int) -> List[int]:
         """Get the list of arms which are beaten by the provided arm.
@@ -216,12 +223,7 @@ class PreferenceMatrix:
         list
             The list of all losers against the given arm.
         """
-        losers = list()
-        for opponent in range(self.get_num_arms()):
-            if self.preferences[arm, opponent] > 0.5:
-                losers.append(opponent)
-
-        return losers
+        return self._get_arms_by_preference(arm, above=True)
 
     def __repr__(self) -> str:
         """Compute a string representation of the preference matrix."""

@@ -61,7 +61,7 @@ class Regret(Metric):
 
     def __init__(
         self,
-        preference_matrix: Union[PreferenceMatrix, np.array],
+        preference_matrix: Union[PreferenceMatrix, np.ndarray],
         aggregation_function: Callable[[float, float], float],
     ):
         # Accept simple numpy arrays for convenience.
@@ -70,9 +70,10 @@ class Regret(Metric):
         self.preference_matrix = preference_matrix
         self.aggregation_function = aggregation_function
         self.best_arm = self.preference_matrix.get_condorcet_winner()
-        assert (
-            self.best_arm is not None
-        ), "The regret can only be computed if a Condorcet winner exists."
+        if self.best_arm is None:
+            raise ValueError(
+                "The regret can only be computed if a Condorcet winner exists."
+            )
 
     def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
         """Compute the regret of a duel."""
@@ -113,7 +114,7 @@ class AverageRegret(Regret):
     0.2
     """
 
-    def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
+    def __init__(self, preference_matrix: Union[np.ndarray, PreferenceMatrix]) -> None:
         super().__init__(
             preference_matrix, aggregation_function=lambda a, b: (a + b) / 2
         )
@@ -147,7 +148,7 @@ class StrongRegret(Regret):
     0.4
     """
 
-    def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
+    def __init__(self, preference_matrix: Union[np.ndarray, PreferenceMatrix]) -> None:
         super().__init__(preference_matrix, aggregation_function=max)
 
 
@@ -179,7 +180,7 @@ class WeakRegret(Regret):
     0.0
     """
 
-    def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
+    def __init__(self, preference_matrix: Union[np.ndarray, PreferenceMatrix]) -> None:
         super().__init__(preference_matrix, aggregation_function=min)
 
 
@@ -199,7 +200,7 @@ class AverageCopelandRegret:
         The cumulative average regret.
     """
 
-    def __init__(self, preference_matrix: Union[np.array, PreferenceMatrix]) -> None:
+    def __init__(self, preference_matrix: Union[np.ndarray, PreferenceMatrix]) -> None:
         # Accept simple numpy arrays for convenience.
         if isinstance(preference_matrix, np.ndarray):
             preference_matrix = PreferenceMatrix(preference_matrix)

@@ -123,7 +123,7 @@ class Rmed1(Algorithm):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        divergence_tolerance: Optional[Callable[[int], np.float]] = None,
+        divergence_tolerance: Optional[Callable[[int], float]] = None,
         random_state: Optional[np.random.RandomState] = None,
     ):
         super().__init__(
@@ -431,7 +431,7 @@ class Rmed2(Rmed1):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        divergence_tolerance: Optional[Callable[[int], np.float]] = None,
+        divergence_tolerance: Optional[Callable[[int], float]] = None,
         random_state: Optional[np.random.RandomState] = None,
         exploratory_constant: float = 3,
     ):
@@ -632,7 +632,7 @@ class Rmed2FH(Rmed2):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        divergence_tolerance: Optional[Callable[[int], np.float]] = None,
+        divergence_tolerance: Optional[Callable[[int], float]] = None,
         random_state: Optional[np.random.RandomState] = None,
         exploratory_constant: float = 3,
     ):

@@ -95,7 +95,7 @@ class SequentialElimination(SingleCopelandProducer, PacAlgorithm):
     def __init__(
         self,
         feedback_mechanism: FeedbackMechanism,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
         time_horizon: Optional[int] = None,
         failure_probability: float = 0.1,
         epsilon_lower: float = 0.0,

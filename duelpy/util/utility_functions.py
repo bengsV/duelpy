@@ -8,7 +8,7 @@ import numpy as np
 
 
 def argmin_set(
-    array: np.array, exclude_indexes: Optional[List[int]] = None
+    array: np.ndarray, exclude_indexes: Optional[List[int]] = None
 ) -> List[int]:
     """Calculate the complete argmin set, returning an array with all indices.
 
@@ -46,7 +46,7 @@ def argmin_set(
 
 
 def argmax_set(
-    array: np.array, exclude_indexes: Optional[List[int]] = None
+    array: np.ndarray, exclude_indexes: Optional[List[int]] = None
 ) -> List[int]:
     """Calculate the complete argmax set, returning an array with all indices..
 

@@ -152,7 +152,7 @@ class MergeRUCB(CondorcetProducer, PacAlgorithm):
         self.preference_estimate.set_confidence_radius(confidence_radius)
 
     def _prune_arm(
-        self, batch_index: int, upper_confidence_bound_matrix: np.array
+        self, batch_index: int, upper_confidence_bound_matrix: np.ndarray
     ) -> None:
         """Remove the arm which has the least potential to win.
 

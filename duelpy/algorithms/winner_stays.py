@@ -73,7 +73,7 @@ class WinnerStaysWeakRegret(CondorcetProducer):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
         self.random_state = (
@@ -209,7 +209,7 @@ class WinnerStaysStrongRegret(CondorcetProducer):
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,
         exploitation_factor: float = 2,
-        random_state: np.random.RandomState = np.random.RandomState(),
+        random_state: Optional[np.random.RandomState] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
         if exploitation_factor < 1:
@@ -217,9 +217,10 @@ class WinnerStaysStrongRegret(CondorcetProducer):
                 "The exploitation_factor parameter needs to be larger than 1."
             )
         self._exploitation_factor = exploitation_factor
+        _random_state = random_state if random_state is not None else np.random.RandomState()
         # time_horizon is None since we control the execution manually
         self._ws = WinnerStaysWeakRegret(
-            self.wrapped_feedback, time_horizon=None, random_state=random_state
+            self.wrapped_feedback, time_horizon=None, random_state=_random_state
         )
         self._round_index = 0
         self._round_length = 0

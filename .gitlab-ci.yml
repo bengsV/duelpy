@@ -47,18 +47,23 @@ lint:
 pytest:
   stage: test
   script:
-  - pip install pytest
+  - pip install pytest pytest-cov
   - pip install -r requirements.txt
-  - pytest
+  - pytest --cov=duelpy --cov-report=xml:coverage.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+.sphinx_build: &sphinx_build
+  - pip install --upgrade sphinx sphinxcontrib-bibtex sphinx_rtd_theme sphinx-autoapi
+  - pip install -r requirements.txt
 
 doc_test_build:
   stage: test
   script:
-  - pip install --upgrade sphinx
-  - pip install sphinxcontrib-bibtex
-  - pip install sphinx_rtd_theme
-  - pip install sphinx-autoapi
-  - pip install -r requirements.txt
+  - *sphinx_build
   - sphinx-build -c sphinx -b html sphinx doc_test
   artifacts:
     expose_as: 'docs'
@@ -71,11 +76,7 @@ doc_test_build:
 pages:
   stage: deploy
   script:
-  - pip install --upgrade sphinx
-  - pip install sphinxcontrib-bibtex
-  - pip install sphinx_rtd_theme
-  - pip install sphinx-autoapi
-  - pip install -r requirements.txt
+  - *sphinx_build
   - sphinx-build -c sphinx -b html sphinx public
   artifacts:
     paths:
@@ -83,11 +84,24 @@ pages:
   only:
   - master
 
+pytest-py38:
+  stage: test
+  image: python:3.8
+  script:
+  - pip install pytest pytest-cov
+  - pip install -r requirements.txt
+  - pytest --cov=duelpy --cov-report=xml:coverage.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
 pypi:
   stage: deploy
   script:
-  - pip install twine setuptools wheel
-  - python3 setup.py sdist bdist_wheel
+  - pip install twine build
+  - python3 -m build
   # The API token is provided in the TWINE_PASSWORD environment variable configured in the CI
   - twine upload --user __token__ dist/*
   only:

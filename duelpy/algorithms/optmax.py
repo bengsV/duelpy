@@ -82,7 +82,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         failure_probability: float = 0.1,
         time_horizon: Optional[int] = None,
         epsilon_range: float = 0.05,
-        random_state: RandomState = RandomState(),
+        random_state: Optional[RandomState] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
         self._failure_probability = failure_probability
@@ -91,7 +91,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         self.preference_estimate = PreferenceEstimate(
             self.wrapped_feedback.get_num_arms()
         )
-        self._random_state = random_state
+        self._random_state = random_state if random_state is not None else RandomState()
 
     def exploration_finished(self) -> bool:
         """Determine whether algorithm has completed exploration.
@@ -423,7 +423,7 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         failure_probability: float,
         arms: list,
         epsilon_range: float,
-        random_state: RandomState = RandomState(),
+        random_state: Optional[RandomState] = None,
     ) -> int:
         r"""Return the :math:`\epsilon`-maximum arm.
 
@@ -448,6 +448,8 @@ class OptMax(SingleCopelandProducer, PacAlgorithm):
         int
             Returns :math:`\epsilon`-maximum anchor arm.
         """
+        if random_state is None:
+            random_state = RandomState()
 
         def prob_scaling(num_iteration: int) -> float:
             return 4 * num_iteration

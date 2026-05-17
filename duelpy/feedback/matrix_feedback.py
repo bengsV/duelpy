@@ -26,7 +26,7 @@ class MatrixFeedback(FeedbackMechanism):
 
     def __init__(
         self,
-        preference_matrix: Union[PreferenceMatrix, np.array],
+        preference_matrix: Union[PreferenceMatrix, np.ndarray],
         arms: Optional[list] = None,
         random_state: Optional[np.random.RandomState] = None,
     ):
@@ -89,7 +89,7 @@ class MatrixFeedback(FeedbackMechanism):
         int
            The number of wins of the first arm against the second arm.
         """
-        arm_i_wins = np.random.binomial(
+        arm_i_wins = self.random_state.binomial(
             duel_count,
             self.preference_matrix.preferences[arm_i_index, arm_j_index],
         )

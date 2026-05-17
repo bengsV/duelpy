@@ -288,7 +288,7 @@ class PreferenceEstimate:
             + self.wins[second_arm_index][first_arm_index]
         )
 
-    def get_radius_matrix(self) -> np.array:
+    def get_radius_matrix(self) -> np.ndarray:
         """Seed the confidence radius cache and return it.
 
         Returns
@@ -351,7 +351,7 @@ class PreferenceEstimate:
             )
         )
 
-    def get_pessimistic_copeland_score_estimates(self) -> np.array:
+    def get_pessimistic_copeland_score_estimates(self) -> np.ndarray:
         """Get pessimistic estimates for every arm's Copeland score.
 
         This only counts wins that have a probability of above 50% in the
@@ -361,7 +361,7 @@ class PreferenceEstimate:
         wins = self.get_lower_estimate_matrix().preferences > 1 / 2
         return wins.sum(axis=1)
 
-    def get_optimistic_copeland_score_estimates(self) -> np.array:
+    def get_optimistic_copeland_score_estimates(self) -> np.ndarray:
         """Get optimistic estimates for every arm's Copeland score.
 
         This counts every win that is considered possible within the confidence

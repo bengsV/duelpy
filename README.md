@@ -1,15 +1,56 @@
 # duelpy
 
-This is a python package for solving with Preference Based Multi Armed Bandit problems, also known as dueling bandits. Refer to [this paper](https://jmlr.org/papers/v22/18-546.html) for an overview of the field.
+A Python library for **Preference-Based Multi-Armed Bandit** (PB-MAB) problems, also known as dueling bandits. Refer to [this paper](https://jmlr.org/papers/v22/18-546.html) for an overview of the field.
 
-You can compare the implemented algorithms in an experiment by running
+## Installation
 
+```bash
+pip install duelpy
 ```
-python3 -m duelpy.experiments.cli
+
+## Quick start
+
+```python
+import numpy as np
+from duelpy.feedback import MatrixFeedback
+from duelpy.algorithms import RelativeUCB
+
+# Define a 3-arm preference matrix where p[i,j] = P(arm i beats arm j)
+preference_matrix = np.array([
+    [0.5, 0.7, 0.8],
+    [0.3, 0.5, 0.6],
+    [0.2, 0.4, 0.5],
+])
+
+feedback = MatrixFeedback(preference_matrix, random_state=np.random.RandomState(42))
+algorithm = RelativeUCB(feedback, time_horizon=500)
+algorithm.run()
+print("Best arm:", algorithm.get_condorcet_winner())
 ```
 
-The experiments are still rather limited. The command-line interface can
-currently only run regret-based comparisons in a limited set of configurations.
-Pass the `--help` flag for more information.
+## Running experiments
 
-See [the documentation](https://duelpy.gitlab.io/duelpy/) for more information about the implemented algorithms.
+You can compare multiple algorithms through the built-in CLI:
+
+```bash
+python3 -m duelpy.experiments.cli --help
+```
+
+## Development setup
+
+```bash
+git clone <repo-url>
+cd duelpy
+pip install -e .
+pip install pre-commit
+pre-commit install
+pytest
+```
+
+## Documentation
+
+See [the full documentation](https://duelpy.gitlab.io/duelpy/) for the complete API reference and algorithm descriptions.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.

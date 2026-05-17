@@ -89,7 +89,7 @@ class DoubleThompsonSampling(SingleCopelandProducer):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
         exploratory_constant: float = 0.51,
     ):
         super().__init__(feedback_mechanism, time_horizon)

@@ -98,7 +98,7 @@ class BeatTheMeanBandit(CondorcetProducer, PacAlgorithm):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
         gamma: float = 1.0,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
@@ -237,7 +237,7 @@ class ComparisonHistory:
             )
         )  # break ties randomly within the working set
 
-        arm1_mask = np.full(self.working_set.shape, True, dtype=np.bool)
+        arm1_mask = np.full(self.working_set.shape, True, dtype=bool)
         arm1_mask[arm1] = False
         arm2 = random_state.choice(
             np.argwhere(self.working_set & arm1_mask).flatten()
@@ -405,7 +405,7 @@ class BeatTheMeanBanditPAC(BeatTheMeanBandit):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: Optional[int] = None,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
         gamma: float = 1.0,
         epsilon: float = 0.01,
         failure_probability: float = 0.1,

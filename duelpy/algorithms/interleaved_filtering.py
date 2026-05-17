@@ -92,7 +92,7 @@ class InterleavedFiltering(CondorcetProducer, PacAlgorithm):
         self,
         feedback_mechanism: FeedbackMechanism,
         time_horizon: int,
-        random_state: np.random.RandomState = None,
+        random_state: Optional[np.random.RandomState] = None,
     ) -> None:
         super().__init__(feedback_mechanism, time_horizon)
         assert self.time_horizon is not None  # for mypy
