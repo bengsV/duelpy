@@ -37,6 +37,9 @@ from duelpy.algorithms.single_elimination_tournament import SingleEliminationTop
 from duelpy.algorithms.successive_elimination import SuccessiveElimination
 from duelpy.algorithms.winner_stays import WinnerStaysStrongRegret
 from duelpy.algorithms.winner_stays import WinnerStaysWeakRegret
+from duelpy.algorithms.colstim import CoLSTIM
+from duelpy.algorithms.contextual_algorithm import ContextualAlgorithm
+from duelpy.algorithms.stad import StaD
 
 
 # Pylint insists that regret_minimizing_algorithms and interfaces are constants and should be
