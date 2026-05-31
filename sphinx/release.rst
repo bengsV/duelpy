@@ -42,12 +42,12 @@ These are the essential steps. Make sure to follow them before releasing.
 - Double check each of the entries. Mark them as done when they are done.
 - Wait for a review. Merge the MR.
 - Create a new tag with the format ``vX.Y.Z`` that points to the merge commit.
-- The "pypi" job of the GitLab `pipeline`_ should push the release to `PyPI`_. You
+- The "pypi" job of the GitHub Actions `pipeline`_ should push the release to `PyPI`_. You
   can check its status `here`_.
 
-.. _pipeline: https://gitlab.com/duelpy/duelpy/-/blob/master/.gitlab-ci.yml
+.. _pipeline: https://github.com/bengsV/duelpy/blob/master/.github/workflows
 .. _PyPI: https://pypi.org/project/duelpy/
-.. _here: https://gitlab.com/duelpy/duelpy/-/pipelines
+.. _here: https://github.com/bengsV/duelpy/actions
 
 Polish
 ------
@@ -62,6 +62,6 @@ fixed in a follow-up release if necessary.
 - Check the `README`_.
     - Is it still accurate and up to date?
 
-.. _changelog: https://gitlab.com/duelpy/duelpy/-/blob/master/CHANGELOG.md
-.. _documentation: https://duelpy.gitlab.io/duelpy/
-.. _README: https://gitlab.com/duelpy/duelpy/-/blob/master/README.md
+.. _changelog: https://github.com/bengsV/duelpy/blob/master/CHANGELOG.md
+.. _documentation: https://bengsv.github.io/duelpy/
+.. _README: https://github.com/bengsV/duelpy/blob/master/README.md

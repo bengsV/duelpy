@@ -25,4 +25,4 @@ Indices and tables
 Fork this project
 ==================
 
-* https://gitlab.com/duelpy/duelpy
+* https://github.com/bengsV/duelpy

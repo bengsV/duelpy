@@ -13,7 +13,7 @@ setuptools.setup(
     description="Dueling Bandit Algorithms in Python",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/duelpy/duelpy",
+    url="https://github.com/bengsV/duelpy",
     packages=setuptools.find_packages(),
     install_requires=[
         "numpy",

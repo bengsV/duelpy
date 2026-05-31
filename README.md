@@ -49,7 +49,7 @@ pytest
 
 ## Documentation
 
-See [the full documentation](https://duelpy.gitlab.io/duelpy/) for the complete API reference and algorithm descriptions.
+See [the full documentation](https://bengsv.github.io/duelpy/) for the complete API reference and algorithm descriptions.
 
 ## Changelog
 
