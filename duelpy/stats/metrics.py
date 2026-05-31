@@ -15,6 +15,7 @@ __all__ = [
     "StrongRegret",
     "WeakRegret",
     "AverageCopelandRegret",
+    "BordaRegret",
     "TotalWallClock",
     "Cumulative",
     "ExponentialMovingAverage",
@@ -214,6 +215,64 @@ class AverageCopelandRegret:
         return self.max_normalized_copeland_score - 0.5 * (
             self.normalized_copeland_scores[arm_i_index]
             + self.normalized_copeland_scores[arm_j_index]
+        )
+
+
+class BordaRegret(Metric):
+    r"""The regret compared to the :term:`Borda winner`.
+
+    For a preference matrix :math:`P`, the :term:`Borda score` of an arm
+    :math:`i` is :math:`b(i) = \frac{1}{K - 1} \sum_{j \ne i} P(i, j)` and the
+    :term:`Borda winner` is :math:`i^* = \arg\max_i b(i)`.  The per-duel Borda
+    regret of pulling the pair :math:`(i, j)` is
+
+    .. math::
+
+        r = b(i^*) - \tfrac{1}{2}\bigl(b(i) + b(j)\bigr).
+
+    This is the regret notion of :cite:`saha2021adversarial`, where it is
+    measured against the Borda winner in hindsight.  For a stationary
+    preference matrix (the case handled here) the hindsight Borda winner
+    coincides with :math:`i^*` above.  Adversarial / time-varying environments
+    expose their time-averaged preference matrix, whose Borda winner is exactly
+    the hindsight winner :math:`\arg\max_i \sum_t b_t(i)`.
+
+    This metric computes the per-duel regret.  It is common practice to report
+    the cumulative regret instead.  You can combine this class with the
+    :class:`Cumulative<duelpy.stats.metrics.Cumulative>` wrapper for that
+    purpose.
+
+    Parameters
+    ----------
+    preference_matrix
+        The true preferences.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> preference_matrix = PreferenceMatrix(np.array([
+    ...     [0.5, 0.9],
+    ...     [0.1, 0.5],
+    ... ]))
+    >>> metric = BordaRegret(preference_matrix)
+    >>> round(metric(0, 1), 2)
+    0.4
+    >>> round(metric(0, 0), 2)
+    0.0
+    """
+
+    def __init__(self, preference_matrix: Union[np.ndarray, PreferenceMatrix]) -> None:
+        # Accept simple numpy arrays for convenience.
+        if isinstance(preference_matrix, np.ndarray):
+            preference_matrix = PreferenceMatrix(preference_matrix)
+        self.borda_scores = preference_matrix.get_borda_scores()
+        self.best_borda_score = float(np.max(self.borda_scores))
+
+    def __call__(self, arm_i_index: int, arm_j_index: int) -> float:
+        """Compute the Borda regret of a duel."""
+        return self.best_borda_score - 0.5 * (
+            float(self.borda_scores[arm_i_index])
+            + float(self.borda_scores[arm_j_index])
         )
 
 

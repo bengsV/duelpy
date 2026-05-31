@@ -25,6 +25,7 @@ from duelpy.experiments.environments import environment_list
 from duelpy.feedback import MatrixFeedback
 from duelpy.stats.metrics import AverageRegret
 from duelpy.stats.metrics import BestArmRate
+from duelpy.stats.metrics import BordaRegret
 from duelpy.stats.metrics import Cumulative
 from duelpy.stats.metrics import ExponentialMovingAverage
 from duelpy.stats.metrics import Metric
@@ -60,14 +61,22 @@ def run_single_algorithm(
     feedback_mechanism = environment_class(**environment_parameters)
     metrics: Dict[str, Metric] = {
         "wall_clock": TotalWallClock(),
-        "cum_average_regret": Cumulative(
-            AverageRegret(feedback_mechanism.preference_matrix)
-        ),
-        "best_arm_rate (EMA)": ExponentialMovingAverage(
-            BestArmRate(feedback_mechanism.preference_matrix.get_condorcet_winner()),
-            alpha=0.01,
+        "cum_borda_regret": Cumulative(
+            BordaRegret(feedback_mechanism.preference_matrix)
         ),
     }
+    # The Condorcet-based metrics are only well-defined when a Condorcet winner
+    # exists. Borda-winner environments (e.g. the adversarial setting) need not
+    # have one, so we add these metrics conditionally.
+    condorcet_winner = feedback_mechanism.preference_matrix.get_condorcet_winner()
+    if condorcet_winner is not None:
+        metrics["cum_average_regret"] = Cumulative(
+            AverageRegret(feedback_mechanism.preference_matrix)
+        )
+        metrics["best_arm_rate (EMA)"] = ExponentialMovingAverage(
+            BestArmRate(condorcet_winner),
+            alpha=0.01,
+        )
     wrapped_feedback = MetricKeepingFeedbackMechanism(
         feedback_mechanism, metrics=metrics, sample_interval=sample_interval
     )  # type: ignore
@@ -159,8 +168,9 @@ def plot_results(data: pd.DataFrame) -> None:
     Parameters
     ----------
     data
-        A pandas dataframe with columns time_step, cum_average_regret and
-        wall_clock.
+        A pandas dataframe with a ``time_step`` column and one column per
+        recorded metric (e.g. ``cum_borda_regret``, ``cum_average_regret``,
+        ``best_arm_rate (EMA)`` and ``wall_clock``).
     """
     algorithms = data["algorithm"].unique()
 
@@ -178,47 +188,34 @@ def plot_results(data: pd.DataFrame) -> None:
     # superfluous dash entries.
     dash_mapping = dict(zip(algorithms, dashes))
 
+    # Plot whichever of the known metric columns are actually present. Some
+    # metrics (the Condorcet-based ones) are only recorded for environments
+    # that have a Condorcet winner.
+    candidate_metrics = [
+        "cum_borda_regret",
+        "cum_average_regret",
+        "best_arm_rate (EMA)",
+        "wall_clock",
+    ]
+    metric_columns = [metric for metric in candidate_metrics if metric in data.columns]
+
     sns.set()
-    _fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3)
-    sns.lineplot(
-        data=data,
-        x="time_step",
-        y="cum_average_regret",
-        hue="algorithm",
-        palette=color_mapping,
-        style="algorithm",
-        dashes=dash_mapping,
-        ci=None,
-        linewidth=2,
-        ax=ax1,
-    )
-    sns.lineplot(
-        data=data,
-        x="time_step",
-        y="best_arm_rate (EMA)",
-        hue="algorithm",
-        palette=color_mapping,
-        style="algorithm",
-        dashes=dash_mapping,
-        ci=None,
-        linewidth=2,
-        ax=ax2,
-        # All plots use the same styles and hues. One legend is sufficient.
-        legend=False,
-    )
-    sns.lineplot(
-        data=data,
-        x="time_step",
-        y="wall_clock",
-        hue="algorithm",
-        palette=color_mapping,
-        style="algorithm",
-        dashes=dash_mapping,
-        ci=None,
-        linewidth=2,
-        ax=ax3,
-        legend=False,
-    )
+    _fig, axes = plt.subplots(nrows=1, ncols=len(metric_columns), squeeze=False)
+    for index, (metric, axis) in enumerate(zip(metric_columns, axes[0])):
+        sns.lineplot(
+            data=data,
+            x="time_step",
+            y=metric,
+            hue="algorithm",
+            palette=color_mapping,
+            style="algorithm",
+            dashes=dash_mapping,
+            ci=None,
+            linewidth=2,
+            ax=axis,
+            # All plots use the same styles and hues. One legend is sufficient.
+            legend=index == 0,
+        )
     plt.show()
 
 

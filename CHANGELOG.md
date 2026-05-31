@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-Nothing yet.
+- Adversarial dueling bandit support (Saha, Koren & Mansour, 2021).
+	- `DuelingExp3` and `DuelingExp3HighProbability` algorithms (Algorithms 1
+	  and 2): EXP3-style regret minimization against the Borda winner.
+	- `BordaConfidenceBound` algorithm (Algorithm 3): an explore-then-commit
+	  algorithm for the fixed-gap adversarial setting.
+	- `AdversarialMatrixFeedback`: a feedback mechanism driven by a time-varying
+	  sequence of preference matrices.
+	- `FixedGapAdversarialMatrix`: a stationary fixed-gap Borda environment.
+	- `BordaRegret`: a metric measuring regret against the Borda winner.
 
 ### Changed
 

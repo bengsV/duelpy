@@ -5,11 +5,14 @@ from duelpy.algorithms.approximate_probability import ApproximateProbability
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBandit
 from duelpy.algorithms.beat_the_mean import BeatTheMeanBanditPAC
 from duelpy.algorithms.binary_search_ranking import BinarySearchRanking
+from duelpy.algorithms.borda_confidence_bound import BordaConfidenceBound
 from duelpy.algorithms.borda_ranking import BordaRanking
 from duelpy.algorithms.copeland_confidence_bound import CopelandConfidenceBound
 from duelpy.algorithms.cw_rmed import CwRmed
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSampling
 from duelpy.algorithms.double_thompson_sampling import DoubleThompsonSamplingPlus
+from duelpy.algorithms.dueling_exp3 import DuelingExp3
+from duelpy.algorithms.dueling_exp3 import DuelingExp3HighProbability
 from duelpy.algorithms.exploreverify import VerificationBasedCondorcet
 from duelpy.algorithms.interleaved_filtering import InterleavedFiltering
 from duelpy.algorithms.kl_divergence_based_pac import KLDivergenceBasedPAC
@@ -80,6 +83,9 @@ regret_minimizing_algorithms = [
     Rmed1,
     Rmed2,
     Rmed2FH,
+    DuelingExp3,
+    DuelingExp3HighProbability,
+    BordaConfidenceBound,
 ]
 other_algorithms = [ApproximateProbability]
 # This is not really needed, but otherwise zimports doesn't understand the

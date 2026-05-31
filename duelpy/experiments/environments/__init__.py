@@ -1,5 +1,8 @@
 """Various dueling bandit environments for use in experiments."""
 
+from duelpy.experiments.environments.fixed_gap_adversarial import (
+    FixedGapAdversarialMatrix,
+)
 from duelpy.experiments.environments.hard_condorcet_matrix import HardCondorcetMatrix
 from duelpy.experiments.environments.mallows_model import MallowsModel
 from duelpy.experiments.environments.plackett_luce_model import PlackettLuceModel
@@ -11,6 +14,11 @@ from duelpy.experiments.environments.plackett_luce_model import PlackettLuceMode
 
 # Make the environment classes available for easy enumeration in experiments
 # and tests.
-environment_list = [HardCondorcetMatrix, PlackettLuceModel, MallowsModel]
+environment_list = [
+    HardCondorcetMatrix,
+    PlackettLuceModel,
+    MallowsModel,
+    FixedGapAdversarialMatrix,
+]
 
 __all__ = [environment.__name__ for environment in environment_list]
