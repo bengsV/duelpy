@@ -14,6 +14,6 @@ version. Be aware that this version may contain unreleased changes.
 
 .. code-block:: Bash
 
-    $ git clone https://gitlab.com/duelpy/duelpy.git
+    $ git clone https://github.com/bengsV/duelpy.git
     $ cd duelpy
     $ pip install -e duelpy

@@ -22,7 +22,7 @@ project = "duelpy"
 # author = "authors"
 
 # The full version, including alpha/beta/rc tags
-release = "https://gitlab.com/duelpy/duelpy"
+release = "https://github.com/bengsV/duelpy"
 
 
 # -- General configuration ---------------------------------------------------
